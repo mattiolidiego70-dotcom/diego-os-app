@@ -1,0 +1,2570 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Salute · Diego OS</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icona-180.png">
+<meta name="theme-color" content="#050505">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600&family=Spline+Sans+Mono:wght@400;500&display=swap">
+<style>
+/* ═══ TOKEN — un solo :root, nessun colore a mano nei componenti ═══ */
+:root{
+  --fondo:#050505;
+  --fondo-desktop:radial-gradient(120% 110% at 12% 4%,#A3FF0022 0%,#0d0d0d 30%,#060606 68%,#020202 100%);
+  --fondo-mobile:radial-gradient(120% 70% at 25% 0%,#A3FF0026 0%,#0d0d0d 34%,#060606 70%,#020202 100%);
+  --vetro:rgba(var(--luce-rgb),.06);
+  --vetro-forte:rgba(var(--luce-rgb),.07);
+  --vetro-filtro:blur(40px) saturate(180%);
+  --vetro-filtro-forte:blur(44px) saturate(200%);
+  --bordo:rgba(var(--luce-rgb),.12);
+  --bordo-forte:rgba(var(--luce-rgb),.14);
+  --luce-interna:inset 0 1px 0 rgba(var(--luce-rgb),.07);
+  --riga:rgba(var(--luce-rgb),.06);
+  --luce-rgb:255,255,255;
+  --ombra-rgb:0,0,0;
+  --accento-rgb:163,255,0;
+  --attenzione-rgb:255,176,32;
+  --viola-rgb:168,85,247;
+  --inchiostro-rgb:11,18,0;
+  --superficie-rgb:20,20,24;
+  --velo-rgb:6,6,8;
+  --accento:#A3FF00;
+  --accento-2:#8FE000;
+  --accento-fondo:rgba(var(--accento-rgb),.18);
+  --accento-fondo-16:rgba(var(--accento-rgb),.16);
+  --accento-bordo:rgba(var(--accento-rgb),.4);
+  --accento-45:rgba(var(--accento-rgb),.45);
+  --attenzione:#ffb020;
+  --testo1:#F5F5F7;
+  --testo2:#C7C7CC;
+  --testo3:#8E8E93;
+  --testo4:#6b6a68;
+  --testo5:#4d4c4a;
+  --inchiostro-su-lime:#0b1200;
+  --sfera:#2b1b4d;
+  --sfera-rosa:#f0abfc;
+  --sfera-blu:#60a5fa;
+  --alone-lime:rgba(var(--accento-rgb),.12);
+  --alone-viola:rgba(var(--viola-rgb),.10);
+  --barra-fondo:rgba(var(--luce-rgb),.09);
+  --tacca-vuota:rgba(var(--luce-rgb),.14);
+  --ombra-hover:0 16px 34px rgba(var(--ombra-rgb),.5);
+  --ombra-alfred:0 18px 44px rgba(var(--ombra-rgb),.5);
+  --ombra-finestra:0 40px 90px rgba(9,5,20,.6),0 0 0 1px rgba(var(--luce-rgb),.22);
+  --font-ui:'Sora',system-ui,sans-serif;
+  --font-mono:'Spline Sans Mono',ui-monospace,monospace;
+  --r-scheda:16px;
+  --r-chip:10px;
+  --r-chip-s:6px;
+  --r-barra:4px;
+  --transizione:transform .22s cubic-bezier(.2,.8,.2,1),box-shadow .22s ease;
+}
+
+/* ═══ FASE 2 — le tre direzioni nuove. Si cambia la pelle, non lo scheletro:
+   ogni blocco riscrive SOLO i token di colore, zero regole di layout. ═══ */
+
+/* A · INCHIOSTRO — blu-nero profondo, neutri freddi, accento acciaio */
+html[data-pelle="inchiostro"]{
+  --fondo:#080B11;
+  --fondo-desktop:radial-gradient(120% 110% at 12% 4%,#7AA2F733 0%,#0e131c 30%,#080b11 68%,#04060a 100%);
+  --fondo-mobile:radial-gradient(120% 70% at 25% 0%,#7AA2F72e 0%,#0e131c 34%,#080b11 70%,#04060a 100%);
+  --accento:#7AA2F7;
+  --accento-rgb:122,162,247;
+  --attenzione-rgb:242,177,85;
+  --viola-rgb:94,234,212;
+  --inchiostro-rgb:5,8,15;
+  --superficie-rgb:14,19,28;
+  --velo-rgb:4,6,10;
+  --accento-2:#5B8DEF;
+  --accento-fondo:rgba(122,162,247,.18);
+  --accento-fondo-16:rgba(122,162,247,.16);
+  --accento-bordo:rgba(122,162,247,.42);
+  --accento-45:rgba(122,162,247,.45);
+  --attenzione:#F2B155;
+  --testo1:#E8ECF4;
+  --testo2:#AEB8CC;
+  --testo3:#76819A;
+  --testo4:#5B6579;
+  --testo5:#434B5C;
+  --inchiostro-su-lime:#05080f;
+  --sfera:#1b2a4d;
+  --sfera-rosa:#9db4f7;
+  --sfera-blu:#5eead4;
+  --alone-lime:rgba(122,162,247,.14);
+  --alone-viola:rgba(94,234,212,.09);
+}
+
+/* B · BRONZO — grafite calda, accento ambra: la piu' calda delle tre */
+html[data-pelle="bronzo"]{
+  --fondo:#100F0E;
+  --fondo-desktop:radial-gradient(120% 110% at 12% 4%,#E8894A2b 0%,#17140f 30%,#100f0e 68%,#070605 100%);
+  --fondo-mobile:radial-gradient(120% 70% at 25% 0%,#E8894A26 0%,#17140f 34%,#100f0e 70%,#070605 100%);
+  --accento:#E8894A;
+  --accento-rgb:232,137,74;
+  --attenzione-rgb:227,198,90;
+  --viola-rgb:158,199,180;
+  --inchiostro-rgb:20,11,4;
+  --superficie-rgb:23,20,15;
+  --velo-rgb:7,6,5;
+  --accento-2:#C96F37;
+  --accento-fondo:rgba(232,137,74,.18);
+  --accento-fondo-16:rgba(232,137,74,.16);
+  --accento-bordo:rgba(232,137,74,.42);
+  --accento-45:rgba(232,137,74,.45);
+  --attenzione:#E3C65A;
+  --testo1:#F4F0EB;
+  --testo2:#C9BFB3;
+  --testo3:#938A7E;
+  --testo4:#6F675D;
+  --testo5:#524C44;
+  --inchiostro-su-lime:#140b04;
+  --sfera:#3a2416;
+  --sfera-rosa:#f0b49a;
+  --sfera-blu:#9ec7b4;
+  --alone-lime:rgba(232,137,74,.13);
+  --alone-viola:rgba(158,199,180,.09);
+}
+
+/* C · CARTA — chiara, per quando apri l'app di giorno. I veli si invertono:
+   --luce-rgb diventa inchiostro, quindi i 59 rgba dei componenti si scuriscono da soli. */
+html[data-pelle="carta"]{
+  --luce-rgb:17,20,26;
+  --fondo:#F5F4F1;
+  --fondo-desktop:radial-gradient(120% 110% at 12% 4%,#2E5AAC14 0%,#f7f6f3 30%,#f2f1ee 68%,#eceae6 100%);
+  --fondo-mobile:radial-gradient(120% 70% at 25% 0%,#2E5AAC12 0%,#f7f6f3 34%,#f2f1ee 70%,#eceae6 100%);
+  --vetro:rgba(255,255,255,.72);
+  --vetro-forte:rgba(255,255,255,.84);
+  --vetro-filtro:blur(24px) saturate(140%);
+  --vetro-filtro-forte:blur(28px) saturate(150%);
+  --bordo:rgba(17,20,26,.12);
+  --bordo-forte:rgba(17,20,26,.16);
+  --luce-interna:inset 0 1px 0 rgba(255,255,255,.9);
+  --accento:#2E5AAC;
+  --accento-rgb:46,90,172;
+  --attenzione-rgb:184,118,26;
+  --viola-rgb:180,138,216;
+  --inchiostro-rgb:255,255,255;
+  --superficie-rgb:250,250,248;
+  --velo-rgb:236,234,230;
+  --accento-2:#24478A;
+  --accento-fondo:rgba(46,90,172,.14);
+  --accento-fondo-16:rgba(46,90,172,.12);
+  --accento-bordo:rgba(46,90,172,.38);
+  --accento-45:rgba(46,90,172,.45);
+  --attenzione:#B8761A;
+  --testo1:#14171D;
+  --testo2:#3C434F;
+  --testo3:#6B7280;
+  --testo4:#8A909B;
+  --testo5:#A8ADB6;
+  --inchiostro-su-lime:#FFFFFF;
+  --sfera:#dfe4f2;
+  --sfera-rosa:#b48ad8;
+  --sfera-blu:#3b82f6;
+  --alone-lime:rgba(46,90,172,.10);
+  --alone-viola:rgba(180,138,216,.10);
+  --ombra-hover:0 14px 30px rgba(17,20,26,.12);
+  --ombra-alfred:0 16px 38px rgba(17,20,26,.14);
+  --ombra-finestra:0 30px 70px rgba(17,20,26,.18),0 0 0 1px rgba(17,20,26,.10);
+}
+
+/* il selettore della pelle: vive solo durante la scelta di Fase 2 */
+#pelli{position:fixed;z-index:900;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom));
+  display:flex;gap:6px;align-items:center;padding:6px 8px;border-radius:999px;
+  background:var(--vetro-forte);backdrop-filter:var(--vetro-filtro);-webkit-backdrop-filter:var(--vetro-filtro);
+  border:1px solid var(--bordo);box-shadow:var(--ombra-hover);font:500 11px var(--font-ui)}
+#pelli button{appearance:none;border:1px solid var(--bordo);background:transparent;color:var(--testo3);
+  font:500 11px var(--font-ui);padding:5px 9px;border-radius:999px;cursor:pointer;transition:var(--transizione)}
+#pelli button[aria-pressed="true"]{background:var(--accento-fondo);border-color:var(--accento-bordo);color:var(--testo1)}
+#pelli .eti{color:var(--testo4);padding-left:2px;letter-spacing:.04em;text-transform:uppercase;font-size:9.5px}
+@media (max-width:760px){#pelli{bottom:calc(72px + env(safe-area-inset-bottom))}}
+*{box-sizing:border-box;scrollbar-width:none;-ms-overflow-style:none}
+*::-webkit-scrollbar{width:0;height:0;display:none}
+html,body{margin:0;height:100%}
+body{background:var(--fondo);font-family:var(--font-ui);color:var(--testo1);overflow:hidden}
+a{color:var(--accento);text-decoration:none}
+:focus-visible{outline:2px solid var(--accento);outline-offset:2px;border-radius:6px}
+@keyframes deriva{0%{transform:translate(-14%,-8%) scale(1.1)}50%{transform:translate(12%,10%) scale(1.35)}100%{transform:translate(-14%,-8%) scale(1.1)}}
+@keyframes deriva2{0%{transform:translate(10%,12%) scale(1.2)}50%{transform:translate(-12%,-10%) scale(1)}100%{transform:translate(10%,12%) scale(1.2)}}
+@keyframes onda{0%,100%{transform:scaleY(.35)}50%{transform:scaleY(1)}}
+
+/* ═══ COMPONENTI ═══ */
+.card{background:linear-gradient(180deg,rgba(var(--luce-rgb),.045),rgba(var(--luce-rgb),.015)),var(--vetro);backdrop-filter:var(--vetro-filtro);-webkit-backdrop-filter:var(--vetro-filtro);
+  border:1px solid var(--bordo);border-radius:var(--r-scheda);padding:13px 15px;
+  box-shadow:var(--luce-interna),0 8px 24px rgba(var(--ombra-rgb),.22);transition:var(--transizione);
+  display:flex;flex-direction:column;gap:7px;min-height:0;min-width:0}
+.card:hover{transform:translateY(-3px) scale(1.008);box-shadow:var(--ombra-hover),inset 0 1px 0 rgba(var(--luce-rgb),.12)}
+.card:active{transform:translateY(-1px) scale(.997)}
+.testa{display:flex;align-items:center;justify-content:space-between;gap:9px}
+.testa .tit{color:var(--testo1);font:600 14.5px var(--font-ui);letter-spacing:-.01em}
+.etk{color:var(--testo4);font:400 10px var(--font-mono);letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
+.lettura{border:1px solid var(--bordo-forte);border-radius:8px;padding:3px 9px;color:var(--testo2);font:500 11px var(--font-mono);white-space:nowrap}
+.espandi{display:flex;color:var(--accento);cursor:pointer}
+.chip{padding:5px 9px;border-radius:8px;border:1px solid var(--bordo);color:var(--testo3);font:400 10.5px var(--font-ui);cursor:pointer;white-space:nowrap;background:none}
+.chip.on{background:var(--accento-fondo-16);border-color:var(--accento-bordo);color:var(--accento);font-weight:500}
+.riga{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid var(--riga);padding-bottom:3px;gap:8px}
+.riga .k{color:var(--testo3);font:400 11.5px var(--font-ui)}
+.riga .v{color:var(--testo1);font:500 12px var(--font-mono);text-align:right}
+.cliccabile{cursor:pointer;border-radius:6px;transition:background .18s ease}
+.cliccabile:hover{background:rgba(var(--luce-rgb),.05)}
+.nota{color:var(--testo4);font:400 10.5px/1.4 var(--font-ui)}
+.bott{text-align:center;background:var(--accento);color:var(--inchiostro-su-lime);border:none;border-radius:var(--r-chip);padding:9px;font:600 12.5px var(--font-ui);cursor:pointer;width:100%}
+.bott2{text-align:center;background:none;border:1px solid rgba(var(--accento-rgb),.35);color:var(--accento);border-radius:var(--r-chip);padding:7px;font:500 12px var(--font-ui);cursor:pointer;width:100%}
+.campo{background:none;border:1px solid var(--bordo-forte);border-radius:9px;padding:9px 10px;color:var(--testo1);font:400 12px var(--font-ui);width:100%}
+.campo::placeholder{color:var(--testo3)}
+.barra{height:6px;border-radius:var(--r-barra);background:var(--barra-fondo);overflow:hidden}
+.barra>i{display:block;height:100%;background:var(--accento)}
+.mono{font-family:var(--font-mono)}
+.sfera{border-radius:50%;position:relative;overflow:hidden;background:var(--sfera);box-shadow:inset 0 1px 1px rgba(var(--luce-rgb),.45);flex:none;display:block}
+.sfera i{position:absolute;inset:0;display:block}
+.sfera .rosa{background:radial-gradient(closest-side,var(--sfera-rosa),transparent 70%);filter:blur(5px);animation:deriva 5.5s ease-in-out infinite}
+.sfera .blu{background:radial-gradient(closest-side,var(--sfera-blu),transparent 70%);filter:blur(6px);animation:deriva2 6.5s ease-in-out infinite}
+.tacca{flex:1;border-radius:6px;background:var(--tacca-vuota)}
+.tacca.si{background:var(--accento)}
+.tacca.dafare{background:rgba(var(--accento-rgb),.10);border:1px dashed rgba(var(--accento-rgb),.5)}
+.quadr{width:9px;height:9px;border-radius:2px;background:rgba(var(--luce-rgb),.12);display:block}
+.quadr.si{background:var(--accento)}
+.spunta{width:16px;height:16px;border-radius:5px;border:1px solid rgba(var(--luce-rgb),.25);background:transparent;flex:none;display:block;cursor:pointer}
+.spunta.comprato{background:var(--accento)}
+.spunta.celho{background:var(--accento-45)}
+.pillstato{border:1px solid var(--bordo);border-radius:var(--r-chip-s);padding:1px 8px;font:400 10px var(--font-ui);color:var(--testo4);white-space:nowrap}
+/* bolle 2026: raggio asimmetrico, gradiente sul lime, profondita' soft */
+.msg-io{align-self:flex-end;max-width:82%;background:linear-gradient(135deg,var(--accento),var(--accento-2));border-radius:18px 18px 5px 18px;padding:10px 14px;color:var(--inchiostro-su-lime);font:400 13px/1.5 var(--font-ui);box-shadow:0 4px 16px rgba(var(--accento-rgb),.18)}
+.msg-coach{align-self:flex-start;max-width:82%;background:rgba(var(--luce-rgb),.055);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(var(--luce-rgb),.08);border-radius:18px 18px 18px 5px;padding:10px 14px;color:var(--testo1);font:400 13px/1.55 var(--font-ui);white-space:pre-wrap;box-shadow:0 2px 12px rgba(var(--ombra-rgb),.25)}
+
+/* ═══ SHELL DESKTOP (>760px) ═══ */
+#sfondo{position:fixed;inset:0;background:var(--fondo-desktop)}
+.alone{position:absolute;border-radius:50%;pointer-events:none}
+#alone1{left:16%;top:-140px;width:560px;height:420px;background:radial-gradient(closest-side,var(--alone-lime),transparent)}
+#alone2{right:-80px;bottom:-120px;width:640px;height:520px;background:radial-gradient(closest-side,rgba(var(--accento-rgb),.08),transparent)}
+#alone3{left:40%;bottom:-40px;width:520px;height:380px;background:radial-gradient(closest-side,var(--alone-viola),transparent)}
+#app{position:fixed;inset:26px;border-radius:16px;overflow:hidden;box-shadow:var(--ombra-finestra);
+  display:grid;grid-template-columns:66px 1fr;grid-template-rows:minmax(0,1fr);background:var(--vetro)}
+#rail{position:relative;z-index:20;background:rgba(var(--luce-rgb),.05);backdrop-filter:blur(46px) saturate(150%);-webkit-backdrop-filter:blur(46px) saturate(150%);
+  border-right:1px solid rgba(var(--luce-rgb),.09);display:flex;flex-direction:column;align-items:center;padding:16px 0 14px}
+#rail .logo{width:26px;height:26px;border-radius:8px;background:var(--accento);color:var(--inchiostro-su-lime);display:flex;align-items:center;justify-content:center;font:600 12px var(--font-ui);margin-bottom:18px}
+#rail .voce{width:42px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;color:rgba(var(--luce-rgb),.5);position:relative;cursor:pointer}
+#rail .voce.on{background:var(--accento-fondo-16);border:1px solid var(--accento-45);color:var(--accento)}
+#rail .voce .nome{display:none;position:absolute;left:52px;top:50%;transform:translateY(-50%);background:rgba(var(--superficie-rgb),.95);border:1px solid var(--bordo);border-radius:8px;padding:4px 10px;color:var(--testo2);font:400 11px var(--font-ui);white-space:nowrap;z-index:40}
+#rail .voce:hover .nome{display:block}
+#colonna{position:relative;display:flex;flex-direction:column;min-width:0;background:linear-gradient(180deg,rgba(var(--luce-rgb),.02),rgba(var(--ombra-rgb),.14))}
+#testata{position:relative;display:flex;align-items:center;gap:14px;padding:11px 18px;background:var(--vetro);backdrop-filter:blur(40px) saturate(190%);-webkit-backdrop-filter:blur(40px) saturate(190%);border-bottom:1px solid rgba(var(--luce-rgb),.08);z-index:25}
+#testata .modulo{color:var(--testo1);font:500 13.5px var(--font-ui);letter-spacing:-.01em}
+/* la pillola col riquadro era brutta (collaudo Diego 13/09): resta SOLO la
+   sfera, come la barra chiusa — stesse forme, un tocco apre la barra */
+#pillola{position:absolute;left:50%;transform:translateX(-50%);display:flex;align-items:center;justify-content:center;background:none;border:none;padding:0;cursor:pointer}
+#pillola>span:not(.sfera){display:none}
+#contesto{margin-left:auto;display:flex;align-items:center;gap:6px;color:var(--testo2);font:400 12px var(--font-mono);white-space:nowrap}
+#striscia{padding:10px 24px 0}
+#tabs{display:inline-flex;padding:3px;border-radius:13px;background:linear-gradient(180deg,rgba(var(--accento-rgb),.10),rgba(var(--accento-rgb),.04));box-shadow:inset 0 1px 0 rgba(var(--luce-rgb),.06),inset 0 0 0 1px rgba(var(--luce-rgb),.06)}
+#tabs .tab{padding:7px 15px;border-radius:10px;color:var(--testo3);font:400 12.5px var(--font-ui);cursor:pointer;border:1px solid transparent;background:none;white-space:nowrap}
+#tabs .tab.on{background:var(--accento-fondo);border-color:var(--accento-bordo);color:var(--accento);font-weight:500}
+#statoriga{display:none;align-items:center;gap:9px;padding:8px 24px 0;color:var(--testo2);font:400 13px var(--font-ui)}
+#statoriga.si{display:flex}
+/* overflow-y:auto anche su desktop: con una finestra piu' bassa del mockup
+   la griglia non si taglia, scorre (collaudo Diego 13/09) */
+.pane{display:none;flex:1;min-height:0;overflow-y:auto;padding:8px 24px 84px}
+.pane.on{display:grid;grid-template-columns:1fr 1fr 1fr;grid-auto-rows:minmax(126px,auto);gap:10px}
+.card{overflow:hidden}
+/* minimi per riga: sotto quella soglia la PANE scorre invece di tagliare le card */
+.pane[data-pane="oggi"].on{grid-template-rows:repeat(5,minmax(134px,1fr))}
+.pane[data-pane="corpo"].on,.pane[data-pane="dieta"].on,.pane[data-pane="spesa"].on,.pane[data-pane="coach"].on{grid-template-rows:repeat(3,minmax(212px,1fr))}
+.pane[data-pane="obiettivi"].on{grid-template-rows:minmax(235px,1.12fr) minmax(205px,1fr) minmax(138px,.66fr);padding-top:0}
+.pane[data-pane="brain"].on{grid-template-rows:minmax(205px,1fr) minmax(205px,1fr) minmax(252px,1.22fr)}
+#diario30{display:none;align-items:center;gap:12px;padding:6px 24px 14px;border-top:1px solid rgba(var(--luce-rgb),.08)}
+#diario30.si{display:flex}
+#barraAlfred{position:absolute;left:50%;bottom:20px;transform:translateX(-50%);width:660px;background:var(--vetro);backdrop-filter:var(--vetro-filtro-forte);-webkit-backdrop-filter:var(--vetro-filtro-forte);border:1px solid var(--bordo-forte);border-radius:16px;padding:11px 14px;box-shadow:var(--ombra-alfred),inset 0 1px 0 rgba(var(--luce-rgb),.09);z-index:70;
+  transition:width .28s cubic-bezier(.2,.8,.2,1),padding .28s ease,border-radius .28s ease,left .28s ease,transform .28s ease}
+#barraAlfred .dentro{display:flex;align-items:center;gap:11px}
+/* la barra si CHIUDE nella sfera quando non la usi: resta solo la pallina,
+   CENTRATA in basso, un tocco la riapre (collaudo Diego 13/09, x2) */
+#barraAlfred.chiusa{width:58px;padding:6px;border-radius:50%;left:50%;transform:translateX(-50%);cursor:pointer}
+#barraAlfred.chiusa .dentro{justify-content:center;gap:0}
+#barraAlfred.chiusa .dentro>*:not(.sfera){display:none !important}
+/* la sfera si ANIMA solo quando Ada parla o lavora: da ferma e' quieta */
+.sfera .rosa,.sfera .blu{animation-play-state:paused}
+#appfusto.ascolta .sfera .rosa,#appfusto.ascolta .sfera .blu{animation-play-state:running}
+#onde{visibility:hidden}
+#appfusto.ascolta #onde{visibility:visible}
+#onde b{animation-play-state:paused}
+#appfusto.ascolta #onde b{animation-play-state:running}
+#alfredTesto{flex:1;background:none;border:none;color:var(--testo1);font:400 13px var(--font-ui);outline:none;min-width:0}
+#alfredTesto::placeholder{color:var(--testo3)}
+.icona-barra{display:flex;color:rgba(var(--luce-rgb),.55);cursor:pointer;background:none;border:none;padding:0}
+.icona-barra.lime{color:var(--accento)}
+#mobiletop,#dockMobile,#mobileTesta{display:none}
+/* risposta di Ada: scheda in vetro sopra il contenuto */
+#alfredSuggerimenti{display:none;position:absolute;left:50%;bottom:86px;transform:translateX(-50%);z-index:68;gap:6px;flex-wrap:wrap;justify-content:center;max-width:660px}
+#alfredSuggerimenti.si{display:flex}
+#alfredRisposta{display:none;position:absolute;left:50%;bottom:86px;transform:translateX(-50%);width:660px;max-height:46%;z-index:69;background:rgba(var(--superficie-rgb),.66);backdrop-filter:blur(30px) saturate(160%);-webkit-backdrop-filter:blur(30px) saturate(160%);border:1px solid var(--bordo-forte);border-radius:16px;padding:14px;box-shadow:var(--ombra-alfred);flex-direction:column;gap:9px}
+#alfredRisposta.si{display:flex}
+#alfredRispTesto{color:var(--testo1);font:400 13px/1.55 var(--font-ui);overflow-y:auto;min-height:0;white-space:pre-wrap}
+#alfredSeguiti{display:flex;gap:6px;flex-wrap:wrap}
+#appfusto.ascolta #app{box-shadow:var(--ombra-finestra),0 0 0 2px rgba(var(--accento-rgb),.35),0 0 44px rgba(var(--accento-rgb),.25)}
+
+/* ═══ MOBILE (≤760px) ═══ */
+@media (max-width:760px){
+  #sfondo{background:var(--fondo-mobile)}
+  /* 100dvh, non 100vh: su iPhone la barra di Safari mangiava il fondo pagina */
+  #app{inset:0;height:100dvh;border-radius:0;display:flex;flex-direction:column;box-shadow:none;background:none}
+  /* la CATENA delle altezze: senza questo vincolo la colonna cresceva a
+     1700px dentro un overflow:hidden e la pagina "non scorreva" (collaudo
+     Diego 13/09): barra e dock finivano invisibili sotto il taglio */
+  /* CATENA DELLE LARGHEZZE (14/09, gemella di quella delle altezze): un
+     flex item ha min-width:auto e si allarga col contenuto - un solo
+     badge nowrap allargava colonna, pane e OGNI card oltre lo schermo */
+  #colonna{flex:1 1 0;min-height:0;min-width:0;max-width:100vw;overflow-x:hidden}
+  .pane{max-width:100vw;box-sizing:border-box}
+  #rail,#testata,#striscia{display:none}
+  #mobileTesta{display:block;position:relative;z-index:20;padding:14px 16px 0}
+  #mobileTesta .sopra{display:flex;align-items:center;justify-content:space-between}
+  #mobileTesta .titolo{color:var(--testo1);font:500 21px var(--font-ui);letter-spacing:-.02em}
+  #mobileTesta .data{color:var(--testo3);font:400 11.5px var(--font-mono)}
+  #tabsMob{display:flex;gap:6px;margin-top:12px;overflow-x:auto;padding-bottom:2px}
+  #tabsMob .tab{padding:6px 13px;border-radius:10px;border:1px solid var(--bordo);color:var(--testo3);font:400 12px var(--font-ui);white-space:nowrap;background:none;cursor:pointer}
+  #tabsMob .tab.on{background:var(--accento-fondo);border-color:var(--accento-bordo);color:var(--accento);font-weight:500}
+  .pane{padding:12px 16px 4px}
+  /* il fondo respira: l'ultima card non finisce sotto la barra di Ada */
+  .pane.on{display:flex;flex-direction:column;overflow-y:auto;gap:9px;padding-bottom:170px}
+  /* REGOLA CRITICA (gia' sbagliata una volta): ogni scheda figlia flex:none */
+  .pane.on>*{flex:none !important;grid-column:auto !important;grid-row:auto !important}
+  /* REV GRAFICA 14/09 - CONTENIMENTO: i badge nowrap (es. «18 mar · 124,5»)
+     davano alle card un min-content piu' largo del telefono e TUTTO
+     sfondava a destra (bolle chat comprese). Nessuna card puo' superare
+     lo schermo; cio' che non ci sta si tronca con i puntini, non taglia
+     la pagina. */
+  .pane.on>*{max-width:100% !important;min-width:0;overflow:hidden !important}
+  /* i min-content dei flex (7 pillole, 26 celle heatmap, badge nowrap)
+     devono potersi SCHIACCIARE: senza questo il figlio detta la larghezza */
+  .pane.on>* *{min-width:0}
+  .lettura{max-width:40vw;overflow:hidden;text-overflow:ellipsis}
+  .tit{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  /* ordine mobile di Oggi come nel mockup — ma SOLO finché Diego non
+     riordina lui: la classe ordine-mockup sparisce appena esiste una
+     configurazione utente (review-7, R7-1) */
+  .pane[data-pane="oggi"].ordine-mockup>[data-blocco="allenamenti"]{order:1}
+  .pane[data-pane="oggi"].ordine-mockup>[data-blocco="heatmap"]{order:2}
+  .pane[data-pane="oggi"].ordine-mockup>[data-blocco="kcal"]{order:3}
+  .pane[data-pane="oggi"].ordine-mockup>[data-blocco="verdetto"]{order:4}
+  .pane[data-pane="oggi"].ordine-mockup>[data-blocco="tiles"]{order:5}
+  .pane[data-pane="oggi"].ordine-mockup>[data-blocco="cuore"]{order:6}
+  .pane[data-pane="oggi"].ordine-mockup>[data-blocco="check"]{order:7}
+  .pane[data-pane="oggi"].ordine-mockup>[data-blocco="cheto"]{order:8}
+  .pane[data-pane="oggi"].ordine-mockup>[data-blocco="lasettimana"]{order:9}
+  .pane[data-pane="oggi"].ordine-mockup>[data-blocco="tdee"]{order:10}
+  #diario30.si{padding:6px 16px 10px}
+  /* la barra GALLEGGIA in trasparenza sopra il contenuto: mai una fascia
+     da parte a parte (collaudo Diego 13/09, sera) */
+  #barraAlfred{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom));transform:translateX(-50%);
+    width:min(88vw,560px);margin:0;border-radius:26px;padding:9px 12px;flex:none;
+    background:rgba(var(--superficie-rgb),.42);border:1px solid rgba(var(--luce-rgb),.14);
+    backdrop-filter:blur(30px) saturate(170%);-webkit-backdrop-filter:blur(30px) saturate(170%);
+    box-shadow:0 12px 34px rgba(var(--ombra-rgb),.45)}
+  #barraAlfred.chiusa{width:54px;left:50%;transform:translateX(-50%);border-radius:50%}
+  /* il contenuto scorre anche SOTTO la barra flottante senza restarne coperto */
+  .pane{padding-bottom:150px}
+  /* la risposta sta SOPRA tutto, ancorata alla barra, non persa nel flusso */
+  #alfredRisposta{position:fixed;left:16px;right:16px;width:auto;transform:none;bottom:calc(150px + env(safe-area-inset-bottom));max-height:56%}
+  #dockMobile{display:flex;align-items:center;justify-content:space-around;margin:9px 16px 10px;background:var(--vetro);backdrop-filter:blur(46px) saturate(180%);-webkit-backdrop-filter:blur(46px) saturate(180%);border:1px solid var(--bordo);border-radius:22px;padding:8px 8px 16px;box-shadow:inset 0 1px 0 rgba(var(--luce-rgb),.08)}
+  #dockMobile .voce{display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 16px;border-radius:13px;color:rgba(var(--luce-rgb),.5);cursor:pointer}
+  #dockMobile .voce.on{background:rgba(var(--accento-rgb),.14);border:1px solid var(--accento-bordo);color:var(--accento)}
+  #dockMobile .nome{font:400 9px var(--font-mono);letter-spacing:.04em;color:var(--testo4)}
+  #dockMobile .voce.on .nome{color:var(--accento);font-weight:500}
+  #statoriga.si{padding:8px 16px 0;font-size:12px}
+}
+/* il pannello espanso dei grafici (vendor, intoccato) confida nel blur del
+   backdrop: quando il blur manca (Low Power, GPU off) il fondo restava
+   semitrasparente e il contenuto sotto filtrava. Copertura garantita da qui. */
+[data-chart-overlay]{background:rgba(var(--velo-rgb),.94) !important}
+/* ═══ VISTA ALFRED — macro-area chat, simil Claude ═══ */
+#vistaAlfred{display:none;flex:1;min-height:0;padding:8px 24px 150px;gap:12px}
+#vistaAlfred.on{display:grid;grid-template-columns:280px minmax(0,1fr)}
+#alfLato{display:flex;flex-direction:column;gap:8px;min-height:0;overflow-y:auto;border-right:1px solid rgba(var(--luce-rgb),.08);padding-right:12px}
+#alfLato .sez{color:var(--testo4);font:400 10px var(--font-mono);letter-spacing:.05em;margin-top:6px}
+.alfChat{display:flex;flex-direction:column;gap:2px;padding:7px 9px;border-radius:10px;cursor:pointer;border:1px solid transparent}
+.alfChat:hover{background:rgba(var(--luce-rgb),.05)}
+.alfChat.on{background:var(--accento-fondo-16);border-color:var(--accento-bordo)}
+.alfChat .tit{color:var(--testo1);font:400 12px var(--font-ui);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.alfChat .sotto{display:flex;gap:7px;color:var(--testo4);font:400 10px var(--font-mono)}
+.alfChat .azioni{display:none;gap:6px}
+.alfChat:hover .azioni{display:flex}
+.alfChat .azioni b{font-weight:400;cursor:pointer;color:var(--testo4);font-size:11px}
+.alfChat .azioni b:hover{color:var(--accento)}
+#alfMsg{display:flex;flex-direction:column;gap:9px;min-height:0;overflow-y:auto;padding:4px 4px 20px}
+#alfTitolo{display:flex;align-items:baseline;gap:10px;padding:2px 4px 8px;border-bottom:1px solid rgba(var(--luce-rgb),.08)}
+@media (max-width:760px){
+  #vistaAlfred{padding:12px 16px 170px}
+  #vistaAlfred.on{display:flex;flex-direction:column}
+  #alfLato{border-right:none;border-bottom:1px solid rgba(var(--luce-rgb),.08);padding:0 0 10px;max-height:38%}
+  #alfredSuggerimenti{position:fixed;left:16px;right:16px;transform:none;bottom:calc(150px + env(safe-area-inset-bottom));max-width:none}
+}
+/* ═══ RIORDINO WIDGET (tieni premuto una scheda, come sul telefono) ═══ */
+@keyframes dondola{0%,100%{transform:rotate(-.5deg)}50%{transform:rotate(.5deg)}}
+.pane.riordino>[data-blocco]{animation:dondola .4s ease-in-out infinite;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none}
+.pane.riordino>[data-blocco].presa{animation:none;opacity:.88;transform:scale(1.03);z-index:55;box-shadow:0 20px 44px rgba(var(--ombra-rgb),.6);cursor:grabbing;position:relative}
+.pane.riordino>[data-blocco].bersaglio{outline:2px dashed rgba(var(--accento-rgb),.55);outline-offset:2px}
+#riordinoAvviso{display:none;position:fixed;left:50%;top:14px;transform:translateX(-50%);z-index:85;background:rgba(var(--superficie-rgb),.9);border:1px solid var(--accento-bordo);border-radius:12px;padding:8px 16px;color:var(--testo1);font:400 12px var(--font-ui)}
+#riordinoAvviso.si{display:block}
+#login{position:fixed;inset:0;z-index:90;background:var(--fondo);display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px}
+#login.si{display:flex}
+#login .scheda{background:var(--vetro);border:1px solid var(--bordo);border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:10px;width:min(320px,86vw);backdrop-filter:var(--vetro-filtro);-webkit-backdrop-filter:var(--vetro-filtro)}
+</style>
+<script src="vendor/chart-interattivi.js" defer></script>
+</head>
+<body>
+<div id="sfondo"><i id="alone1" class="alone"></i><i id="alone2" class="alone"></i><i id="alone3" class="alone"></i></div>
+
+<div id="login"><div class="scheda">
+  <div style="color:var(--testo1);font:500 16px var(--font-ui)">Salute · Diego OS</div>
+  <div style="color:var(--testo3);font:400 12px var(--font-ui)">Inserisci il codice di accesso. Resta salvato SOLO su questo dispositivo.</div>
+  <input id="tok" class="campo" type="password" autocomplete="current-password" placeholder="codice">
+  <button class="bott" onclick="entra()">Entra</button>
+  <div id="loginErr" style="color:var(--attenzione);font:400 11.5px var(--font-ui)"></div>
+</div></div>
+
+<div id="appfusto">
+<div id="app" data-screen-label="app desktop">
+
+  <aside id="rail">
+    <div class="logo">D</div>
+    <div style="display:flex;flex-direction:column;gap:8px;align-items:center">
+      <div class="voce on" data-amb="salute" onclick="tornaSalute()"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg><span class="nome">Salute</span></div>
+      <div class="voce" data-amb="finance" onclick="avvisoRiordino('Finance arriva qui a breve: per ora vive nella vecchia dashboard (index-v1-superata.html)')"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H5a2 2 0 0 1-2-2V5"/></svg><span class="nome">Finance</span></div>
+      <div class="voce" data-amb="outfit" onclick="vaiAmbito('outfit')"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46A2 2 0 0 0 2.28 5.7l.58 3.47a1 1 0 0 0 .99.83H6v10a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.83l.58-3.47a2 2 0 0 0-1.34-2.24Z"/></svg><span class="nome">Outfit</span></div>
+      <div class="voce" data-amb="alfred" onclick="apriAlfred()"><span class="sfera" style="width:19px;height:19px"><i class="rosa" style="filter:blur(4px)"></i><i class="blu" style="filter:blur(5px)"></i></span><span class="nome">Ada</span></div>
+    </div>
+    <div style="margin-top:auto;color:rgba(var(--luce-rgb),.4);display:flex"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></div>
+  </aside>
+
+  <div id="colonna">
+    <div id="testata">
+      <span style="display:flex;color:rgba(var(--luce-rgb),.45)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/></svg></span>
+      <div class="modulo">Salute</div>
+      <div id="pillola" onclick="barraApri();document.getElementById('alfredTesto').focus()">
+        <span class="sfera" style="width:20px;height:20px"><i class="rosa" style="filter:blur(4px)"></i><i class="blu" style="filter:blur(5px)"></i></span>
+        <span>Chiedi ad Ada, o dillo a voce</span>
+      </div>
+      <div id="contesto"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M8 2v4M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg><span id="contestoTesto">—</span></div>
+    </div>
+
+    <div id="mobileTesta">
+      <div class="sopra"><span class="titolo" id="mobTitolo">Salute</span><span class="data" id="mobData">—</span></div>
+      <div id="tabsMob"></div>
+    </div>
+
+    <div id="striscia"><div id="tabs"></div></div>
+
+    <div id="statoriga"><span id="statopallino" style="width:6px;height:6px;border-radius:50%;background:var(--attenzione);flex:none;display:block"></span><span id="statotesto"></span><span id="statosugg" style="margin-left:auto;color:var(--testo4);font:400 11.5px var(--font-ui);white-space:nowrap"></span></div>
+
+    <section class="pane" data-pane="oggi"></section>
+    <section class="pane" data-pane="corpo"></section>
+    <section class="pane" data-pane="obiettivi"></section>
+    <section class="pane" data-pane="dieta"></section>
+    <section class="pane" data-pane="spesa"></section>
+    <section class="pane" data-pane="brain"></section>
+    <section class="pane" data-pane="coach"></section>
+    <section class="pane" data-pane="abbinamenti"></section>
+    <section class="pane" data-pane="acquisti"></section>
+
+    <div id="diario30"></div>
+
+    <section id="vistaAlfred">
+      <div id="alfLato">
+        <button class="bott" style="padding:8px" onclick="CONV_CHAT=nuovaConversazione();caricaConversazione(CONV_CHAT);renderListaChat();barraApri();document.getElementById('alfredTesto').focus()">Nuova chat</button>
+        <div id="alfListe"></div>
+      </div>
+      <div style="display:flex;flex-direction:column;min-height:0">
+        <div id="alfTitolo"></div>
+        <div id="alfMsg"></div>
+      </div>
+    </section>
+    <div id="alfredRisposta"><div id="alfredRispTesto"></div><div id="alfredSeguiti"></div></div>
+    <div id="alfredSuggerimenti"></div>
+    <div id="riordinoAvviso"></div>
+
+    <div id="barraAlfred"><div class="dentro">
+      <span class="sfera" id="sferaGrande" style="width:34px;height:34px;box-shadow:0 0 16px rgba(var(--viola-rgb),.4),inset 0 1px 2px rgba(var(--luce-rgb),.5)"><i class="rosa"></i><i class="blu"></i>
+        <i id="onde" style="display:flex;align-items:center;justify-content:center;gap:2.5px">
+          <b style="width:2px;height:9px;background:rgba(var(--luce-rgb),.9);border-radius:1px;display:block;animation:onda 1.2s ease-in-out infinite"></b>
+          <b style="width:2px;height:14px;background:rgba(var(--luce-rgb),.9);border-radius:1px;display:block;animation:onda 1.2s ease-in-out .15s infinite"></b>
+          <b style="width:2px;height:8px;background:rgba(var(--luce-rgb),.9);border-radius:1px;display:block;animation:onda 1.2s ease-in-out .3s infinite"></b>
+        </i>
+      </span>
+      <input id="alfredTesto" placeholder="Chiedi ad Ada, o dillo a voce" autocomplete="off">
+      <input id="fotoFile" type="file" accept="image/*" capture="environment" style="display:none">
+      <input id="allegatoFile" type="file" accept="application/pdf,text/csv,text/plain,.csv,.txt,.pdf" style="display:none">
+      <button class="icona-barra" title="Foto" onclick="document.getElementById('fotoFile').click()"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/></svg></button>
+      <button class="icona-barra" title="Allegato" onclick="document.getElementById('allegatoFile').click()"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg></button>
+      <button class="icona-barra lime" id="micBtn" title="Parla"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v3"/></svg></button>
+    </div></div>
+
+    <div id="dockMobile">
+      <div class="voce on" onclick="tornaSalute()" data-amb="salute"><span style="display:flex"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></span><span class="nome">SALUTE</span></div>
+      <div class="voce" onclick="avvisoRiordino('Finance arriva qui a breve: per ora vive nella vecchia dashboard (index-v1-superata.html)')"><span style="display:flex"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H5a2 2 0 0 1-2-2V5"/></svg></span><span class="nome">FINANCE</span></div>
+      <div class="voce" onclick="vaiAmbito('outfit')" data-amb="outfit"><span style="display:flex"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1"><path d="M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46A2 2 0 0 0 2.28 5.7l.58 3.47a1 1 0 0 0 .99.83H6v10a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.83l.58-3.47a2 2 0 0 0-1.34-2.24Z"/></svg></span><span class="nome">OUTFIT</span></div>
+      <div class="voce" id="dockAda" onclick="apriAlfred()"><span class="sfera" style="width:19px;height:19px"><i class="rosa" style="filter:blur(4px)"></i><i class="blu" style="filter:blur(5px)"></i></span><span class="nome">ADA</span></div>
+    </div>
+
+  </div>
+</div>
+</div>
+<script>
+/* ═══ NUCLEO — stessi pattern della pagina precedente (token, api, esc) ═══ */
+var API_BASE='https://icsafmrkndgdksybagky.supabase.co/functions/v1/health-app';
+var TOK=localStorage.getItem('app_token')||localStorage.getItem('dos_token')||'';
+function esc(x){return String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+function api(p,corpo){
+  /* il flag serve perché l'abort può scattare anche mentre si legge il CORPO
+     della risposta: il segnale copre tutta la richiesta, non solo gli header */
+  var c=new AbortController(); var scaduto=false;
+  var t=setTimeout(function(){scaduto=true;c.abort();},120000);
+  var o={headers:{'x-app-token':TOK,'content-type':'application/json'},signal:c.signal};
+  if(corpo){o.method='POST';o.body=JSON.stringify(corpo);}
+  return fetch(API_BASE+p,o).then(function(r){
+    if(r.status===401){document.getElementById('login').classList.add('si');var e401=new Error('sessione scaduta');e401.stato=401;throw e401;}
+    if(!r.ok) return r.json().catch(function(){return null;}).then(function(e){
+      /* i FATTI dell'errore viaggiano strutturati (design R9): chi consuma
+         classifica su stato e corpo, mai sul testo del messaggio */
+      var err=new Error((e&&e.errore)||('Servizio non disponibile (HTTP '+r.status+')'));
+      err.stato=r.status; err.corpo=e;
+      throw err;});
+    return r.json();
+  }).catch(function(e){
+    if(scaduto){var err=new Error('il caricamento dei dati è scaduto dopo 2 minuti: esito incerto');err.scaduto=true;throw err;}
+    throw e;
+  }).finally(function(){clearTimeout(t);});
+}
+function entra(){
+  var t=document.getElementById('tok').value.trim(); if(!t) return;
+  TOK=t;
+  api('/api/qualita').then(function(){
+    localStorage.setItem('app_token',t);localStorage.setItem('dos_token',t);
+    document.getElementById('login').classList.remove('si'); avvia();
+  }).catch(function(e){document.getElementById('loginErr').textContent=(e&&e.stato===401)?'Codice sbagliato.':'Servizio non raggiungibile ora ('+e.message+'): il codice potrebbe essere giusto, riprova.';});
+}
+function fmt(n,d){return n==null?'—':Number(n).toFixed(d==null?1:d).replace('.',',');}
+function fmtInt(n){return n==null?'—':Math.round(Number(n)).toLocaleString('it-IT');}
+function dataIT(iso){try{var d=new Date(iso+'T12:00:00');return d.getDate()+' '+['gen','feb','mar','apr','mag','giu','lug','ago','set','ott','nov','dic'][d.getMonth()];}catch(e){return iso;}}
+/* attributi per chart-interattivi.js: labels|values dal reale */
+function chartAttrs(nome,kind,unit,hint,labels,values,cmpLabel,cmpValues){
+  /* il vendor (handoff, intoccato) trasforma i vuoti in 0: un giorno senza
+     dato diventerebbe uno zero INVENTATO nell'overlay. Quindi al contratto
+     data-chart passano solo le coppie complete; i buchi restano visibili
+     nei grafici inline della pagina, che i null li sanno gestire. */
+  var L=[],V=[],C=cmpValues?[]:null;
+  (values||[]).forEach(function(v,i){
+    /* buco = null O stringa vuota: i renderer a barre passano '' per le sedi
+       senza misura, e il vendor trasformerebbe anche quelle in zeri */
+    if(v==null||v==='') return;
+    if(cmpValues&&(cmpValues[i]==null||cmpValues[i]==='')) return;
+    L.push(labels[i]); V.push(String(v).replace('.',','));
+    if(C) C.push(String(cmpValues[i]).replace('.',','));
+  });
+  var a=' data-chart="'+esc(nome)+'" data-kind="'+kind+'" data-unit="'+esc(unit)+'" data-hint="'+esc(hint)+'"'+
+    ' data-labels="'+esc(L.join('|'))+'" data-values="'+esc(V.join('|'))+'"';
+  if(C) a+=' data-cmp-label="'+esc(cmpLabel)+'" data-cmp-values="'+esc(C.join('|'))+'"';
+  return a;
+}
+function svgLine(values,w,h,stroke,sw){
+  var v=values.filter(function(x){return x!=null;}); if(v.length<2) return '';
+  var min=Math.min.apply(null,v),max=Math.max.apply(null,v); var pad=(max-min)*0.18||1;
+  var lo=min-pad,hi=max+pad; var n=values.length;
+  var pts=values.map(function(x,i){ if(x==null) return null;
+    return ((i/(n-1))*w).toFixed(1)+','+((1-(x-lo)/(hi-lo))*h).toFixed(1);}).filter(Boolean).join(' ');
+  return '<svg width="100%" height="'+h+'" viewBox="0 0 '+w+' '+h+'" preserveAspectRatio="none" style="display:block"><polyline points="'+pts+'" fill="none" stroke="'+stroke+'" stroke-width="'+(sw||2)+'"/></svg>';
+}
+var cursore='<i data-chart-cursor style="position:absolute;top:0;bottom:0;width:1.5px;background:rgba(var(--luce-rgb),.5);display:none"></i>';
+var svgEspandi='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>';
+var svgMatita='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>';
+function muto(msg){return '<div class="nota">'+esc(msg||'la fonte tace: nessun dato da mostrare')+'</div>';}
+/* design R9: UNICA definizione della qualifica di un intervallo stimato
+   {min,max,tracce,nd_da}. Ogni scheda che mostra una stima passa da qui:
+   niente copie della regola che possano divergere (kcal si', proteine no). */
+function qualificaIntervallo(v,unita){
+  if(!v||v.min==null) return {testo:'—',degradato:false,nd:0};
+  var nd=Array.isArray(v.nd_da)?v.nd_da.length:0;
+  var t=fmtInt(v.min)+'-'+fmtInt(v.max)+(unita?' '+unita:'');
+  if(v.tracce) t+=' · tracce';
+  if(nd) t+=' · parziale ('+nd+' ND)';
+  return {testo:t,degradato:!!(nd||v.tracce),nd:nd};
+}
+
+/* ═══ LE SETTE TAB — generate da UNA lista (mai markup ripetuto) ═══ */
+/* L'app ha SEZIONI (salute, outfit), e ogni sezione ha le sue tab.
+   Prima l'outfit era una tab dentro Salute: sbagliato, l'abbigliamento e'
+   una sezione sua. La barra a sinistra sceglie la sezione, la striscia in
+   alto sceglie la tab dentro quella sezione. */
+var TABS_SALUTE=[
+  {id:'oggi',label:'Oggi',hintBarra:'"Ho mangiato pollo e insalata" — i pasti si registrano solo parlando'},
+  {id:'corpo',label:'Corpo',hintBarra:'"Vita 88 e collo 38" — oppure carica la foto del plicometro'},
+  {id:'obiettivi',label:'Obiettivi',hintBarra:'"Ho fatto il WOD di oggi" — oppure carica la foto della lavagna'},
+  {id:'dieta',label:'Dieta',hintBarra:'"Cambia la cena con qualcosa di più leggero" — o carica il PDF del nutrizionista'},
+  {id:'spesa',label:'Spesa',hintBarra:'"Aggiungi due avocado" — oppure carica la foto dello scontrino'},
+  {id:'brain',label:'Brain',hintBarra:'"Dettami un pensiero — col microfono qui sotto, o scrivilo."'},
+  {id:'coach',label:'Coach',hintBarra:'Scrivi, parla, o carica una foto del pasto'}
+];
+var TABS_OUTFIT=[
+  {id:'abbinamenti',label:'Abbinamenti',hintBarra:'"Cosa mi metto per una cena fuori" — questi li ha giudicati il motore, non sono accostamenti a caso'},
+  {id:'acquisti',label:'Acquisti',hintBarra:'"Cerco un pantalone scuro sotto i 200" — qui ci sono i capi dei negozi, non abbinati'}
+];
+var AMBITO='salute';
+var TABS=TABS_SALUTE;
+var TAB_ATTIVA='oggi';
+function vaiAmbito(a){
+  if(a===AMBITO) return;
+  AMBITO=a;
+  TABS = a==='outfit' ? TABS_OUTFIT : TABS_SALUTE;
+  /* la sezione si illumina in TUTTE E DUE le barre: a sinistra sul desktop,
+     in basso sul telefono. Prima il dock restava su SALUTE mentre eri in
+     Outfit, e la barra mentiva su dove ti trovavi. */
+  document.querySelectorAll('#rail .voce[data-amb], #dockMobile .voce[data-amb]').forEach(function(v){
+    v.classList.toggle('on', v.getAttribute('data-amb')===a);
+  });
+  TAB_ATTIVA=null;
+  vai(TABS[0].id);
+}
+var DATI={};      /* cache condivisa */
+function montaTabs(){
+  ['tabs','tabsMob'].forEach(function(dove){
+    var el=document.getElementById(dove); el.innerHTML='';
+    TABS.forEach(function(t){
+      var b=document.createElement('button'); b.className='tab'+(t.id===TAB_ATTIVA?' on':'');
+      b.textContent=t.label; b.onclick=function(){vai(t.id);}; el.appendChild(b);
+    });
+  });
+}
+function vai(id){
+  if(!TABS.some(function(t){return t.id===id;})) return;
+  if(typeof VISTA_ALFRED!=='undefined'&&VISTA_ALFRED) chiudiAlfred();
+  var cambio=TAB_ATTIVA!==null&&TAB_ATTIVA!==id;
+  TAB_ATTIVA=id; location.hash=id; montaTabs();
+  document.querySelectorAll('.pane').forEach(function(p){p.classList.toggle('on',p.dataset.pane===id);});
+  var t=TABS.find(function(x){return x.id===id;});
+  document.getElementById('alfredTesto').placeholder=t.hintBarra;
+  document.getElementById('mobTitolo').textContent=id==='oggi'?'Salute':t.label;
+  document.getElementById('statoriga').classList.toggle('si',id==='obiettivi'&&!!(DATI.statoObiettivi||(DATI.obiettivi&&DATI.obiettivi.nota_dieta)));
+  document.getElementById('diario30').classList.toggle('si',id==='obiettivi');
+  RENDER[id]&&RENDER[id]();
+  /* al cambio pagina: 5 secondi di consigli, poi la barra torna pallina */
+  if(cambio&&typeof suggerimentiFlash==='function') suggerimentiFlash(id);
+}
+
+/* ═══ BLOCCHI ORDINABILI — lo stesso meccanismo di dash_health, esteso a
+   ogni tab: registro CHIUSO di tipi per tab, configurazione runtime in
+   contesto (dash_salute_v2), tipo sconosciuto scartato, il resto vive. ═══ */
+var REGISTRO={};   /* REGISTRO[tab] = { tipo: renderFn } — riempito sotto */
+function configUtente(tab){
+  try{
+    var raw=DATI.contesto&&DATI.contesto.dash_salute_v2;
+    var c=raw?(typeof raw==='string'?JSON.parse(raw):raw):null;
+    return (c&&c[tab]&&Array.isArray(c[tab]))?c[tab]:null;
+  }catch(e){return null;}
+}
+function blocchiConfigurati(tab,def){
+  try{
+    var lista=configUtente(tab)||def;
+    return lista.filter(function(b){return b.enabled!==false&&REGISTRO[tab][b.type];})
+      .sort(function(a,b){return (a.order||0)-(b.order||0);});
+  }catch(e){return def.filter(function(b){return REGISTRO[tab][b.type];});}
+}
+function montaBlocchi(tab,def){
+  var pane=document.querySelector('.pane[data-pane="'+tab+'"]');
+  /* l'ordine del mockup vale solo finché non c'è un ordine scelto da Diego:
+     altrimenti il CSS annullerebbe il suo riordino (review-7, R7-1) */
+  pane.classList.toggle('ordine-mockup',!configUtente(tab));
+  pane.innerHTML='';
+  blocchiConfigurati(tab,def).forEach(function(b){
+    try{
+      /* il 2° argomento porta la CONFIG della card (serve al tipo generico
+         «tracker»: codice/titolo scelti da Ada); i renderer storici lo ignorano */
+      var el=REGISTRO[tab][b.type](DATI,b);
+      if(el){ if(b.area) el.style.gridArea=''; if(b.col) el.style.gridColumn=b.col; if(b.row) el.style.gridRow=b.row; el.setAttribute('data-blocco',b.type); pane.appendChild(el); }
+    }catch(e){
+      /* un blocco rotto non uccide la tab, ma NON sparisce in silenzio */
+      var guasto=scheda(null,null,'<div class="nota" style="color:var(--attenzione)">blocco «'+esc(b.type)+'» in errore: '+esc(e.message)+'</div>');
+      guasto.setAttribute('data-blocco',b.type); pane.appendChild(guasto);
+    }
+  });
+}
+function scheda(col,row,html,classi){
+  var d=document.createElement('div'); d.className='card'+(classi?' '+classi:'');
+  if(col) d.style.gridColumn=col; if(row) d.style.gridRow=row;
+  d.innerHTML=html; return d;
+}
+
+/* ═══════════ TAB OGGI ═══════════ */
+REGISTRO.oggi={
+  verdetto:function(D){
+    var s=D.semaforo||{}, f=(D.dati182||[]), ult=f[f.length-1]||{};
+    var serie14=f.slice(-14);
+    var colore=s.colore==='verde'?'var(--accento)':(s.colore==='rosso'?'var(--attenzione)':'var(--attenzione)');
+    var labels=serie14.map(function(r){return dataIT(r.date);});
+    var pesi=serie14.map(function(r){return r.weight_kg;});
+    var medie=serie14.map(function(r){return r.peso_ma7;});
+    var read=ult.date?(dataIT(ult.date)+' · '+fmt(ult.weight_kg,1)+' kg'):'—';
+    var testo=s.titolo||s.verdetto||'Ritmo peso';
+    var perche=s.spiegazione||s.motivo||(ult.delta_peso_ma7_su_7gg!=null?('Variazione media: <span class="mono" style="font-weight:500;color:var(--testo2)">'+fmt(ult.delta_peso_ma7_su_7gg,2)+' kg</span> in 7 giorni.'):'la spiegazione arriva dal semaforo, che ora tace');
+    var el=scheda('1/3','1','',null); el.setAttribute('data-chart-card','');
+    el.style.flexDirection='row'; el.style.alignItems='center'; el.style.gap='22px'; el.style.padding='10px 16px';
+    el.innerHTML=
+      '<div style="display:flex;flex-direction:column;gap:6px;min-width:0">'+
+        '<div style="display:flex;align-items:center;gap:9px"><span style="width:11px;height:11px;border-radius:50%;background:'+colore+';box-shadow:0 0 12px '+colore+';display:block"></span>'+
+        '<span style="color:var(--testo1);font:500 19px var(--font-ui)">'+esc(testo)+'</span></div>'+
+        '<div style="color:var(--testo3);font:400 12.5px/1.5 var(--font-ui);max-width:44ch">'+perche+'</div></div>'+
+      '<div style="margin-left:auto;display:flex;align-items:flex-end;gap:12px">'+
+        '<div style="text-align:right"><div class="etk">SCORE</div><div style="color:var(--testo1);font:500 28px var(--font-mono);line-height:1.1">'+(s.score!=null?s.score:'—')+'</div></div>'+
+        '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">'+
+          '<div style="display:flex;align-items:center;gap:7px"><span data-chart-read data-chart-default="'+esc(read)+'" class="lettura">'+esc(read)+'</span><span data-chart-expand class="espandi">'+svgEspandi+'</span></div>'+
+          '<div '+chartAttrs('Peso','line','kg','pesate e media 7gg · 14 giorni',labels,pesi,'media 7gg',medie)+' style="position:relative;width:150px;height:44px;cursor:crosshair">'+cursore+svgLine(pesi,150,44,'var(--accento)',2)+'</div>'+
+        '</div></div>';
+    return el;
+  },
+  tdee:function(D){
+    var t=D.tdee||{}, q=D.qualita||{};
+    var pct=q.copertura_pct!=null?Math.round(q.copertura_pct):null;
+    return scheda('3','1',
+      '<div class="testa" style="color:var(--accento)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M12 2v4M12 18v4M4.9 4.9l2.9 2.9M16.2 16.2l2.9 2.9M2 12h4M18 12h4"/><circle cx="12" cy="12" r="3"/></svg><span class="etk">TDEE</span></div>'+
+      '<div style="color:var(--testo1);font:500 22px var(--font-mono)">'+(t.tdee!=null?fmtInt(t.tdee):'—')+'<span style="font:400 11px var(--font-mono);color:var(--testo3)"> kcal</span></div>'+
+      '<div><span style="color:var(--testo3);font:400 10px var(--font-ui);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:2px">Affidabilità</span><span style="color:var(--testo2);font:400 11.5px/1.45 var(--font-ui);display:block">'+esc(t.affidabilita||'non dichiarata')+'</span></div>'+
+      '<div style="display:flex;align-items:center;gap:8px"><span class="barra" style="flex:1"><i style="width:'+(pct==null?0:pct)+'%"></i></span><span style="color:var(--testo2);font:500 11px var(--font-mono)">'+(pct==null?'—':pct+'%')+'</span></div>'+
+      '<div class="nota">qualità dati · '+(pct==null?'pipeline muta: lo dico, non lo invento':'pipeline attiva')+' · si modifica dalle ipotesi di Dieta</div>');
+  },
+  tiles:function(D){
+    var f=D.dati182||[], s14=f.slice(-14), ult=s14[s14.length-1]||{};
+    /* auto-fit: 4 colonne sul desktop, 2 sul telefono — mai overflow orizzontale */
+    var wrap=document.createElement('div'); wrap.style.cssText='grid-column:1/4;grid-row:2;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;min-height:0';
+    var labels=s14.map(function(r){return dataIT(r.date);});
+    var defs=[
+      {label:'Peso · media 7gg',unit:'kg',serie:s14.map(function(r){return r.peso_ma7;}),val:ult.peso_ma7!=null?fmt(ult.peso_ma7,1)+' kg':'—',delta:ult.delta_peso_ma7_su_7gg!=null?fmt(ult.delta_peso_ma7_su_7gg,2)+' kg / 7gg':'servono pesate regolari'},
+      {label:'Sonno · 7gg',unit:'ore',serie:s14.map(function(r){return r.sleep_duration_hours;}),val:ult.sonno_ma7!=null?fmt(ult.sonno_ma7,1)+' h':(ult.sleep_duration_hours!=null?fmt(ult.sleep_duration_hours,1)+' h':'—'),delta:'media sui 7 giorni'},
+      {label:'Recovery · 7gg',unit:'%',serie:s14.map(function(r){return r.whoop_recovery_pct;}),val:ult.whoop_recovery_pct!=null?Math.round(ult.whoop_recovery_pct)+'%':'—',delta:'ultimo dato Whoop'},
+      {label:'Passi · oggi',unit:'passi',serie:s14.map(function(r){return r.steps;}),val:ult.steps!=null?fmtInt(ult.steps):'—',delta:ult.steps!=null?'':'la fonte passi tace'}
+    ];
+    defs.forEach(function(t){
+      var vivi=t.serie.filter(function(x){return x!=null;});
+      var read=vivi.length?dataIT(ult.date)+' · '+fmt(vivi[vivi.length-1],1):'—';
+      var d=document.createElement('div'); d.className='card'; d.setAttribute('data-chart-card','');
+      d.style.padding='10px 12px';
+      d.innerHTML='<div style="display:flex;align-items:center;justify-content:space-between"><span style="color:var(--testo3);font:400 11px var(--font-ui)">'+esc(t.label)+'</span><span data-chart-expand class="espandi" style="width:13px">'+svgEspandi+'</span></div>'+
+        '<div style="display:flex;align-items:baseline;gap:7px;margin-top:4px"><span style="color:var(--testo1);font:500 20px var(--font-mono)">'+esc(t.val)+'</span><span data-chart-read data-chart-default="'+esc(read)+'" style="margin-left:auto;color:var(--testo4);font:400 9.5px var(--font-mono);text-align:right">'+esc(read)+'</span></div>'+
+        '<div '+chartAttrs(t.label,'line',t.unit,'ultimi 14 giorni',labels,t.serie)+' style="position:relative;height:22px;margin-top:4px;cursor:crosshair">'+cursore+(vivi.length>=2?svgLine(t.serie,118,22,'var(--accento)',2.2):muto('serie vuota'))+'</div>'+
+        '<div style="color:var(--testo3);font:400 10.5px var(--font-ui);margin-top:4px">'+esc(t.delta)+'</div>';
+      wrap.appendChild(d);
+    });
+    return wrap;
+  },
+  kcal:function(D){
+    var f=D.dati182||[], ult=f[f.length-1]||{};
+    /* il target viene dagli OBIETTIVI, che lo derivano dalla DIETA caricata
+       (media delle giornate del piano): una fonte sola, mai due */
+    function voceDa(chiave){return ((D.obiettivi&&D.obiettivi.lista)||[]).find(function(x){return x.chiave===chiave;})||null;}
+    function targetDa(chiave){var o=voceDa(chiave);return o&&o.target!=null?Number(o.target):null;}
+    var target=targetDa('kcal');
+    /* se la media della dieta e' MONCA (alternative con dati mancanti), il
+       target si dichiara parziale — per NUTRIENTE, mai una somma dei due
+       contatori (la stessa alternativa puo' mancare in entrambi, review-8) */
+    var vKcal=voceDa('kcal'), vProt=voceDa('proteine');
+    var ndK=(vKcal&&vKcal.nd)||0, ndP=(vProt&&vProt.nd)||0;
+    var ndTesti=[]; if(ndK)ndTesti.push('kcal: '+ndK+' ND'); if(ndP)ndTesti.push('proteine: '+ndP+' ND');
+    /* il GUASTO della fonte dieta arriva anche qui, non solo alla riga Obiettivi */
+    var guastoDieta=(D.obiettivi&&D.obiettivi.nota_dieta)||
+      (vKcal&&/non leggibile|da verificare/i.test(vKcal.nota_target||'')?vKcal.nota_target:null);
+    var oggi=ult.calories_in!=null?Number(ult.calories_in):null;
+    var pct=(oggi!=null&&target)?Math.min(100,Math.round(oggi/target*100)):0;
+    var pr=ult.protein_g!=null?Math.round(ult.protein_g):null;
+    var prT=targetDa('proteine');
+    return scheda('1/3','3',
+      '<div class="testa"><span class="tit">Kcal di oggi vs target</span><span style="color:var(--testo2);font:500 14px var(--font-mono)">'+(oggi!=null?fmtInt(oggi):'—')+' / '+(target?fmtInt(target):'—')+'</span></div>'+
+      '<div style="position:relative;height:10px;border-radius:6px;background:var(--barra-fondo);overflow:hidden">'+
+        '<div style="position:absolute;left:0;top:0;bottom:0;width:'+pct+'%;background:var(--accento);box-shadow:0 0 14px rgba(var(--accento-rgb),.5)"></div>'+
+        (target?'<div style="position:absolute;left:95%;top:-3px;bottom:-3px;width:1.5px;background:rgba(var(--luce-rgb),.7)"></div><div style="position:absolute;left:90%;top:0;bottom:0;width:10%;background:rgba(var(--luce-rgb),.10)"></div>':'')+'</div>'+
+      '<div style="display:flex;justify-content:space-between;color:var(--testo3);font:400 11px var(--font-ui)">'+
+        '<span>proteine '+(pr!=null?pr:'—')+(prT?' / '+prT:'')+' g · carbo '+(ult.carbs_g!=null?Math.round(ult.carbs_g):'—')+' g · grassi '+(ult.fat_g!=null?Math.round(ult.fat_g):'—')+' g</span>'+
+        '<span class="mono">finestra ±5%</span></div>'+
+      (ndTesti.length?'<div class="nota" style="color:var(--attenzione)">target PARZIALE, dati mancanti nel piano ('+esc(ndTesti.join(' · '))+')</div>':'')+
+      (guastoDieta?'<div class="nota" style="color:var(--attenzione)">'+esc(guastoDieta)+'</div>':'')+
+      (target||guastoDieta?'':muto('il target arriva dalla DIETA caricata: passa il piano ad Ada e comparira qui da solo')));
+  },
+  allenamenti:function(D){
+    var b=D.box||{};
+    var giorni=b.giorni||b.settimana||[]; var fatte=b.fatte!=null?b.fatte:'—';
+    /* il target NON si inventa: o dal box, o dall'obiettivo allenamenti, o resta muto */
+    var obAll=((D.obiettivi&&D.obiettivi.lista)||[]).find(function(o){return o.chiave==='allenamenti';});
+    var targ=b.target!=null?b.target:(b.target_settimana!=null?b.target_settimana:(obAll&&obAll.target!=null?obAll.target:'—'));
+    /* V14 (review visione): contatori pieni e tacche tutte grigie si
+       CONTRADDICEVANO. Senza dettaglio per giorno, le tacche si riempiono
+       dai contatori (prime N verdi) e la nota lo dichiara. */
+    var senzaDettaglio=!giorni.some(function(g){return g&&(g.tipo||g.da_fare);});
+    var nFatte=Number(b.fatte)||0;
+    var tacche='';
+    for(var i=0;i<7;i++){
+      var g=giorni[i]||{}; var cl='tacca'+(g.tipo==='fatta'?' si':(g.da_fare?' dafare':''));
+      if(senzaDettaglio&&i<nFatte) cl='tacca si';
+      tacche+='<span class="'+cl+'" style="height:17px"></span>';
+    }
+    var conti=(b.fatte!=null?b.fatte+' fatte':'')+(b.saltate!=null?' · '+b.saltate+' saltate':'')+(b.riposi!=null?' · '+b.riposi+' riposi':'')+(b.da_fare!=null?' · '+b.da_fare+' da fare':'')+
+      (senzaDettaglio&&nFatte>0?' · senza dettaglio per giorno':'');
+    return scheda('3','3',
+      '<div class="testa" style="color:var(--accento)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M4 9v6M8 7v10M16 7v10M20 9v6M8 12h8"/></svg><span class="etk">SETTIMANA</span></div>'+
+      '<div style="color:var(--testo1);font:500 19px var(--font-mono);margin-top:7px">'+fatte+' / '+targ+'</div>'+
+      '<div style="display:flex;gap:5px;margin-top:6px">'+tacche+'</div>'+
+      '<div style="color:var(--testo3);font:400 11px var(--font-ui);margin-top:5px">'+esc(conti||'dettaglio non disponibile: lo dichiaro')+'</div>');
+  },
+  cuore:function(D){
+    var f=D.dati182||[], s14=f.slice(-14), ult=s14[s14.length-1]||{};
+    var rhr=ult.resting_hr_bpm!=null?Math.round(ult.resting_hr_bpm):null;
+    var hrv=ult.whoop_hrv_ms!=null?Math.round(ult.whoop_hrv_ms):null;
+    var serie=s14.map(function(r){return r.resting_hr_bpm;});
+    var labels=s14.map(function(r){return dataIT(r.date);});
+    var read=rhr!=null?dataIT(ult.date)+' · '+rhr+' bpm':'—';
+    var el=scheda('3','4','',null); el.setAttribute('data-chart-card','');
+    el.innerHTML='<div class="testa" style="color:var(--accento)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M3 12h4l2-5 4 10 2-5h6"/></svg>'+
+      '<span style="display:flex;align-items:center;gap:8px"><span data-chart-read data-chart-default="'+esc(read)+'" class="lettura">'+esc(read)+'</span><span data-chart-expand class="espandi">'+svgEspandi+'</span></span></div>'+
+      '<div style="display:flex;gap:20px;margin-top:8px">'+
+        '<div><div style="color:var(--testo3);font:400 10.5px var(--font-ui)">RHR</div><div style="color:var(--testo1);font:500 19px var(--font-mono)">'+(rhr!=null?rhr:'—')+'<span style="font:400 11px var(--font-mono);color:var(--testo3)"> bpm</span></div></div>'+
+        '<div style="width:1px;background:rgba(var(--luce-rgb),.1)"></div>'+
+        '<div><div style="color:var(--testo3);font:400 10.5px var(--font-ui)">HRV</div><div style="color:var(--testo1);font:500 19px var(--font-mono)">'+(hrv!=null?hrv:'—')+'<span style="font:400 11px var(--font-mono);color:var(--testo3)"> ms</span></div></div></div>'+
+      '<div '+chartAttrs('RHR','line','bpm','frequenza a riposo · 14 giorni',labels,serie)+' style="position:relative;height:24px;margin-top:6px;cursor:crosshair">'+cursore+(serie.filter(function(x){return x!=null;}).length>=2?svgLine(serie,240,24,'rgba(var(--accento-rgb),.55)',1.6):muto('Whoop tace su RHR'))+'</div>';
+    return el;
+  },
+  heatmap:function(D){
+    var f=D.dati182||[];
+    var settimane={};
+    f.forEach(function(r){
+      var d=new Date(r.date+'T12:00:00'); var lun=new Date(d); lun.setDate(d.getDate()-((d.getDay()+6)%7));
+      var k=lun.toISOString().slice(0,10);
+      settimane[k]=settimane[k]||{peso:0,kcal:0,sonno:0,strain:0,tot:0};
+      var s=settimane[k]; s.tot++;
+      if(r.weight_kg!=null)s.peso++; if(r.calories_in!=null)s.kcal++;
+      if(r.sleep_duration_hours!=null)s.sonno++; if(r.strain!=null||r.whoop_strain!=null)s.strain++;
+    });
+    var chiavi=Object.keys(settimane).sort().slice(-26);
+    var righe=[['Peso','peso'],['Kcal','kcal'],['Sonno','sonno'],['Strain','strain']];
+    var el=scheda('1/3','4','',null); el.setAttribute('data-chart-card',''); el.style.gap='6px'; el.style.padding='10px 16px';
+    var ultimaK=chiavi[chiavi.length-1];
+    var readDef=ultimaK?('sett. '+numSettimana(ultimaK)+' · '+Math.round((settimane[ultimaK].peso/Math.max(1,settimane[ultimaK].tot))*100)+'% dati'):'—';
+    var h='<div class="testa"><div style="display:flex;align-items:center;gap:8px"><span class="tit">Costanza · 26 settimane</span></div>'+
+      '<span style="display:flex;align-items:center;gap:8px"><span data-chart-read data-chart-default="'+esc(readDef)+'" class="lettura">'+esc(readDef)+'</span><span data-chart-expand class="espandi">'+svgEspandi+'</span></span></div>';
+    if(!chiavi.length){el.innerHTML=h+muto();return el;}
+    righe.forEach(function(rr){
+      var labels=chiavi.map(function(k){return 'sett. '+numSettimana(k);});
+      var vals=chiavi.map(function(k){var s=settimane[k];return Math.round((s[rr[1]]/Math.max(1,s.tot))*100);});
+      h+='<div style="display:flex;align-items:center;gap:8px"><span style="width:44px;color:var(--testo3);font:400 10.5px var(--font-ui)">'+rr[0]+'</span>'+
+        '<div '+chartAttrs('Costanza · '+rr[0].toLowerCase(),'bars','%','dati presenti per settimana',labels,vals)+' style="display:flex;gap:2px;flex:1;position:relative;cursor:crosshair">'+
+        vals.map(function(v){return '<span style="flex:1;height:11px;border-radius:3px;background:rgba(var(--accento-rgb),'+Math.max(0.06,v/100).toFixed(2)+')"></span>';}).join('')+'</div></div>';
+    });
+    el.innerHTML=h; return el;
+  },
+  check:function(D){
+    var c=D.checkStats||{};
+    return scheda('1','5',
+      '<div style="display:flex;align-items:center;gap:9px"><span style="display:flex;color:var(--accento)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/><path d="M19 3v4M17 5h4"/></svg></span><span class="tit" style="flex:1">Check serale</span><span style="color:var(--testo2);font:500 11.5px var(--font-mono)">22:00</span></div>'+
+      '<div style="display:flex;gap:6px">'+
+        '<span style="flex:1;border:1px solid rgba(var(--luce-rgb),.10);border-radius:10px;padding:6px 8px"><span class="etk" style="font-size:9px;display:block">CHE CONTANO</span><span style="color:var(--testo1);font:500 15px var(--font-mono)">'+(c.che_contano_pct!=null?c.che_contano_pct+'%':'—')+'</span></span>'+
+        '<span style="flex:1;border:1px solid rgba(var(--luce-rgb),.10);border-radius:10px;padding:6px 8px"><span class="etk" style="font-size:9px;display:block">SUL FUOCO</span><span style="color:var(--testo1);font:500 15px var(--font-mono)">'+(c.fuoco_giorni!=null?c.fuoco_giorni+' / 7':'—')+'</span></span></div>'+
+      '<button class="bott2" onclick="apriCheck()">Apri il check</button>');
+  },
+  cheto:function(D){
+    var a=D.aderenza7||{}; var cal=a.calendario||[];
+    var tacche='';
+    for(var i=0;i<7;i++){
+      var g=cal[i]||{}; var e=(g.esito||'').toUpperCase();
+      var st='flex:1;height:10px;border-radius:3px;';
+      if(e==='IN') st+='background:'+(i>=4?'var(--accento)':'rgba(var(--accento-rgb),.4)')+(i===6?';box-shadow:0 0 10px rgba(var(--accento-rgb),.6)':'');
+      else if(e==='OUT') st+='background:var(--attenzione)';
+      else st+='background:rgba(var(--luce-rgb),.10);border:1px dashed rgba(var(--luce-rgb),.22)';
+      tacche+='<span style="'+st+'"></span>';
+    }
+    var a28=D.aderenza28||{};
+    return scheda('2','5',
+      '<div class="testa" style="color:var(--accento)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M20 6 9 17l-5-5"/></svg><span class="etk">PIANO CHETO</span></div>'+
+      '<div style="color:var(--testo1);font:500 19px var(--font-mono);margin-top:7px">'+(a['in']!=null?('IN '+a['in']+'/'+(a.giorni_finestra||7)):'—')+'</div>'+
+      '<div style="display:flex;gap:3px;margin-top:6px">'+tacche+'</div>'+
+      '<div style="color:var(--testo3);font:400 11.5px var(--font-ui);margin-top:5px"><span style="color:var(--accento);font:500 11.5px var(--font-mono)">'+(a.serie_in_corrente!=null?a.serie_in_corrente:'—')+'</span> giorni di fila'+(a.nd!=null?' · '+a.nd+' ND':'')+(a.da_rivalutare?' · '+a.da_rivalutare+' da rivalutare':'')+'</div>'+
+      '<div class="nota" style="font-size:10px">28 giorni: '+(a28['in']!=null?(a28['in']+' IN · '+a28.out+' OUT · '+a28.nd+' ND'):'—')+'</div>');
+  },
+  lasettimana:function(D){
+    var ctx=D.contesto||{}; var voci=[];
+    try{ var raw=ctx.settimana_impegni; voci=raw?(typeof raw==='string'?JSON.parse(raw):raw):[]; }catch(e){voci=[];}
+    var h='<span class="tit">La settimana</span>';
+    if(!Array.isArray(voci)||!voci.length) h+=muto('gli impegni ricorrenti si fissano con Ada («la settimana: CrossFit lun-mer-ven»)');
+    else voci.slice(0,4).forEach(function(v){h+='<div style="display:flex;align-items:center;gap:9px"><span style="width:5px;height:5px;border-radius:50%;background:var(--accento);display:block;flex:none"></span><span style="color:var(--testo2);font:400 12.5px var(--font-ui)">'+esc(typeof v==='string'?v:(v.nome+' — '+v.quando))+'</span></div>';});
+    var el=scheda('3','5',h); el.style.gap='5px'; el.style.padding='10px 14px'; return el;
+  }
+};
+function numSettimana(iso){
+  var d=new Date(iso+'T12:00:00'); var inizio=new Date(d.getFullYear(),0,1);
+  return Math.ceil((((d-inizio)/86400000)+inizio.getDay()+1)/7);
+}
+/* la card generica tracker vale anche nella dash Oggi (stesso renderer) */
+REGISTRO.oggi.tracker=function(D,b){return REGISTRO.obiettivi.tracker(D,b);};
+var DEF_OGGI=[{type:'verdetto',order:1},{type:'tdee',order:2},{type:'tiles',order:3},{type:'kcal',order:4},{type:'allenamenti',order:5},{type:'heatmap',order:6},{type:'cuore',order:7},{type:'check',order:8},{type:'cheto',order:9},{type:'lasettimana',order:10}];
+
+/* ═══════════ TAB CORPO ═══════════ */
+var PERIODO_PESO=30;
+var SEDI_CIRC=['collo','torace','braccio','vita','cintura','fianchi','girosedere','coscia'];
+var SEDI_PLICHE=['addome','petto','bicipite','tricipite','sottoscapolare','gamba'];
+REGISTRO.corpo={
+  peso:function(D){
+    var f=(D.dati182||[]).slice(-PERIODO_PESO);
+    var labels=f.map(function(r){return dataIT(r.date);});
+    var pesi=f.map(function(r){return r.weight_kg;});
+    var medie=f.map(function(r){return r.peso_ma7;});
+    var ult=f[f.length-1]||{};
+    var read=ult.date?dataIT(ult.date)+' · '+fmt(ult.weight_kg!=null?ult.weight_kg:ult.peso_ma7,1)+' kg':'—';
+    var chips=[30,90,182].map(function(g){return '<button class="chip'+(g===PERIODO_PESO?' on':'')+' mono" style="padding:4px 9px;font-size:10.5px" onclick="PERIODO_PESO='+g+';RENDER.corpo()">'+g+'gg</button>';}).join('');
+    var el=scheda('1/3','1','',null); el.setAttribute('data-chart-card',''); el.style.gap='6px';
+    el.innerHTML='<div style="display:flex;align-items:center;gap:10px"><span class="tit">Peso</span><span style="display:flex;gap:5px">'+chips+'</span>'+
+      '<span style="margin-left:auto;display:flex;align-items:center;gap:9px"><span data-chart-read data-chart-default="'+esc(read)+'" class="lettura">'+esc(read)+'</span><span data-chart-expand class="espandi">'+svgEspandi+'</span></span></div>'+
+      '<div '+chartAttrs('Peso','line','kg','pesate e media 7gg · '+PERIODO_PESO+' giorni',labels,pesi,'media 7gg',medie)+' style="position:relative;flex:1;min-height:60px;cursor:crosshair">'+cursore+
+        '<svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" style="display:block;position:absolute;inset:0">'+lineaVB(pesi,'rgba(var(--accento-rgb),.45)',1.6)+lineaVB(medie,'var(--testo1)',2)+'</svg></div>'+
+      '<div class="nota">linea chiara: media 7gg · lime: pesate singole — passa col dito o col mouse per la lettura fissa</div>';
+    return el;
+  },
+  ultimapresa:function(D){
+    /* le "prese" vengono dal trend reale: per ogni sede l'ultima misura con la sua data */
+    var serie=(D.misureTrend&&D.misureTrend.misure)||{};
+    var voci=Object.keys(serie).map(function(k){var e=serie[k]||{};
+      return {nome:k.replace('circ_',''),val:e.ultima,data:e.data,lettura:e.lettura};})
+      .filter(function(v){return v.val!=null;})
+      .sort(function(a,b){return String(b.data||'').localeCompare(String(a.data||''));});
+    /* V10 (review visione): peso/bodyfat vengono da dati182, le
+       circonferenze dal trend misure - la data in testata copriva TUTTO e
+       mischiava le fonti. Ogni valore porta la SUA data. */
+    var f=D.dati182||[], u=null;
+    for(var iu=f.length-1;iu>=0;iu--){ if(f[iu]&&f[iu].weight_kg!=null){u=f[iu];break;} }
+    u=u||{};
+    var h='<div class="testa"><span class="tit">Ultima presa</span><span class="etk">MISURE '+(voci[0]&&voci[0].data?dataIT(voci[0].data).toUpperCase():'—')+'</span></div>'+
+      '<div style="display:flex;gap:16px">'+
+        '<div><div style="color:var(--testo3);font:400 10.5px var(--font-ui)">Peso'+(u.date?' · '+esc(dataIT(u.date)):'')+'</div><div style="color:var(--testo1);font:500 20px var(--font-mono)">'+fmt(u.weight_kg,1)+'</div></div>'+
+        '<div><div style="color:var(--testo3);font:400 10.5px var(--font-ui)">Body fat'+(u.date?' · '+esc(dataIT(u.date)):'')+'</div><div style="color:var(--testo1);font:500 20px var(--font-mono)">'+(u.body_fat_pct!=null?fmt(u.body_fat_pct,1)+'%':'—')+'</div></div></div>'+
+      '<div style="display:flex;flex-direction:column;gap:4px;overflow-y:auto;min-height:0">';
+    if(!voci.length) h+=muto('nessuna presa nel trend (entrano solo le misure del giovedì)');
+    else voci.slice(0,6).forEach(function(p){h+='<div class="riga"><span class="k">'+esc(p.nome)+' · '+esc(dataIT(p.data||''))+'</span><span style="color:var(--testo2);font:400 11px var(--font-mono)">'+fmt(p.val,1)+' cm</span></div>';});
+    return scheda('3','1',h+'</div>');
+  },
+  circonferenze:function(D){
+    /* contratto salute_misure_corpo: {misure:{circ_vita:{ultima,data,media_4sett,delta_4sett,lettura},...}} */
+    var serie=(D.misureTrend&&D.misureTrend.misure)||{};
+    var el=scheda('1','2/4','',null); el.setAttribute('data-chart-card','');
+    var righe='', labels=[], vals=[];
+    var tutte=SEDI_CIRC.map(function(s){
+      var e=serie['circ_'+s]||null;
+      return {sede:s,val:e&&e.ultima!=null?Number(e.ultima):null,
+        delta:e&&e.delta_4sett!=null?Number(e.delta_4sett):null,data:e?e.data:null};
+    });
+    /* barre a TENDENZA (collaudo Diego 13/09): il punto zero e' la media delle
+       4 settimane precedenti; la barra mostra il DELTA — verde se scende,
+       ambra se sale — non la grandezza assoluta (116 cm di torace riempivano
+       tutto e non dicevano niente) */
+    var maxD=Math.max.apply(null,tutte.map(function(t){return Math.abs(t.delta||0);}))||1;
+    tutte.forEach(function(t){
+      labels.push(t.sede); vals.push(t.val!=null?t.val:null);
+      var giu=t.delta!=null&&t.delta<0, su=t.delta!=null&&t.delta>0;
+      var wPct=t.delta!=null?Math.max(4,Math.round(Math.abs(t.delta)/maxD*46)):0;
+      var colore=giu?'var(--accento)':'var(--attenzione)';
+      righe+='<div style="display:flex;align-items:center;gap:9px;cursor:crosshair">'+
+        '<span style="width:74px;color:var(--testo3);font:400 11px var(--font-ui);flex:none">'+esc(t.sede)+'</span>'+
+        '<span style="flex:1;height:14px;border-radius:4px;background:rgba(var(--luce-rgb),.07);position:relative;display:block;overflow:hidden">'+
+          '<i style="position:absolute;left:50%;top:0;bottom:0;width:1px;background:rgba(var(--luce-rgb),.3)"></i>'+
+          (t.delta!=null&&t.delta!==0?'<i style="position:absolute;top:2px;bottom:2px;'+(giu?'right:50%':'left:50%')+';width:'+wPct+'%;border-radius:3px;background:'+colore+';opacity:.8"></i>':'')+'</span>'+
+        '<span style="width:52px;text-align:right;color:var(--testo1);font:500 11.5px var(--font-mono);flex:none">'+(t.val!=null?fmt(t.val,1):'—')+'</span>'+
+        '<span style="width:40px;text-align:right;color:'+(giu?'var(--accento)':(su?'var(--attenzione)':'var(--testo4)'))+';font:400 10px var(--font-mono);flex:none" title="delta della media 4 settimane">'+(t.delta!=null?((t.delta>0?'+':'')+fmt(t.delta,1)):'—')+'</span></div>';
+    });
+    var uv=tutte.filter(function(t){return t.val!=null;});
+    var read=uv.length?uv[0].sede+' · '+fmt(uv[0].val,1)+' cm':'—';
+    el.innerHTML='<div style="display:flex;align-items:center;gap:9px"><span class="tit">Circonferenze</span>'+
+      '<span style="margin-left:auto" data-chart-read data-chart-default="'+esc(read)+'" class="lettura">'+esc(read)+'</span><span data-chart-expand class="espandi">'+svgEspandi+'</span></div>'+
+      '<div '+chartAttrs('Circonferenze','bars','cm','presa del giovedì, a digiuno',labels,vals)+' style="display:flex;flex-direction:column;gap:6px;flex:1;min-height:0;overflow-y:auto;position:relative">'+righe+'</div>'+
+      '<div class="nota">Barra dal punto zero (media 4 settimane precedenti): verde se scende, ambra se sale. Presa del giovedì, a digiuno.</div>';
+    return el;
+  },
+  pliche:function(D){
+    var perData=D.pliche||[];
+    var el=scheda('2','2/4','',null); el.setAttribute('data-chart-card','');
+    var corr=perData[perData.length-1]||perData[0]||null;
+    var prev=perData[perData.length-2]||null;
+    if(Array.isArray(perData)&&perData.length&&perData[0].data&&perData[perData.length-1].data){
+      var ordinate=perData.slice().sort(function(a,b){return String(a.data).localeCompare(String(b.data));});
+      corr=ordinate[ordinate.length-1]; prev=ordinate[ordinate.length-2]||null;
+    }
+    function valore(presa,serieNome){
+      if(!presa||!Array.isArray(presa.pliche)) return null;
+      var p=presa.pliche.find(function(x){return x.serie==='plica_'+serieNome||x.etichetta===serieNome;});
+      return p&&p.valore!=null?Number(p.valore):null;   /* Number(null)===0: uno zero inventato (review-7) */
+    }
+    var labels=[],vals=[],righe='';
+    var max=1;
+    SEDI_PLICHE.forEach(function(s){var v=valore(corr,s); if(v&&v>max)max=v;});
+    function inConflitto(presa,serieNome){
+      if(!presa||!Array.isArray(presa.pliche)) return false;
+      var p=presa.pliche.find(function(x){return x.serie==='plica_'+serieNome||x.etichetta===serieNome;});
+      return !!(p&&p.conflitto);
+    }
+    /* stessa lettura a TENDENZA delle circonferenze: punto zero = presa
+       precedente, barra del delta verde (giu') o ambra (su) */
+    var deltasP=SEDI_PLICHE.map(function(s){var v=valore(corr,s),vp=valore(prev,s);return v!=null&&vp!=null?v-vp:null;});
+    var maxDP=Math.max.apply(null,deltasP.map(function(d){return Math.abs(d||0);}))||1;
+    SEDI_PLICHE.forEach(function(s,ix){
+      var v=valore(corr,s), vp=valore(prev,s), confl=inConflitto(corr,s);
+      var dp=deltasP[ix]; var giu=dp!=null&&dp<0, su=dp!=null&&dp>0;
+      var wPct=dp!=null?Math.max(4,Math.round(Math.abs(dp)/maxDP*46)):0;
+      labels.push(s); vals.push(v!=null?v:null);
+      righe+='<div style="display:flex;align-items:center;gap:9px;cursor:crosshair">'+
+        '<span style="width:86px;color:var(--testo3);font:400 11px var(--font-ui);flex:none">'+esc(s)+'</span>'+
+        '<span style="flex:1;height:14px;border-radius:4px;background:rgba(var(--luce-rgb),.07);position:relative;display:block;overflow:hidden">'+
+          '<i style="position:absolute;left:50%;top:0;bottom:0;width:1px;background:rgba(var(--luce-rgb),.3)"></i>'+
+          (dp!=null&&dp!==0?'<i style="position:absolute;top:2px;bottom:2px;'+(giu?'right:50%':'left:50%')+';width:'+wPct+'%;border-radius:3px;background:'+(confl?'var(--attenzione)':(giu?'var(--accento)':'var(--attenzione)'))+';opacity:.8"></i>':'')+'</span>'+
+        '<span style="width:56px;text-align:right;color:'+(confl?'var(--attenzione)':'var(--testo1)')+';font:500 11.5px var(--font-mono);flex:none">'+(v!=null?fmt(v,0)+' mm'+(confl?' ?':''):'—')+'</span>'+
+        '<span style="width:40px;text-align:right;color:'+(giu?'var(--accento)':(su?'var(--attenzione)':'var(--testo4)'))+';font:400 10px var(--font-mono);flex:none" title="delta sulla presa precedente">'+(dp!=null?((dp>0?'+':'')+fmt(dp,0)):'—')+'</span></div>';
+    });
+    var conflittoPresa=!!(corr&&corr.conflitto);
+    var read=corr&&corr.data?dataIT(corr.data)+' · presa'+(conflittoPresa?' · CONFLITTO':''):'—';
+    el.innerHTML='<div style="display:flex;align-items:center;gap:9px"><span class="tit">Pliche</span>'+
+      '<span style="margin-left:auto" data-chart-read data-chart-default="'+esc(read)+'" class="lettura">'+esc(read)+'</span><span data-chart-expand class="espandi">'+svgEspandi+'</span></div>'+
+      '<div '+chartAttrs('Pliche','bars','mm','presa corrente vs precedente',labels,vals)+' style="display:flex;flex-direction:column;gap:8px;flex:1;min-height:0;overflow-y:auto;position:relative">'+righe+'</div>'+
+      '<div class="nota">Barra dal punto zero'+(prev&&prev.data?' (presa del '+dataIT(prev.data)+')':'')+': verde se scende, ambra se sale. Delta in mm.'+
+      (conflittoPresa?' <span style="color:var(--attenzione)">Questa presa ha valori DISCORDI per la stessa serie: mostrato il minimo, da chiarire con Ada.</span>':'')+'</div>';
+    return el;
+  },
+  inserimento:function(D){
+    var campi=[['Peso','kg','peso'],['Girovita','cm','vita'],['Body fat','%','bf'],['Recovery','%','recovery'],['Strain','pt','strain'],['Sonno','ore','sonno']];
+    var h='<div class="testa"><span class="tit">Inserimento rapido</span><span class="nota" style="font-size:10px">i pasti solo in chat</span></div>'+
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">';
+    campi.forEach(function(c){h+='<div style="border:1px solid var(--bordo);border-radius:9px;padding:4px 9px;display:flex;align-items:baseline;justify-content:space-between;gap:6px">'+
+      '<input data-campo="'+c[2]+'" inputmode="decimal" placeholder="'+esc(c[0])+'" style="background:none;border:none;outline:none;color:var(--testo1);font:400 11.5px var(--font-ui);width:100%;min-width:0">'+
+      '<span style="color:var(--testo4);font:400 10.5px var(--font-mono)">'+c[1]+'</span></div>';});
+    h+='</div>'+
+      '<div style="border:1px solid var(--bordo);border-radius:9px;padding:7px 9px;display:flex;align-items:center;justify-content:space-between;gap:8px">'+
+        '<select id="sedeMisura" style="background:none;border:none;outline:none;color:var(--testo3);font:400 10.5px var(--font-ui);flex:1"><option value="">Circonferenza o plica — scegli sede</option>'+
+        SEDI_CIRC.map(function(s){return '<option value="circ_'+s+'">circonferenza · '+s+'</option>';}).join('')+
+        SEDI_PLICHE.map(function(s){return '<option value="plica_'+s+'">plica · '+s+'</option>';}).join('')+
+        '</select><input id="sedeValore" inputmode="decimal" placeholder="valore" style="background:none;border:none;outline:none;color:var(--testo1);font:400 11.5px var(--font-mono);width:64px;text-align:right"></div>'+
+      '<div style="display:flex;flex-direction:column;gap:6px;margin-top:auto">'+
+        '<button class="bott" onclick="salvaMisure(this)">Salva misura</button>'+
+        '<button class="bott2" onclick="nuovoPromemoria()">Nuovo promemoria</button>'+
+        '<div id="esitoMisura" class="nota"></div>'+
+        '<div class="nota">Le prese fuori dalla finestra del giovedì restano marcate «fuori protocollo» nel dato, ma non si vedono qui.</div></div>';
+    return scheda('3','2/4',h);
+  }
+};
+var DEF_CORPO=[{type:'peso',order:1},{type:'ultimapresa',order:2},{type:'circonferenze',order:3},{type:'pliche',order:4},{type:'inserimento',order:5}];
+function lineaVB(values,stroke,sw){
+  var v=values.filter(function(x){return x!=null;}); if(v.length<2) return '';
+  var min=Math.min.apply(null,v),max=Math.max.apply(null,v);var pad=(max-min)*0.18||1;
+  var lo=min-pad,hi=max+pad,n=values.length;
+  var pts=values.map(function(x,i){if(x==null)return null;
+    return ((i/(n-1))*100).toFixed(2)+','+((1-(x-lo)/(hi-lo))*100).toFixed(2);}).filter(Boolean).join(' ');
+  return '<polyline points="'+pts+'" fill="none" stroke="'+stroke+'" stroke-width="'+sw+'" vector-effect="non-scaling-stroke"/>';
+}
+function salvaMisure(btn){
+  var out=document.getElementById('esitoMisura'); out.textContent='';
+  var pane=btn.closest('.card'); var invii=[];
+  var mappa={peso:'weight_kg',bf:'body_fat_pct',recovery:'whoop_recovery_pct',strain:'whoop_strain',sonno:'sleep_duration_hours'};
+  pane.querySelectorAll('input[data-campo]').forEach(function(i){
+    var v=i.value.trim().replace(',','.'); if(!v) return;
+    var c=i.dataset.campo;
+    /* contratti veri: /api/misura vuole {campo,valore}; /api/misura_corpo {misure:[{nome,valore}]} */
+    if(c==='vita') invii.push(api('/api/misura_corpo',{misure:[{nome:'circ_vita',valore:Number(v)}]}));
+    else invii.push(api('/api/misura',{campo:mappa[c],valore:Number(v)}));
+  });
+  var sede=document.getElementById('sedeMisura').value, sv=document.getElementById('sedeValore').value.trim().replace(',','.');
+  if(sede&&sv) invii.push(api('/api/misura_corpo',{misure:[{nome:sede,valore:Number(sv)}]}));
+  if(!invii.length){out.textContent='Niente da salvare: compila almeno un campo.';return;}
+  Promise.allSettled(invii).then(function(ris){
+    /* design R9 v2: l'UNICA fonte dell'esito e' il CORPO STRUTTURATO del
+       server (salvate/confermate/incerte/rifiutate_dal_database/non_tentate),
+       sommato tale e quale — cosi' il 409 parziale conta 1 salvata E 1
+       rifiutata. Un 200 muto NON e' una conferma; un corpo illeggibile,
+       la rete persa, il timeout e i 5xx restano INCERTI, fail-closed. */
+    var salvate=0,rifiutate=0,incerte=0,nonTentate=0;
+    /* l'evidenza si VALIDA, non si annusa (review-5): un corpo conta come
+       esito solo se i tipi sono giusti, salvate e confermate concordano e
+       la risposta COPRE almeno la misura chiesta. Tutto il resto e' incerto. */
+    function nIntero(v){return typeof v==='number'&&isFinite(v)&&v>=0&&Math.floor(v)===v?v:null;}
+    function haCampiEsito(c){return !!(c&&typeof c==='object'&&!Array.isArray(c)&&(c.salvate!==undefined||c.confermate!==undefined||c.incerte!==undefined||c.rifiutate_dal_database!==undefined||c.non_tentate!==undefined));}
+    function classifica(c){
+      if(!haCampiEsito(c)) return null;
+      var s=null;
+      if(c.salvate!==undefined){s=nIntero(c.salvate); if(s===null) return null;}
+      if(Array.isArray(c.confermate)){ if(s!==null&&s!==c.confermate.length) return null; if(s===null)s=c.confermate.length; }
+      else if(c.confermate!==undefined) return null;
+      s=s||0;
+      function arr(v){ if(v===undefined) return 0; if(!Array.isArray(v)) return null; return v.length; }
+      var r=arr(c.rifiutate_dal_database), i=arr(c.incerte), nt=arr(c.non_tentate);
+      if(r===null||i===null||nt===null) return null;
+      if(s+r+i+nt<1) return null;         /* non copre la misura chiesta */
+      return {s:s,r:r,i:i,nt:nt};
+    }
+    ris.forEach(function(r){
+      var corpo=r.status==='fulfilled'?r.value:(r.reason||{}).corpo;
+      var esito=classifica(corpo);
+      if(esito){salvate+=esito.s;rifiutate+=esito.r;incerte+=esito.i;nonTentate+=esito.nt;return;}
+      if(haCampiEsito(corpo)){incerte++;return;}  /* esito nominale ma invalido/scoperto */
+      if(r.status==='fulfilled'){incerte++;return;}  /* 200 senza attestazione */
+      var e=r.reason||{};
+      /* respinta DICHIARATA: 4xx con un corpo-oggetto che porta un errore testuale */
+      if(e.stato>=400&&e.stato<500&&corpo&&typeof corpo==='object'&&!Array.isArray(corpo)&&
+         typeof corpo.errore==='string'&&corpo.errore.trim()!==''){rifiutate++;return;}
+      incerte++;
+    });
+    out.textContent=salvate+' salvat'+(salvate===1?'a':'e')+
+      (rifiutate?' · '+rifiutate+' RIFIUTATE (guardia del registro)':'')+
+      (nonTentate?' · '+nonTentate+' non tentate (fermate dopo il primo problema)':'')+
+      (incerte?' · '+incerte+' SENZA CONFERMA: potrebbero essere scritte, verifica prima di ripetere':'');
+    caricaTutto().then(function(){RENDER.corpo();});
+  });
+}
+function nuovoPromemoria(){
+  var testo=prompt('Testo del promemoria (l\'orario lo dici dentro, es. «domani 8:00 misure»):');
+  if(!testo) return;
+  mandaAdAlfred('Creami un promemoria: '+testo);
+}
+
+/* ═══════════ TAB OBIETTIVI ═══════════ */
+REGISTRO.obiettivi={
+  attivi:function(D){
+    var ob=D.obiettivi&&Array.isArray(D.obiettivi.lista)?D.obiettivi.lista:[];
+    var el=scheda('1/3','1/3','',null);
+    var h='<div class="testa"><span class="tit">Obiettivi attivi</span><span class="etk">'+ob.length+' · MODIFICABILI</span></div>'+
+      '<div style="display:flex;flex-direction:column;gap:8px;flex:1;min-height:0;justify-content:space-between;overflow-y:auto">';
+    /* il guasto della fonte dieta si dichiara ANCHE qui (nota N9-1): una
+       scheda vuota col guasto non equivale a «nessun obiettivo» */
+    if(D.obiettivi&&D.obiettivi.nota_dieta) h+='<div class="nota" style="color:var(--attenzione)">'+esc(D.obiettivi.nota_dieta)+'</div>';
+    if(!ob.length) h+=muto('nessun obiettivo fissato: dillo ad Ada («porta il peso a 78 entro dicembre»)');
+    ob.forEach(function(o,i){
+      var ritardo=!!o.in_ritardo;
+      var colore=ritardo?'var(--attenzione)':'var(--accento)';
+      var pct=o.pct!=null?Math.max(0,Math.min(100,o.pct)):null;
+      h+='<div class="cliccabile" data-obiettivo="'+i+'" onclick="modificaObiettivo('+i+')" style="display:flex;flex-direction:column;gap:5px;border-bottom:1px solid var(--riga);padding:0 0 9px">'+
+        '<div style="display:flex;align-items:baseline;gap:8px"><span style="flex:1;color:var(--testo1);font:500 13.5px var(--font-ui)">'+esc(o.nome)+'</span>'+
+          '<span style="color:var(--testo3);font:400 11.5px var(--font-mono)">'+esc(o.attuale!=null?String(o.attuale):'—')+'</span>'+
+          '<span style="color:var(--testo4);font:400 11px var(--font-ui)">→</span>'+
+          '<span style="color:'+colore+';font:500 14px var(--font-mono)">'+esc(o.target!=null?String(o.target):'—')+(o.unita?' '+esc(o.unita):'')+'</span>'+
+          '<span style="color:var(--testo4);display:flex;align-items:center">'+svgMatita+'</span></div>'+
+        '<div class="barra"><i style="width:'+(pct==null?0:pct)+'%;background:'+colore+'"></i></div>'+
+        '<div style="display:flex;align-items:center;gap:7px"><span style="color:'+(ritardo?'var(--attenzione)':'var(--testo4)')+';font:400 10.5px var(--font-ui)">'+esc([o.nota,o.nota_target].filter(Boolean).join(' · '))+'</span>'+
+          '<span style="color:var(--testo5);font:400 10px var(--font-ui)">·</span><span style="color:var(--testo4);font:400 10.5px var(--font-ui)">'+esc(o.entro||'sempre')+'</span>'+
+          '<span class="pillstato" style="margin-left:auto">'+esc(o.chi||'io')+'</span></div></div>';
+    });
+    el.innerHTML=h+'</div>'; return el;
+  },
+  allenamenti:function(D){
+    var b=D.box||{}; var giorni=b.giorni||[];
+    var nomi=['lun','mar','mer','gio','ven','sab','dom'];
+    var h='<div class="testa"><span class="tit">Allenamenti · settimana</span><span class="etk">WOD</span></div><div style="display:flex;gap:6px;flex:1;min-height:0">';
+    for(var i=0;i<7;i++){
+      var g=giorni[i]||{};
+      var st='width:100%;flex:1;min-height:34px;border-radius:9px;border:1px solid rgba(var(--luce-rgb),.10);display:block;';
+      if(g.tipo==='fatta') st+='background:var(--accento)';
+      else if(g.da_fare) st+='background:rgba(var(--luce-rgb),.08);border-color:rgba(var(--accento-rgb),.55)';
+      else st+='background:rgba(var(--luce-rgb),.08)';
+      h+='<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;min-height:0"><span style="color:var(--testo4);font:400 10px var(--font-mono)">'+nomi[i]+'</span><span style="'+st+'"></span><span style="color:'+(g.tipo==='fatta'?'var(--testo2)':'var(--testo4)')+';font:400 9.5px var(--font-ui);text-align:center">'+esc(g.nome||g.tipo||(g.da_fare?'da fare':'—'))+'</span></div>';
+    }
+    return scheda('3','1',h+'</div><div class="nota" style="font-size:10px">pieno: fatto · vuoto: riposo · bordo lime: da fare</div>');
+  },
+  /* CARD GENERICA «tracker» (ordine Diego 14/09: la dash si AMPLIA a box).
+     Ada la aggiunge da chat scrivendo dash_salute_v2 con
+     {"type":"tracker","codice":"<codice abitudine>","titolo":"...","order":N}:
+     un box per QUALUNQUE tracker, anche creato un minuto prima. */
+  tracker:function(D,b){
+    b=b||{};
+    var lista=D.abitudini||[];
+    var cod=String(b.codice||'').toLowerCase();
+    var a=lista.find(function(x){return String(x.codice||'').toLowerCase()===cod;})
+        ||lista.find(function(x){return String(x.nome||'').toLowerCase().indexOf(cod)>=0;});
+    var titolo=b.titolo||(a&&a.nome)||b.codice||'Tracker';
+    var h='<div class="testa"><span class="tit">'+esc(titolo)+'</span><span class="etk">TRACKER</span></div>';
+    if(!cod) return scheda('3','1',h+muto('card tracker senza codice: dillo ad Ada e la sistema'));
+    if(!a)  return scheda('3','1',h+muto('tracker «'+esc(cod)+'» non trovato fra le abitudini: si crea o si corregge con Ada'));
+    var giorni=a.ultimi_7||a.settimana||[];
+    var fatte=a.volte_ultimi_7gg!=null?a.volte_ultimi_7gg:giorni.filter(function(v){return v===true||v==='fatta';}).length;
+    var q='';
+    for(var i=0;i<7;i++){var v=giorni[i]; q+='<span class="quadr'+((v===true||v==='fatta')?' si':'')+'" style="width:14px;height:14px"></span>';}
+    h+='<div style="color:var(--testo1);font:500 19px var(--font-mono);margin-top:6px">'+fatte+'<span style="font:400 11px var(--font-mono);color:var(--testo3)"> / 7 gg</span></div>'+
+       '<div style="display:flex;gap:4px;margin-top:6px">'+q+'</div>'+
+       (a.ancora?'<div class="nota">ancora: '+esc(a.ancora)+'</div>':'');
+    return scheda('3','1',h);
+  },
+  abitudini:function(D){
+    var lista=D.abitudini||[];
+    var h='<div class="testa"><span class="tit">Abitudini</span><span class="etk">7 GG</span></div>';
+    if(!lista.length) h+=muto('nessuna abitudine: dilla ad Ada («crea una abitudine…»)');
+    lista.slice(0,5).forEach(function(a){
+      var giorni=a.ultimi_7||a.settimana||[];
+      var q='';
+      for(var i=0;i<7;i++){var v=giorni[i]; q+='<span class="quadr'+((v===true||v==='fatta')?' si':'')+'"></span>';}
+      h+='<div style="display:flex;align-items:center;gap:8px"><span style="flex:1;color:var(--testo2);font:400 11.5px var(--font-ui)">'+esc(a.nome)+'</span><span style="display:flex;gap:2px">'+q+'</span></div>';
+    });
+    return scheda('3','2',h);
+  },
+  benchmark:function(D){
+    var ctx=D.contesto||{}; var lista=[];
+    try{var raw=ctx.benchmark; lista=raw?(typeof raw==='string'?JSON.parse(raw):raw):[];}catch(e){lista=[];}
+    var h='<div class="testa"><span class="tit">Benchmark</span><span class="etk">PR</span></div>';
+    if(!Array.isArray(lista)||!lista.length) h+=muto('i PR si dicono ad Ada («benchmark: back squat 120 kg») e compaiono qui');
+    else{
+      h+='<div style="display:grid;grid-template-columns:repeat('+Math.min(4,lista.length)+',1fr);gap:10px">';
+      lista.slice(0,4).forEach(function(b){
+        var meglio=b.delta&&String(b.delta).indexOf('+')===0!==(b.tempo===true);
+        h+='<div style="display:flex;flex-direction:column;gap:2px;border-left:1px solid rgba(var(--luce-rgb),.09);padding-left:11px">'+
+          '<span style="color:var(--testo3);font:400 11px var(--font-ui)">'+esc(b.nome)+'</span>'+
+          '<span style="color:var(--testo1);font:400 21px var(--font-mono)">'+esc(b.valore)+'</span>'+
+          (b.delta?'<span style="color:'+(b.peggiorato?'var(--testo3)':'var(--accento)')+';font:400 10.5px var(--font-mono)">'+esc(b.delta)+' sull\'ultima</span>':'')+'</div>';
+      });
+      h+='</div>';
+    }
+    return scheda('1/4','3',h);
+  }
+};
+var DEF_OBIETTIVI=[{type:'attivi',order:1},{type:'allenamenti',order:2},{type:'abitudini',order:3},{type:'benchmark',order:4}];
+function modificaObiettivo(i){
+  var ob=(DATI.obiettivi&&DATI.obiettivi.lista||[])[i]; if(!ob) return;
+  if(ob.chi==='dieta'){
+    alert('Questo target viene dalla DIETA caricata: è la media di tutte le giornate componibili del piano. Si aggiorna da solo quando ricarichi il piano; per forzarlo dillo ad Ada.');
+    return;
+  }
+  var nuovo=prompt('Nuovo target per «'+ob.nome+'» (ora '+ob.target+(ob.unita?' '+ob.unita:'')+'). Vale anche detto ad Ada: «porta '+ob.nome.toLowerCase()+' a …»',ob.target);
+  if(nuovo==null||!String(nuovo).trim()||String(nuovo)===String(ob.target)) return;
+  var pulito=String(nuovo).trim().replace(',','.');
+  var n=Number(pulito);
+  /* Number('')===0 e Number('   ')===0: senza questo controllo tre spazi
+     diventerebbero un target ZERO scritto davvero */
+  if(pulito===''||!isFinite(n)){alert('Il target è un numero («'+nuovo+'» non lo è): niente salvato.');return;}
+  api('/api/obiettivi',{chiave:ob.chiave,target:n})
+    .then(function(r){
+      /* l'esito NON_VERIFICATO si dice: la rilettura non ha confermato la scrittura */
+      if(!r||r.esito!=='salvato') alert('ATTENZIONE: salvataggio NON VERIFICATO dalla rilettura (da '+(r&&r.da)+' a '+(r&&r.a)+'). Controlla con Ada.');
+      return caricaTutto();
+    }).then(function(){RENDER.obiettivi();})
+    .catch(function(e){alert('Non salvato: '+e.message);});
+}
+function rigaStatoObiettivi(){
+  var st=DATI.statoObiettivi;
+  var notaDieta=DATI.obiettivi&&DATI.obiettivi.nota_dieta;
+  if(!st&&notaDieta&&TAB_ATTIVA==='obiettivi'){
+    /* niente stato ma fonte guasta: la riga lo dice invece di sparire (N9-1) */
+    document.getElementById('statopallino').style.background='var(--attenzione)';
+    document.getElementById('statotesto').textContent=notaDieta;
+    document.getElementById('statosugg').textContent='';
+    document.getElementById('statoriga').classList.add('si');
+    return;
+  }
+  if(!st){document.getElementById('statoriga').classList.remove('si');return;}
+  document.getElementById('statopallino').style.background=st.in_ritardo?'var(--attenzione)':'var(--accento)';
+  var t=st.attivi+' obiettivi attivi';
+  if(st.in_ritardo) t+=' · '+st.in_ritardo+' in ritardo — '+st.motivo;
+  if(DATI.obiettivi&&DATI.obiettivi.nota_dieta) t+=' · '+DATI.obiettivi.nota_dieta;
+  document.getElementById('statotesto').innerHTML=esc(t).replace(esc(st.in_ritardo+' in ritardo'),'<span style="color:var(--attenzione)">'+st.in_ritardo+' in ritardo</span>');
+  document.getElementById('statosugg').textContent='“Ada, porta il peso a 77”';
+  if(TAB_ATTIVA==='obiettivi') document.getElementById('statoriga').classList.add('si');
+}
+function montaDiario30(){
+  var el=document.getElementById('diario30');
+  var f=(DATI.dati182||[]).slice(-30);
+  if(!f.length){el.innerHTML='<span style="color:var(--testo3);font:400 11.5px var(--font-ui)">Diario · 30 gg</span>'+muto();return;}
+  var labels=f.map(function(r){return dataIT(r.date);});
+  var vals=f.map(function(r){
+    var campi=[r.calories_in,r.weight_kg,r.sleep_duration_hours,r.whoop_recovery_pct];
+    return Math.round(campi.filter(function(x){return x!=null;}).length/campi.length*100);
+  });
+  var med=Math.round(vals.reduce(function(a,b){return a+b;},0)/vals.length);
+  el.setAttribute('data-chart-card','');
+  el.innerHTML='<span style="color:var(--testo3);font:400 11.5px var(--font-ui);white-space:nowrap">Diario · 30 gg</span>'+
+    '<span '+chartAttrs('Diario · compilazione','bars','%','quanto è compilato il diario, giorno per giorno',labels,vals)+' style="flex:1;display:flex;gap:1.5px;position:relative;cursor:crosshair;min-width:0">'+
+    vals.map(function(v){return '<span style="flex:1;height:10px;border-radius:2px;background:rgba(var(--accento-rgb),'+Math.max(0.08,v/100*0.9).toFixed(2)+');display:block"></span>';}).join('')+'</span>'+
+    '<span data-chart-read data-chart-default="'+med+'% compilato" class="lettura" style="padding:2px 8px">'+med+'% compilato</span>'+
+    '<span data-chart-expand class="espandi" style="width:14px">'+svgEspandi+'</span>';
+}
+
+/* ═══════════ TAB DIETA ═══════════ */
+var FILTRO_PASTO='tutti';
+REGISTRO.dieta={
+  giornata:function(D){
+    var n=D.nutrizione||{}; var piano=n.piano||{};
+    var alt=piano.alternative||[];
+    var perPasto={};
+    alt.forEach(function(a){(perPasto[a.pasto]=perPasto[a.pasto]||[]).push(a);});
+    var ordine=['colazione','spuntino_mattina','pranzo','spuntino_pomeriggio','cena'];
+    var nomi={colazione:'Colazione',spuntino_mattina:'Spuntino mattina',pranzo:'Pranzo',spuntino_pomeriggio:'Spuntino pomeriggio',cena:'Cena'};
+    var scelte=(D.nutrizione&&D.nutrizione.scelte)||{};
+    var filtri=[['tutti','Tutti i pasti'],['colazione','Colazione'],['spuntino','Spuntini'],['pranzo','Pranzo'],['cena','Cena']];
+    var h='<div class="testa"><span class="tit">Giornata · una lettera per pasto</span><span class="etk">'+ordine.filter(function(p){return perPasto[p];}).length+' PASTI</span></div>'+
+      '<div style="display:flex;gap:5px;flex-wrap:wrap">'+filtri.map(function(fz){return '<button class="chip'+(FILTRO_PASTO===fz[0]?' on':'')+'" onclick="FILTRO_PASTO=\''+fz[0]+'\';RENDER.dieta()">'+fz[1]+'</button>';}).join('')+'</div>'+
+      '<div style="display:flex;flex-direction:column;gap:7px;overflow-y:auto;min-height:0;flex:1">';
+    /* i numeri per pasto vengono dalla STIMA reale (salute_nutrizione_stima)
+       calcolata sulle lettere mostrate, mai dal markup */
+    var perPastoStima={};
+    ((D.stima&&D.stima.per_pasto)||[]).forEach(function(u){if(u&&u.pasto)perPastoStima[u.pasto]=u;});
+    var vuoto=true;
+    ordine.forEach(function(p){
+      if(FILTRO_PASTO!=='tutti'&&p.indexOf(FILTRO_PASTO)!==0&&!(FILTRO_PASTO==='spuntino'&&p.indexOf('spuntino')===0)) return;
+      var alts=perPasto[p]||[]; if(!alts.length) return; vuoto=false;
+      var scelta=(D.stimaScelte&&D.stimaScelte[p])||scelte[p]||alts[0].lettera;
+      var a=alts.find(function(x){return x.lettera===scelta;})||alts[0];
+      var st=perPastoStima[p];
+      var qk=qualificaIntervallo(st&&st.nutrienti&&st.nutrienti.kcal,'');
+      var qp=qualificaIntervallo(st&&st.nutrienti&&st.nutrienti.proteine,'P');
+      var kcalTxt=qk.testo, protTxt=qp.testo==='—'?'':qp.testo;
+      h+='<div class="cliccabile" onclick="scegliAlternativa(\''+p+'\')" style="display:flex;gap:11px;align-items:flex-start;border-bottom:1px solid rgba(var(--luce-rgb),.07);padding-bottom:7px">'+
+        '<span style="width:26px;height:26px;border-radius:8px;background:var(--accento-fondo-16);border:1px solid var(--accento-bordo);color:var(--accento);display:flex;align-items:center;justify-content:center;font:600 12px var(--font-mono);flex:none">'+esc(a.lettera||'?')+'</span>'+
+        '<div style="flex:1;min-width:0"><div style="display:flex;align-items:baseline;gap:8px"><span style="color:var(--testo1);font:500 12.5px var(--font-ui)">'+esc(nomi[p]||p)+'</span><span style="color:var(--testo4);font:400 10px var(--font-ui)">'+alts.length+' alternative</span></div>'+
+        '<div style="color:var(--testo3);font:400 11.5px/1.4 var(--font-ui);margin-top:2px">'+esc((a.testo||'').slice(0,90))+'</div></div>'+
+        '<div style="text-align:right;flex:none"><div style="color:var(--testo2);font:500 12px var(--font-mono)">'+esc(kcalTxt)+'</div><div style="color:var(--testo4);font:400 10px var(--font-mono)">'+esc(protTxt)+'</div></div></div>';
+    });
+    if(vuoto) h+=muto('il piano del nutrizionista non risulta caricato: passa il PDF ad Ada dalla barra qui sotto');
+    h+='</div><div class="nota">Le lettere vengono dal foglio del nutrizionista: una per pasto, combinabili liberamente.</div>';
+    return scheda('1/3','1/3',h);
+  },
+  totali:function(D){
+    /* contratto salute_nutrizione_stima: giornata (5 pasti) o giornata_parziale,
+       per nutriente {min,max}. Se manca, resta dichiarato: mai numeri inventati */
+    var st=D.stima||null;
+    var tot=st&&(st.giornata||st.giornata_parziale)||null;
+    var parziale=!!(st&&!st.giornata&&st.giornata_parziale);
+    var h='<div class="testa"><span class="tit">Totali stimati</span><span class="etk">'+(parziale?'PARZIALI':'MIN-MAX')+'</span></div>';
+    var conND=[];
+    if(!tot) h+=muto('la stima arriva col piano caricato (lettere per pasto)');
+    else [['Kcal','kcal'],['Proteine','proteine','g'],['Carboidrati','carboidrati_disponibili','g'],['Grassi','grassi','g'],['Fibra','fibra','g']].forEach(function(r){
+      /* la qualifica (parziale/ND/tracce) esce SEMPRE da qualificaIntervallo:
+         una regola sola per Totali, Giornata e chiunque altro (design R9) */
+      var q=qualificaIntervallo(tot[r[1]],r[2]||'');
+      if(q.nd) conND.push(r[0]+' ('+q.nd+' ND)');
+      h+='<div class="riga"><span class="k">'+r[0]+'</span><span class="v"'+(q.degradato?' style="color:var(--attenzione)"':'')+'>'+esc(q.testo)+'</span></div>';
+    });
+    h+='<div class="nota">'+esc((st&&st.nota_giornata)||'Intervallo, non un numero secco: dipende dalle alternative scelte.')+
+      (conND.length?' <span style="color:var(--attenzione)">Somma incompleta: '+esc(conND.join(', '))+' — ingredienti senza dato nella fonte.</span>':'')+'</div>';
+    return scheda('3','1',h);
+  },
+  ricette:function(D){
+    /* la generazione e' di Ada (AI): il bottone manda il comando in chat.
+       Qui sotto le BOZZE vere (salute_ricette_lista) con Accetta → Spesa. */
+    var bozze=(D.ricette||[]).filter(function(r){return r.stato==='bozza'||r.stato==='proposta';});
+    var h='<div class="testa"><span class="tit">Genera ricette</span><span class="etk">COACH</span></div>'+
+      '<input id="ricettaVoglia" class="campo" placeholder=\'Cosa ti va? es. "qualcosa con pollo e zucchine"\'>'+
+      '<div style="display:flex;gap:6px;flex-wrap:wrap">'+['pollo','zucchine','veloce','senza forno'].map(function(t){return '<button class="chip" onclick="var i=document.getElementById(\'ricettaVoglia\');i.value=(i.value?i.value+\' \':\'\')+\''+t+'\'">'+t+'</button>';}).join('')+'</div>'+
+      '<button class="bott" onclick="generaRicette(this)">Genera (chiede ad Ada)</button>'+
+      '<div id="ricetteEsito" style="overflow-y:auto;min-height:0;display:flex;flex-direction:column;gap:6px">'+
+      (bozze.length?bozze.slice(0,4).map(function(ric){return '<div style="border:1px solid var(--riga);border-radius:9px;padding:7px 9px">'+
+        '<div style="color:var(--testo1);font:500 12px var(--font-ui)">'+esc(ric.titolo||('Ricetta '+ric.id))+'</div>'+
+        '<div style="color:var(--testo3);font:400 11px/1.4 var(--font-ui)">'+esc((ric.voglia||ric.testo||'').slice(0,140))+'</div>'+
+        '<button class="bott2" style="margin-top:5px;padding:4px" onclick="accettaRicetta('+ric.id+',this)">Accetta → Spesa</button></div>';}).join(''):
+      '<div class="nota">nessuna bozza in attesa: genera con Ada</div>')+'</div>'+
+      '<div class="nota">Le accettate finiscono in Spesa, sezione variabile.</div>';
+    return scheda('3','2',h);
+  },
+  grafico:function(D){
+    var f=(D.dati182||[]).slice(-30);
+    var labels=f.map(function(r){return dataIT(r.date);});
+    var kcal=f.map(function(r){return r.calories_in;});
+    var prot=f.map(function(r){return r.protein_g;});
+    var ult=f[f.length-1]||{};
+    var read=ult.date?dataIT(ult.date)+' · '+(ult.calories_in!=null?fmtInt(ult.calories_in)+' kcal':'—'):'—';
+    var vivi=kcal.filter(function(x){return x!=null;});
+    var max=Math.max.apply(null,vivi.length?vivi:[1]);
+    var barre=kcal.map(function(v,i){return v==null?'<span style="flex:1"></span>':'<span style="flex:1;align-self:flex-end;height:'+Math.max(4,Math.round(v/max*100))+'%;border-radius:2px 2px 0 0;background:rgba(var(--accento-rgb),.3)"></span>';}).join('');
+    var el=scheda('1','3','',null); el.setAttribute('data-chart-card','');
+    el.innerHTML='<div style="display:flex;align-items:center;gap:9px"><span class="tit">Calorie e proteine</span>'+
+      '<span style="margin-left:auto" data-chart-read data-chart-default="'+esc(read)+'" class="lettura">'+esc(read)+'</span><span data-chart-expand class="espandi">'+svgEspandi+'</span></div>'+
+      '<div '+chartAttrs('Calorie','bars','kcal','kcal al giorno · 30 giorni · confronto: proteine',labels,kcal,'proteine',prot)+' style="position:relative;flex:1;min-height:56px;cursor:crosshair;display:flex;align-items:stretch;gap:2px">'+cursore+(vivi.length?barre:muto())+'</div>'+
+      '<div class="nota">barre: kcal · lime: proteine (nella lettura)</div>';
+    return el;
+  },
+  ipotesi:function(D){
+    /* le ipotesi VERE sono le assunzioni del modello (salute_nutrizione_leggi) */
+    var n=D.nutrizione||{}; var ass=Array.isArray(n.assunzioni)?n.assunzioni:[];
+    var h='<div class="testa"><span class="tit">Ipotesi modificabili</span><span class="etk cliccabile" onclick="modificaIpotesi()">MODIFICA</span></div>';
+    if(!ass.length) h+=muto('le assunzioni del modello arrivano con /api/nutrizione');
+    else ass.slice(0,4).forEach(function(a){
+      /* V33: mai booleani inglesi a video - true/false diventano si'/no */
+      var vv=a.valore===true?'sì':(a.valore===false?'no':(a.valore!=null?String(a.valore)+(a.unita?' '+a.unita:''):'—'));
+      h+='<div class="riga"><span class="k">'+esc(a.etichetta||a.chiave)+'</span><span class="v">'+esc(vv)+'</span></div>';});
+    h+='<div class="nota">Cambiarle ricalcola le stime, non il piano.</div>';
+    return scheda('2','3',h);
+  },
+  fonti:function(D){
+    /* i valori per 100 g stanno sulle VOCI (voce.valori.<nutriente>.valore),
+       le "fonti" sono bibliografia: qui si mostrano le voci coi loro numeri */
+    var n=D.nutrizione||{}; var voci=Array.isArray(n.voci)?n.voci:[];
+    var h='<div class="testa"><span class="tit">Fonti e verdure</span><span class="etk">PER 100 G</span></div>';
+    if(!voci.length) h+=muto('le voci per 100 g arrivano dal piano/nutrizione');
+    else voci.slice(0,5).forEach(function(v){
+      var k=v.valori&&v.valori.kcal, p=v.valori&&v.valori.proteine;
+      var testo=(k&&k.valore!=null?fmtInt(k.valore)+' kcal':'—')+(p&&p.valore!=null?' · '+fmtInt(p.valore)+' P':'');
+      h+='<div class="riga"><span class="k">'+esc(v.nome)+'</span><span class="v">'+esc(testo)+'</span></div>';});
+    h+='<div class="nota">'+esc(n.etichetta||'stime da tabelle esterne, non prescritte dal nutrizionista')+'</div>';
+    return scheda('3','3',h);
+  }
+};
+var DEF_DIETA=[{type:'giornata',order:1},{type:'totali',order:2},{type:'ricette',order:3},{type:'grafico',order:4},{type:'ipotesi',order:5},{type:'fonti',order:6}];
+function scegliAlternativa(pasto){mandaAdAlfred('Per il pasto «'+pasto.replace('_',' ')+'» dimmi le alternative del piano e cosa mi consigli oggi.');}
+function modificaIpotesi(){mandaAdAlfred('Voglio modificare le ipotesi della dieta (TDEE, quota proteine, deficit, ripartizione): dimmi i valori attuali e chiedimi i nuovi.');}
+function generaRicette(btn){
+  /* POST /api/ricette SCRIVE una ricetta gia' composta, non la genera:
+     la generazione e' un lavoro del coach, quindi passa dalla chat */
+  var voglia=document.getElementById('ricettaVoglia').value.trim();
+  mandaAdAlfred('Genera una ricetta '+(voglia?'con: '+voglia:'compatibile col piano di oggi')+'. Salvala in bozza tra le mie ricette.');
+  document.getElementById('ricetteEsito').innerHTML='<div class="nota">chiesto ad Ada: la proposta arriva nella risposta e la bozza compare in questa scheda al prossimo aggiornamento.</div>';
+}
+function accettaRicetta(id,btn){
+  /* contratto /api/ricette/stato: azione nel registro chiuso accetta|rifiuta|promuovi */
+  api('/api/ricette/stato',{id:Number(id),azione:'accetta'}).then(function(r){
+    /* HTTP 200 non basta: conta l'esito APPLICATIVO (giro_assente/scritto:false esiste) */
+    if(!r||r.scritto===false){btn.textContent='Non accettata: '+((r&&r.esito)||'esito negativo dal registro');return;}
+    btn.textContent='Accettata ✓';btn.disabled=true;
+    return caricaTutto().then(function(){if(TAB_ATTIVA==='spesa')RENDER.spesa();else if(TAB_ATTIVA==='dieta')RENDER.dieta();});
+  })
+  .catch(function(e){btn.textContent='Non accettata: '+e.message;});
+}
+
+/* ═══════════ TAB SPESA ═══════════ */
+var FILTRO_SPESA='da_comprare';
+REGISTRO.spesa={
+  lista:function(D){
+    var g=D.spesa||{}; var righe=g.righe||[];
+    var master=g.master||[];
+    if(D.spesaErrore) return scheda('1/3','1/4','<div class="testa"><span class="tit">Lista · giro corrente</span><span class="etk" style="color:var(--attenzione)">IN ERRORE</span></div>'+muto('la lista non è leggibile ora: '+D.spesaErrore));
+    var filtri=[['tutti','Tutti'],['da_comprare','Da comprare'],['comprato','Comprato'],['in_casa',"Ce l'ho"],['master','Catalogo master']];
+    var fonte=FILTRO_SPESA==='master'?master:righe.filter(function(r){
+      var st=statoRiga(r);
+      return FILTRO_SPESA==='tutti'||st===FILTRO_SPESA;
+    });
+    var nSel=Object.keys(SEL_MASTER).filter(function(k){return SEL_MASTER[k];}).length;
+    var h='<div class="testa"><span class="tit">Lista · giro corrente</span><span class="etk">'+righe.length+' VOCI</span></div>'+
+      '<div style="display:flex;gap:5px;flex-wrap:wrap">'+filtri.map(function(fz){return '<button class="chip'+(FILTRO_SPESA===fz[0]?' on':'')+'" onclick="FILTRO_SPESA=\''+fz[0]+'\';RENDER.spesa()">'+fz[1]+'</button>';}).join('')+'</div>'+
+      (FILTRO_SPESA==='master'?'<div style="display:flex;align-items:center;gap:8px"><button class="bott" style="flex:1;padding:7px" onclick="aggiungiSelezionate(this)">Aggiungi alla lista ('+nSel+')</button><span class="nota" style="flex:none">flagga e componi</span></div>':'')+
+      '<div style="display:flex;flex-direction:column;gap:6px;overflow-y:auto;min-height:0;flex:1">';
+    if(!fonte.length) h+=muto(FILTRO_SPESA==='master'?'catalogo vuoto':'niente in questo stato');
+    if(FILTRO_SPESA==='master'){
+      fonte.forEach(function(r){
+        var inLista=righe.some(function(x){return x.alimento_id===r.id;});
+        h+='<div style="display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--riga);padding-bottom:5px">'+
+          '<span class="spunta'+(SEL_MASTER[r.id]?' comprato':'')+'" onclick="toggleSelMaster('+r.id+')"></span>'+
+          '<span style="flex:1;color:var(--testo1);font:400 12px var(--font-ui)">'+esc(r.nome)+'</span>'+
+          '<span style="color:var(--testo4);font:400 10px var(--font-ui)">'+esc(r.categoria||'')+'</span>'+
+          (inLista?'<span style="color:var(--testo4);font:400 10px var(--font-mono)">già in lista</span>':'')+'</div>';
+      });
+    }else{
+      fonte.forEach(function(r){
+        var st=statoRiga(r);
+        h+='<div style="display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--riga);padding-bottom:5px">'+
+          '<span class="spunta '+(st==='comprato'?'comprato':(st==='in_casa'?'celho':''))+'" title="segna comprato" onclick="spuntaRiga('+(r.alimento_id!=null?r.alimento_id:'null')+','+(r.rev!=null?r.rev:'null')+',\''+st+'\')"></span>'+
+          '<span style="flex:1;color:var(--testo1);font:400 12px var(--font-ui)">'+esc(r.nome)+'</span>'+
+          '<span style="color:var(--testo4);font:400 10px var(--font-ui)">'+esc(r.categoria||'')+'</span>'+
+          '<span class="cliccabile" style="color:'+(st==='in_casa'?'var(--accento)':'var(--testo4)')+';font:400 10px var(--font-mono);width:74px;text-align:right;cursor:pointer" title="ce l\'ho già in casa" onclick="segnaCeLho('+(r.alimento_id!=null?r.alimento_id:'null')+','+(r.rev!=null?r.rev:'null')+',\''+st+'\')">'+(st==='in_casa'?"ce l'ho ✓":"ce l'ho?")+'</span></div>';
+      });
+    }
+    h+='</div><div class="nota">Tocco sulla casella: comprato. Tocco su «ce l\'ho»: già in casa. Dal catalogo master flagghi e aggiungi.</div>';
+    return scheda('1/3','1/4',h);
+  },
+  giro:function(D){
+    var g=D.spesa||{}; var righe=g.righe||[];
+    if(D.spesaErrore) return scheda('3','1','<div class="testa"><span class="tit">Giro</span><span class="etk" style="color:var(--attenzione)">IN ERRORE</span></div>'+muto('conteggi non disponibili: '+D.spesaErrore));
+    var conta={da_comprare:0,comprato:0,in_casa:0};
+    righe.forEach(function(r){conta[statoRiga(r)]=(conta[statoRiga(r)]||0)+1;});
+    var completa=righe.length>0&&conta.da_comprare===0;
+    return scheda('3','1',
+      '<div class="testa"><span class="tit">Giro</span><span class="etk">STATO</span></div>'+
+      '<div style="display:flex;gap:8px">'+
+        '<div style="flex:1"><div class="etk" style="font-size:9.5px">DA COMPRARE</div><div style="color:var(--testo1);font:500 20px var(--font-mono)">'+conta.da_comprare+'</div></div>'+
+        '<div style="flex:1"><div class="etk" style="font-size:9.5px">COMPRATO</div><div style="color:var(--testo1);font:500 20px var(--font-mono)">'+conta.comprato+'</div></div>'+
+        '<div style="flex:1"><div class="etk" style="font-size:9.5px">CE L\'HO</div><div style="color:var(--testo1);font:500 20px var(--font-mono)">'+conta.in_casa+'</div></div></div>'+
+      (completa?'<div class="nota" style="color:var(--accento)">Lista completata: azzera e riparte tutto «da comprare».</div>':'')+
+      '<div id="esitoGiro" class="nota"></div>'+
+      '<div style="display:flex;gap:6px;margin-top:auto;flex-wrap:wrap">'+
+        '<button class="bott2" style="flex:1" onclick="condividiWhatsapp()">Condividi</button>'+
+        '<button class="bott2" style="flex:1'+(completa?';border-color:var(--accento-bordo);color:var(--accento)':'')+'" onclick="azzeraLista(this)">Azzera lista</button>'+
+        '<button class="bott2" style="flex:1" onclick="exportExcel()">Export</button></div>');
+  },
+  variabile:function(D){
+    var g=D.spesaVariabile||[];
+    var h='<div class="testa"><span class="tit">Variabile</span><span class="etk">DA RICETTE</span></div>';
+    if(D.spesaVariabileErrore) return scheda('3','2',h+muto('sezione non leggibile ora: '+D.spesaVariabileErrore));
+    if(!g.length) h+=muto('le voci nascono dalle ricette accettate in Dieta');
+    else g.slice(0,6).forEach(function(v){h+='<div class="riga"><span class="k">'+esc(v.nome)+'</span><span class="v">ricetta '+esc(dataIT(v.data||v.ricetta_data||''))+'</span></div>';});
+    h+='<div class="nota">Decade se non la promuovi a fissa.</div>';
+    return scheda('3','2',h);
+  },
+  storico:function(D){
+    /* contratto cosa=giri: [{id,titolo,stato,creato,rev,righe_vive,comprate}] */
+    var s=(D.spesa&&D.spesa.storico)||[];
+    var h='<div class="testa"><span class="tit">Storico giri</span><span class="etk">ULTIMI</span></div>';
+    if(D.spesaGiriErrore) return scheda('3','3',h+muto('storico non leggibile ora: '+D.spesaGiriErrore));
+    if(!s.length) h+=muto('lo storico si riempie col primo giro chiuso');
+    else s.slice(0,4).forEach(function(gg){
+      h+='<div class="riga"><span class="k">'+esc((gg.titolo||('giro '+gg.id))+' · '+dataIT(String(gg.creato||'').slice(0,10)))+'</span><span class="v">'+esc(gg.stato+(gg.righe_vive!=null?' · '+gg.comprate+'/'+gg.righe_vive+' prese':''))+'</span></div>';});
+    h+='<div class="nota">Il piano alimentare vive in Dieta: qui solo il rimando.</div>';
+    return scheda('3','3',h);
+  }
+};
+var DEF_SPESA=[{type:'lista',order:1},{type:'giro',order:2},{type:'variabile',order:3},{type:'storico',order:4}];
+function statoRiga(r){
+  /* registro CHIUSO del database: da_comprare | comprato | in_casa */
+  if(r.stato==='comprato') return 'comprato';
+  if(r.stato==='in_casa') return 'in_casa';
+  return 'da_comprare';
+}
+/* identita' dell'operazione: un doppio tocco non fa due scritture (contratto validaSpesa) */
+function nuovaChiave(){
+  if(window.crypto&&crypto.randomUUID) return crypto.randomUUID();
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,function(c){
+    var r=Math.random()*16|0,v=c==='x'?r:(r&0x3|0x8);return v.toString(16);});
+}
+/* design R9 v2 applicato ANCHE alla spesa (review-10): l'esito viene dal
+   CORPO del dominio, mai dall'HTTP 200. scritto:false = NON scritto. */
+function spesaScritta(r){
+  /* N11-1: i tipi si validano, non si coercono — scritto:"false" e scritto:0
+     non sono un si', un esito-array non e' un esito */
+  if(!r||typeof r!=='object'||Array.isArray(r)) return false;
+  if(r.scritto!==undefined&&r.scritto!==true) return false;
+  return typeof r.esito==='string'&&/^(aggiornato|creato|chiuso)$/.test(r.esito);
+}
+function motivoSpesa(r){
+  var e=String((r&&r.esito)||'esito assente');
+  if(e==='versione_superata') return 'la lista è cambiata nel frattempo: ricarico';
+  if(e==='invariato') return 'già in lista';
+  if(e==='piano_assente') return 'manca il piano da cui far nascere la lista';
+  return e;
+}
+function cambiaStatoRiga(id,rev,nuovo){
+  if(id==null){alert('questa voce non porta un id: si gestisce da Ada');return Promise.reject(new Error('senza id'));}
+  var giro=DATI.spesa&&DATI.spesa.giro;
+  if(!giro||giro.id==null){alert('nessun giro aperto: crealo dal catalogo master o con Ada');return Promise.reject(new Error('senza giro'));}
+  return api('/api/lista_spesa/giro',{azione:'stato',giro:giro.id,alimento:id,rev:rev,stato:nuovo,operazione:nuovaChiave()})
+    .then(function(r){
+      if(!spesaScritta(r)){var err=new Error(motivoSpesa(r));err.esitoDominio=String((r&&r.esito)||'');throw err;}
+      return r;
+    });
+}
+/* DUE gesti distinti (collaudo Diego 13/09 sera): la casella = comprato si'/no;
+   il badge a destra = ce l'ho gia' in casa si'/no. Niente ciclo a tre stati. */
+function toccoStato(id,rev,nuovo){
+  cambiaStatoRiga(id,rev,nuovo)
+    .then(function(){return caricaSpesa();}).then(function(){RENDER.spesa();})
+    .catch(function(e){
+      if(/senza (id|giro)/.test(e.message)) return;
+      alert('Non segnata: '+e.message);        /* il rifiuto del dominio si DICE */
+      caricaSpesa().then(function(){RENDER.spesa();});
+    });
+}
+function spuntaRiga(id,rev,statoAttuale){toccoStato(id,rev,statoAttuale==='comprato'?'da_comprare':'comprato');}
+function segnaCeLho(id,rev,statoAttuale){toccoStato(id,rev,statoAttuale==='in_casa'?'da_comprare':'in_casa');}
+/* AZZERA: tutte le voci tornano «da comprare» — una scrittura per riga,
+   in sequenza, con esito CONTATO dal CORPO (ok/rifiutate col motivo) */
+function azzeraLista(btn){
+  var righe=((DATI.spesa||{}).righe||[]).filter(function(r){return statoRiga(r)!=='da_comprare';});
+  var out=document.getElementById('esitoGiro');
+  if(!righe.length){if(out)out.textContent='Tutto già da comprare: niente da azzerare.';return;}
+  if(!confirm('Riporto '+righe.length+' voci a «da comprare»?')) return;
+  if(btn) btn.disabled=true;
+  var ok=0,ko=0,motivi=[];
+  righe.reduce(function(catena,r){
+    return catena.then(function(){
+      return cambiaStatoRiga(r.alimento_id,r.rev,'da_comprare')
+        .then(function(){ok++;},function(e){ko++;if(motivi.indexOf(e.message)<0)motivi.push(e.message);});
+    });
+  },Promise.resolve()).then(function(){return caricaSpesa();}).then(function(){
+    RENDER.spesa();
+    var o=document.getElementById('esitoGiro');
+    if(o)o.textContent='Azzerate '+ok+' voci'+(ko?' · '+ko+' NON azzerate ('+motivi.join('; ')+')':'');
+  });
+}
+/* SELEZIONE DAL MASTER: flagga le voci e componi la lista della spesa */
+var SEL_MASTER={};
+function toggleSelMaster(id){SEL_MASTER[id]=!SEL_MASTER[id];RENDER.spesa();}
+function aggiungiSelezionate(btn){
+  var ids=Object.keys(SEL_MASTER).filter(function(k){return SEL_MASTER[k];}).map(Number);
+  if(!ids.length){alert('Flagga prima almeno una voce del catalogo.');return;}
+  var giro=DATI.spesa&&DATI.spesa.giro;
+  var partenza=Promise.resolve(null);
+  var serveCrea=!giro||giro.stato!=='aperto';
+  if(serveCrea){
+    if(!confirm('Non c\'è una lista aperta: ne creo una nuova (parte dalle voci del piano) e ci aggiungo le '+ids.length+' selezionate?')) return;
+    partenza=api('/api/lista_spesa/giro',{azione:'crea',operazione:nuovaChiave()}).then(function(r){
+      /* la creazione si VERIFICA: senza lista vera le aggiunte non partono */
+      if(!(spesaScritta(r)&&r.esito==='creato')) throw new Error('Lista non creata: '+motivoSpesa(r));
+      return r;
+    });
+  }
+  if(btn) btn.disabled=true;
+  var ok=0,giaInLista=0,ko=0,motivi=[];
+  partenza.then(function(){
+    return ids.reduce(function(catena,id){
+      return catena.then(function(){
+        return api('/api/lista_spesa/giro',{azione:'aggiungi_riga',alimento:id,operazione:nuovaChiave()})
+          .then(function(r){
+            if(spesaScritta(r)){ok++;return;}
+            if(r&&r.esito==='invariato'){giaInLista++;return;}
+            ko++;var m=motivoSpesa(r);if(motivi.indexOf(m)<0)motivi.push(m);
+          },function(e){ko++;if(motivi.indexOf(e.message)<0)motivi.push(e.message);});
+      });
+    },Promise.resolve());
+  }).then(function(){return caricaSpesa();}).then(function(){
+    SEL_MASTER={};FILTRO_SPESA='da_comprare';RENDER.spesa();
+    var o=document.getElementById('esitoGiro');
+    if(o)o.textContent='Aggiunte '+ok+' voci'+(giaInLista?' · '+giaInLista+' già in lista':'')+(ko?' · '+ko+' NON aggiunte ('+motivi.join('; ')+')':'');
+  }).catch(function(e){if(btn)btn.disabled=false;alert(e.message.indexOf('Lista non creata')===0?e.message:'Lista non creata: '+e.message);});
+}
+function condividiWhatsapp(){
+  /* condivisibile SEMPRE: tutta la lista con lo stato di ogni voce */
+  var righe=(DATI.spesa||{}).righe||[];
+  if(!righe.length){alert('La lista è vuota: componila dal catalogo master o con Ada.');return;}
+  var simbolo={da_comprare:'▢',comprato:'✔',in_casa:'~'};
+  var testo='Spesa:\n'+righe.map(function(r){return simbolo[statoRiga(r)]+' '+r.nome;}).join('\n');
+  window.open('https://wa.me/?text='+encodeURIComponent(testo),'_blank');
+}
+function exportExcel(){mandaAdAlfred('Mandami l\'export della lista della spesa in file.');}
+
+/* ═══════════ TAB BRAIN ═══════════ */
+var FILTRO_BRAIN='correnti';
+var TIPO_NUOVO='pensiero';
+/* Archivio temi: STRUTTURA VISIBILE CON DATI FINTI - il motore e' il compito
+   aperto su DIEGOOS (Ada dopo ogni seduta), NON va implementato qui. */
+var TEMI_FINTI=[
+  {tema:'Evitamento delle telefonate difficili',barre:[8,12,12,16,16,12,16,16],colore:'var(--attenzione)',tend:'in crescita',ultima:'8 set',stato:'presente'},
+  {tema:'Pensieri notturni, sonno corto',barre:[16,16,12,12,12,8,12,8],colore:'var(--accento)',tend:'in calo',ultima:'8 set',stato:'presente'},
+  {tema:'Confronto con mio padre',barre:[16,12,4,4,0,0,8,12],colore:'var(--attenzione)',tend:'ritornato a luglio',ultima:'21 ago',stato:'rientrato'},
+  {tema:'Senso di colpa sul tempo libero',barre:[12,12,8,4,4,0,0,0],colore:'var(--testo4)',tend:'non compare da 3 mesi',ultima:'12 giu',stato:'passato'},
+  {tema:'Ansia prima delle riunioni',barre:[16,8,8,4,0,0,0,0],colore:'var(--testo4)',tend:'non compare da 3 mesi',ultima:'30 mag',stato:'passato'}
+];
+REGISTRO.brain={
+  appunti:function(D){
+    var tutti=D.psicologa||{correnti:[],storico:[]};
+    if(D.brainErrore) return scheda('1/3','1/3','<div class="testa"><span class="tit">Appunti</span><span class="etk" style="color:var(--attenzione)">IN ERRORE</span></div>'+muto('gli appunti non sono leggibili ora: '+D.brainErrore));
+    var filtri=[['correnti','Correnti'],['portati','Già portati'],['pensiero','Pensieri'],['sogno','Sogni'],['pattern','Pattern'],['da_dire','Da dire']];
+    var base=FILTRO_BRAIN==='portati'?(tutti.storico||[]):(tutti.correnti||[]);
+    var lista=(['correnti','portati'].indexOf(FILTRO_BRAIN)>=0)?base:base.filter(function(a){return (a.tipo||'').replace(' ','_')===FILTRO_BRAIN;});
+    var h='<div class="testa"><span class="tit">Appunti</span><span class="etk">'+(tutti.correnti||[]).length+' CORRENTI</span></div>'+
+      '<div style="display:flex;gap:5px;flex-wrap:wrap">'+filtri.map(function(fz){return '<button class="chip'+(FILTRO_BRAIN===fz[0]?' on':'')+'" onclick="FILTRO_BRAIN=\''+fz[0]+'\';RENDER.brain()">'+fz[1]+'</button>';}).join('')+'</div>'+
+      '<div style="display:flex;flex-direction:column;gap:6px;overflow-y:auto;min-height:0;flex:1">';
+    if(!lista.length) h+=muto('niente qui: scrivi a destra, o dettalo ad Ada');
+    lista.forEach(function(a){
+      h+='<div style="display:flex;gap:10px;align-items:flex-start;border-bottom:1px solid var(--riga);padding-bottom:6px">'+
+        '<span class="spunta'+(a.selezionato?' comprato':'')+'" style="margin-top:2px" onclick="this.classList.toggle(\'comprato\');APPUNTI_SEL[\''+a.id+'\']=this.classList.contains(\'comprato\');contaSelezionati()"></span>'+
+        '<div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:7px"><span style="color:var(--accento);font:500 9px var(--font-mono);letter-spacing:.05em">'+esc((a.tipo||'').toUpperCase())+'</span><span style="color:var(--testo4);font:400 9.5px var(--font-mono)">'+esc(dataIT((a.ts||'').slice(0,10)))+'</span></div>'+
+        '<div style="color:var(--testo1);font:400 12px/1.45 var(--font-ui);margin-top:2px">'+esc(a.testo)+'</div></div></div>';
+    });
+    h+='</div><div style="display:flex;gap:6px"><button class="bott" style="flex:1" onclick="portaInSeduta()">Portati in seduta (<span id="nSel">0</span>)</button><button class="bott2" style="flex:0 0 90px" onclick="exportBrain()">Export</button></div>';
+    return scheda('1/3','1/3',h);
+  },
+  nuovo:function(D){
+    var tipi=[['pensiero','Pensiero'],['sogno','Sogno'],['pattern','Pattern'],['da dire','Da dire']];
+    var h='<div class="testa"><span class="tit">Nuovo appunto</span><span class="etk">TIPO</span></div>'+
+      '<div style="display:flex;gap:5px;flex-wrap:wrap">'+tipi.map(function(t){return '<button class="chip'+(TIPO_NUOVO===t[0]?' on':'')+'" onclick="TIPO_NUOVO=\''+t[0]+'\';RENDER.brain()">'+t[1]+'</button>';}).join('')+'</div>'+
+      '<textarea id="nuovoAppunto" class="campo" rows="3" placeholder="Scrivi qui, o dettalo ad Ada" style="resize:none"></textarea>'+
+      '<div style="display:flex;gap:6px;align-items:center"><button class="bott2" style="width:auto;padding:7px 18px" onclick="salvaAppunto(this)">Salva</button><span class="nota">si può fare anche in chat</span></div>'+
+      '<div class="nota">Nessun titolo obbligatorio: una riga basta. La data la mette il sistema.</div>';
+    return scheda('3','1/3',h);
+  },
+  tendenze:function(D){
+    /* conteggi CALCOLATI dagli appunti veri (90 giorni), non da un campo che non esiste */
+    var p=D.psicologa||{correnti:[],storico:[]};
+    if(D.brainErrore) return scheda('3','3','<div class="testa"><span class="tit">Tendenze</span><span class="etk" style="color:var(--attenzione)">IN ERRORE</span></div>'+muto('appunti non leggibili: '+D.brainErrore));
+    var da=new Date(); da.setDate(da.getDate()-90);
+    var tutti=(p.correnti||[]).concat(p.storico||[]).filter(function(a){return String(a.ts||'')>=da.toISOString().slice(0,10);});
+    var conta=function(tipo){return tutti.filter(function(a){return a.tipo===tipo;}).length;};
+    var portati=(p.storico||[]).filter(function(a){return String(a.portato_il||'')>=da.toISOString().slice(0,10);}).length;
+    var h='<div class="testa"><span class="tit">Tendenze</span><span class="etk">ULTIMI 90 GG</span></div>';
+    if(!tutti.length&&!portati) h+=muto('i conteggi arrivano dagli appunti');
+    else [['Pensieri',conta('pensiero')],['Pattern',conta('pattern')],['Sogni',conta('sogno')],['Portati in seduta',portati]].forEach(function(r){
+      h+='<div class="riga"><span class="k">'+r[0]+'</span><span class="v">'+r[1]+'</span></div>';});
+    h+='<div class="nota">Serve a lei, non a te: nessun punteggio.</div>';
+    return scheda('3','3',h);
+  },
+  archivio:function(D){
+    /* V11 (review visione): i temi dimostrativi sembravano risultati veri -
+       il badge ESEMPIO sta su OGNI riga, non solo in una nota a pie' card */
+    var h='<div class="testa"><span class="tit">Archivio · temi nel tempo</span><span class="etk" style="color:var(--attenzione)">ESEMPIO · MOTORE IN COSTRUZIONE</span></div>'+
+      '<div style="display:flex;flex-direction:column;gap:6px;flex:1;min-height:0;overflow:hidden;opacity:.55">';
+    TEMI_FINTI.forEach(function(t){
+      var pill=t.stato==='passato'?'border:1px solid var(--bordo);color:var(--testo4)':
+        (t.stato==='presente'&&t.colore==='var(--accento)'?'border:1px solid rgba(var(--accento-rgb),.33);color:var(--accento)':'border:1px solid rgba(var(--attenzione-rgb),.33);color:var(--attenzione)');
+      h+='<div style="display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--riga);padding-bottom:6px">'+
+        '<span style="flex:1;min-width:0;color:var(--testo1);font:400 12px var(--font-ui)">'+esc(t.tema)+'</span>'+
+        '<span style="display:flex;align-items:flex-end;gap:2px;height:16px">'+t.barre.map(function(b){return '<span style="width:4px;height:'+Math.max(2,b)+'px;border-radius:1px;background:'+(b?t.colore:'rgba(var(--luce-rgb),.12)')+';opacity:.85;display:block"></span>';}).join('')+'</span>'+
+        '<span style="color:var(--testo4);font:400 10px var(--font-ui);white-space:nowrap">'+esc(t.tend)+'</span>'+
+        '<span style="color:var(--testo4);font:400 10.5px var(--font-mono);white-space:nowrap">'+esc(t.ultima)+'</span>'+
+        '<span style="border-radius:6px;padding:1px 8px;font:400 10px var(--font-ui);white-space:nowrap;'+pill+'">'+t.stato+'</span></div>';
+    });
+    h+='</div><div class="nota">Ogni seduta entrerà qui da sola (motore in costruzione: per ora questi sono dati di esempio, dichiarati).</div>';
+    return scheda('1/3','3',h);
+  }
+};
+var DEF_BRAIN=[{type:'appunti',order:1},{type:'nuovo',order:2},{type:'tendenze',order:3},{type:'archivio',order:4}];
+var APPUNTI_SEL={};
+function contaSelezionati(){var n=Object.keys(APPUNTI_SEL).filter(function(k){return APPUNTI_SEL[k];}).length;var el=document.getElementById('nSel');if(el)el.textContent=n;}
+function salvaAppunto(btn){
+  var t=document.getElementById('nuovoAppunto').value.trim(); if(!t) return;
+  api('/api/psicologa',{tipo:TIPO_NUOVO,testo:t}).then(function(){return caricaBrain();}).then(function(){RENDER.brain();})
+  .catch(function(e){alert('Non salvato: '+e.message);});
+}
+function portaInSeduta(){
+  var ids=Object.keys(APPUNTI_SEL).filter(function(k){return APPUNTI_SEL[k];});
+  if(!ids.length){alert('Seleziona prima gli appunti da portare.');return;}
+  api('/api/psicologa_porta',{ids:ids}).then(function(){APPUNTI_SEL={};return caricaBrain();}).then(function(){RENDER.brain();})
+  .catch(function(e){alert(e.message);});
+}
+function exportBrain(){
+  var c=(DATI.psicologa&&DATI.psicologa.correnti)||[];
+  var t=c.map(function(a){return '['+(a.tipo||'')+' · '+(a.ts||'').slice(0,10)+'] '+a.testo;}).join('\n\n');
+  var b=new Blob([t],{type:'text/plain'});var u=URL.createObjectURL(b);
+  var l=document.createElement('a');l.href=u;l.download='appunti-brain.txt';l.click();URL.revokeObjectURL(u);
+}
+
+/* ═══════════ TAB COACH ═══════════ */
+REGISTRO.coach={
+  conversazione:function(D){
+    var msgs=D.chatStoria||[];
+    /* REV 14/09 (V12/V13): la chat portava giorni diversi sotto un «OGGI»
+       fisso, bolle senza orario e messaggi di sistema travestiti da
+       risposte. Ora: separatori di giorno, ora per bolla, errori attenuati. */
+    var h='<div class="testa"><span class="tit">Conversazione</span><span class="etk">CON ADA</span></div>'+
+      '<div id="chatScroll" style="display:flex;flex-direction:column;gap:8px;overflow-y:auto;min-height:0;flex:1;padding-right:2px">';
+    if(!msgs.length) h+=muto('scrivi ad Ada nella barra qui in basso: la conversazione parte da lì');
+    var giornoPrec='';
+    msgs.forEach(function(m){
+      var ts=m.ts?new Date(m.ts):null;
+      var giorno=ts?ts.toLocaleDateString('it-IT',{timeZone:'Europe/Rome',weekday:'short',day:'numeric',month:'short'}):'';
+      if(giorno&&giorno!==giornoPrec){
+        h+='<div style="align-self:center;color:var(--testo4);font:500 10px var(--font-mono);text-transform:uppercase;letter-spacing:.08em;padding:6px 0 2px">'+esc(giorno)+'</div>';
+        giornoPrec=giorno;
+      }
+      var testo=m.testo.replace(/^\[[a-z:]+\]\s*/i,'');
+      var eSistema=/^\(nessuna risposta testuale\)|^\[TETTO DI SPESA\]|il giorno nominato e la data non combaciano/i.test(testo);
+      var ora=ts?ts.toLocaleTimeString('it-IT',{timeZone:'Europe/Rome',hour:'2-digit',minute:'2-digit'}):'';
+      if(eSistema){
+        h+='<div style="align-self:center;max-width:88%;color:var(--testo4);font:400 italic 11px var(--font-ui);text-align:center">'+esc(testo)+(ora?' · '+ora:'')+'</div>';
+      }else{
+        h+='<div class="'+(m.ruolo==='diego'?'msg-io':'msg-coach')+'">'+esc(testo)+
+          (ora?'<span style="display:block;text-align:right;font:400 9.5px var(--font-mono);opacity:.55;margin-top:3px">'+ora+'</span>':'')+'</div>';
+      }
+    });
+    h+='</div><div class="nota">Si scrive nella barra in basso (anche a voce); foto e file dal + della barra.</div>';
+    var el=scheda('1/3','1/4',h);
+    setTimeout(function(){var c=document.getElementById('chatScroll');if(c)c.scrollTop=c.scrollHeight;},0);
+    return el;
+  },
+  ilcoach:function(D){
+    var nome=(D.contesto&&D.contesto.nome_coach)||'Ada';
+    return scheda('3','1',
+      '<div class="testa"><span class="tit">Il coach</span><span class="etk">NOME</span></div>'+
+      '<div style="display:flex;align-items:center;gap:10px"><span class="sfera" style="width:32px;height:32px"><i class="rosa" style="filter:blur(6px)"></i><i class="blu" style="filter:blur(7px)"></i></span>'+
+      '<div style="flex:1"><div style="color:var(--testo1);font:500 15px var(--font-ui)">'+esc(nome)+'</div><div style="color:var(--testo4);font:400 10.5px var(--font-ui)">'+(nome==='Ada'?'nome predefinito':'nome scelto da te')+'</div></div>'+
+      '<span style="color:var(--accento);font:500 11.5px var(--font-ui);cursor:pointer" onclick="cambiaNomeCoach()">Cambia</span></div>'+
+      '<div class="nota">Un solo assistente per salute e moda: nessuna etichetta, nessun canale da scegliere.</div>');
+  },
+  fonti:function(D){
+    return scheda('3','2',
+      '<div class="testa"><span class="tit">Cosa guarda</span><span class="etk">FONTI</span></div>'+
+      '<div class="riga"><span class="k">Peso e misure</span><span class="v">Corpo</span></div>'+
+      '<div class="riga"><span class="k">Cibo e aderenza</span><span class="v">Dieta · chat</span></div>'+
+      '<div class="riga"><span class="k">Sonno e recovery</span><span class="v">Whoop</span></div>'+
+      '<div class="riga"><span class="k">Allenamenti</span><span class="v">Obiettivi</span></div>'+
+      '<div class="nota">Se una fonte tace, lo dichiara: non inventa.</div>');
+  },
+  storico:function(D){
+    var msgs=D.chatStoria||[];
+    var perGiorno={};
+    msgs.forEach(function(m){var g=(m.ts||'').slice(0,10);if(g){perGiorno[g]=(perGiorno[g]||0)+1;}});
+    var giorni=Object.keys(perGiorno).sort().reverse().slice(0,4);
+    var h='<div class="testa"><span class="tit">Storico</span><span class="etk">CONVERSAZIONI</span></div>';
+    if(!giorni.length) h+=muto();
+    giorni.forEach(function(g){h+='<div class="riga cliccabile" onclick="cercaStorico(\''+g+'\')"><span class="k">'+dataIT(g)+'</span><span class="v">'+perGiorno[g]+' messaggi</span></div>';});
+    h+='<button class="bott2" style="margin-top:auto" onclick="cercaStorico()">Cerca nello storico</button>';
+    return scheda('3','3',h);
+  }
+};
+var DEF_COACH=[{type:'conversazione',order:1},{type:'ilcoach',order:2},{type:'fonti',order:3},{type:'storico',order:4}];
+function cambiaNomeCoach(){
+  var n=prompt('Nome del coach (max 2 parole):',(DATI.contesto&&DATI.contesto.nome_coach)||'Ada');
+  if(!n) return;
+  mandaAdAlfred('Da oggi ti chiami '+n.trim()+': salva il nome del coach nel contesto.');
+}
+function cercaStorico(giorno){
+  var q=giorno?null:prompt('Cosa cerco nello storico?'); if(!giorno&&!q) return;
+  var msgs=DATI.chatStoria||[];
+  var trovati=msgs.filter(function(m){return giorno?(m.ts||'').slice(0,10)===giorno:(m.testo||'').toLowerCase().indexOf(q.toLowerCase())>=0;});
+  mostraRisposta(trovati.length?trovati.map(function(m){return (m.ruolo==='diego'?'Tu: ':'Coach: ')+m.testo;}).join('\n\n'):'Niente nello storico caricato (ultimi messaggi).',[]);
+}
+
+/* ═══ RENDER per tab ═══ */
+var RENDER={
+  oggi:function(){montaBlocchi('oggi',DEF_OGGI);},
+  corpo:function(){montaBlocchi('corpo',DEF_CORPO);},
+  obiettivi:function(){montaBlocchi('obiettivi',DEF_OBIETTIVI);rigaStatoObiettivi();montaDiario30();},
+  dieta:function(){montaBlocchi('dieta',DEF_DIETA);},
+  spesa:function(){montaBlocchi('spesa',DEF_SPESA);},
+  brain:function(){montaBlocchi('brain',DEF_BRAIN);},
+  coach:function(){montaBlocchi('coach',DEF_COACH);},
+  abbinamenti:function(){montaAbbinamenti();},
+  acquisti:function(){montaAcquisti();}
+};
+
+/* ═══════════ ABBINAMENTI — giudicati dal motore, non accostati a caso ══
+   Ogni terna qui dentro e' passata da engine/motore.mjs punteggia() e da
+   verificaCanone() con il contesto vero (kb/08): registro, formalita',
+   volume, tessuto, canone. Quelle che non passano NON ci sono, e
+   un'occasione senza proposte resta vuota con il suo perche': per la
+   giornata col cliente il motore ha scartato 40.000 terne su 40.000,
+   perche' nel catalogo non c'e' niente di abbastanza formale. */
+var OCC_ATTIVA='';
+/* UNA RISPOSTA VECCHIA NON SCRIVE SU UN PANNELLO NUOVO.
+   Trovato il 06/10 cliccando l'app come utente: entrando in Outfit il
+   pannello si disegna due volte (una dal cambio sezione, una dal cambio tab)
+   e la risposta della PRIMA chiamata si attaccava al pannello gia' ridisegnato:
+   65 card dove dovevano essere 33. E' la stessa famiglia della guardia R12-3
+   che l'app aveva gia' sulla conversazione di Ada. */
+var GEN_OUTFIT=0;
+function montaAbbinamenti(){
+  var p=document.querySelector('.pane[data-pane="abbinamenti"]');
+  if(!p) return;
+  p.textContent='';
+  var testa=document.createElement('div'); testa.className='card'; testa.style.gridColumn='1 / -1';
+  var h=document.createElement('div'); h.className='testa';
+  var t1=document.createElement('span'); t1.className='tit'; t1.textContent='Abbinamenti giudicati';
+  var t2=document.createElement('span'); t2.className='etk'; t2.textContent='MOTORE kb/01 + kb/11';
+  h.appendChild(t1); h.appendChild(t2); testa.appendChild(h);
+  var filtri=document.createElement('div');
+  filtri.style.cssText='display:flex;gap:6px;flex-wrap:wrap;padding-top:8px';
+  testa.appendChild(filtri);
+  var nota=document.createElement('div'); nota.className='nota'; nota.textContent='Caricamento…';
+  testa.appendChild(nota); p.appendChild(testa);
+
+  var mia=++GEN_OUTFIT;
+  api('/api/abbinamenti'+(OCC_ATTIVA?('?occasione='+encodeURIComponent(OCC_ATTIVA)):'')).then(function(d){
+    if(mia!==GEN_OUTFIT) return;   /* un'altra richiesta e' partita dopo: questa non scrive */
+    var occ=(d&&d.occasioni)||[];
+    ['tutte'].concat(occ).forEach(function(o){
+      var b=document.createElement('button'); b.className='tab'+(((o==='tutte')===(!OCC_ATTIVA))&&(o==='tutte'||o===OCC_ATTIVA)?' on':'');
+      b.textContent=o.replace(/_/g,' ');
+      b.onclick=function(){ OCC_ATTIVA = (o==='tutte')?'':o; montaAbbinamenti(); };
+      filtri.appendChild(b);
+    });
+    var ab=(d&&d.abbinamenti)||[];
+    if(!ab.length){
+      nota.textContent='nessun abbinamento per questa occasione: il motore non ha trovato niente che passi le regole, e non invento';
+      return;
+    }
+    /* Un'occasione con meno di tre proposte lo DICE. Il motore ha scartato
+       quello che non passava, e l'app non deve far contare le card a Diego
+       per accorgersene: per la giornata col cliente, su 40.000 terne provate
+       ne passano due, perche' nel catalogo non c'e' quasi niente di
+       abbastanza formale. Si dichiara, non si riempie. */
+    var perOcc={};
+    ab.forEach(function(x){ perOcc[x.occasione]=(perOcc[x.occasione]||0)+1; });
+    var scarse=Object.keys(perOcc).filter(function(k){ return perOcc[k]<3; });
+    nota.textContent=ab.length+' abbinamenti, ognuno con il voto del motore e il perche'
+      + (scarse.length ? ('. Sotto le tre proposte: '
+          + scarse.map(function(k){ return k.replace(/_/g,' ')+' ('+perOcc[k]+')'; }).join(', ')
+          + ' — il motore ha scartato il resto, e non riempio') : '');
+    ab.forEach(function(a){
+      var c=document.createElement('div'); c.className='card'; c.style.gridColumn='span 4';
+      var hh=document.createElement('div'); hh.className='testa';
+      var n1=document.createElement('span'); n1.className='tit';
+      n1.textContent=String(a.occasione||'').replace(/_/g,' ')+' · '+a.punteggio+'/100';
+      var n2=document.createElement('span'); n2.className='etk'; n2.textContent=a.totale_eur+' EUR';
+      hh.appendChild(n1); hh.appendChild(n2); c.appendChild(hh);
+      var perche=document.createElement('div'); perche.className='nota';
+      perche.textContent=(a.perche||'')+' · formalita '+a.formalita+' · '+a.registro+
+        (a.canone&&a.canone!=='conforme'?(' · canone '+a.canone):'');
+      c.appendChild(perche);
+      (a.capi||[]).forEach(function(capo){
+        var riga=document.createElement('a');
+        riga.href=capo.link||'#'; riga.target='_blank'; riga.rel='noopener noreferrer';
+        riga.style.cssText='display:flex;gap:10px;align-items:center;padding:7px 0;border-top:1px solid var(--riga);text-decoration:none';
+        var img=document.createElement('img');
+        img.width=44; img.height=58; img.loading='lazy'; img.referrerPolicy='no-referrer';
+        img.style.cssText='width:44px;height:58px;object-fit:cover;border-radius:var(--r-chip-s);background:var(--vetro);flex:none';
+        if(capo.immagine && /^https:\/\//.test(capo.immagine)) img.src=capo.immagine;
+        riga.appendChild(img);
+        var box=document.createElement('div'); box.style.cssText='min-width:0;flex:1';
+        var r1=document.createElement('div');
+        r1.style.cssText='color:var(--testo1);font:500 12.5px var(--font-ui);overflow:hidden;text-overflow:ellipsis;white-space:nowrap';
+        r1.textContent=capo.titolo||'(senza titolo)';
+        var r2=document.createElement('div');
+        r2.style.cssText='color:var(--testo3);font:400 11px var(--font-ui)';
+        var tg=(capo.taglie||[]).filter(function(x){return x;});
+        r2.textContent=capo.ruolo+' · '+(capo.sottocategoria||'?')+(capo.registro?(' · '+capo.registro):'')+' · '+capo.prezzo+' EUR'
+          +(tg.length?(' · taglie '+tg.slice(0,8).join(' ')):' · taglie non dichiarate');
+        box.appendChild(r1); box.appendChild(r2); riga.appendChild(box);
+        c.appendChild(riga);
+      });
+      /* Il giudizio: due bottoni, e quello che scrivi resta. Non cambia il
+         voto del motore — un "non mi piace" e' un dato, non una regola. */
+      var voto=document.createElement('div');
+      voto.style.cssText='display:flex;gap:8px;align-items:center;padding-top:9px;border-top:1px solid var(--riga);margin-top:6px';
+      var esito=document.createElement('span');
+      esito.style.cssText='color:var(--testo4);font:400 11px var(--font-ui);margin-left:auto';
+      esito.textContent=(a.mi_piace||a.non_mi_piace)?('giudizi: '+(a.mi_piace||0)+' su, '+(a.non_mi_piace||0)+' giu'):'non ancora giudicato';
+      [['mi piace',true],['non mi piace',false]].forEach(function(par){
+        var b=document.createElement('button');
+        b.type='button'; b.className='tab';
+        b.textContent=par[0];
+        b.onclick=function(){
+          b.disabled=true; esito.textContent='…';
+          api('/api/giudizio',{outfit:a.id,mi_piace:par[1]}).then(function(r){
+            esito.textContent = (r&&r.ok)
+              ? ('segnato · giudizi su questo: '+(r.giudizi_su_questo||1))
+              : ('non segnato: '+((r&&r.errore)||'errore'));
+          }).catch(function(e){
+            esito.textContent='non segnato: '+(e&&e.message?e.message:'errore');
+          }).finally(function(){ b.disabled=false; });
+        };
+        voto.appendChild(b);
+      });
+      voto.appendChild(esito);
+      c.appendChild(voto);
+      p.appendChild(c);
+    });
+  }).catch(function(e){
+    if(mia!==GEN_OUTFIT) return;
+    nota.textContent='gli abbinamenti non rispondono: '+(e&&e.message?e.message:'errore');
+  });
+}
+
+/* ═══════════ TAB OUTFIT — capi VERI, non prosa inventata ═══════════
+   Ogni capo e' una riga di vestiario.prodotto: titolo, negozio, prezzo, link
+   e foto del negozio. Due regole che NON si allentano:
+   1. le immagini si assegnano con img.src, MAI con innerHTML: quegli URL
+      vengono da un database alimentato da terzi;
+   2. se le proposte complete sono meno di tre, si DICHIARA. Non si riempie. */
+var OUTFIT_TETTO=300;
+function montaAcquisti(){
+  var p=document.querySelector('.pane[data-pane="acquisti"]');
+  if(!p) return;
+  p.textContent='';
+  var testa=document.createElement('div'); testa.className='card'; testa.style.gridColumn='1 / -1';
+  var tit=document.createElement('div'); tit.className='testa';
+  var t1=document.createElement('span'); t1.className='tit'; t1.textContent='Capi dai negozi';
+  var t2=document.createElement('span'); t2.className='etk'; t2.textContent='CONSIGLI DI ACQUISTO · SOTTO I '+OUTFIT_TETTO+' EUR';
+  tit.appendChild(t1); tit.appendChild(t2); testa.appendChild(tit);
+  var sotto=document.createElement('div'); sotto.className='nota';
+  sotto.textContent='Caricamento…';
+  testa.appendChild(sotto);
+  p.appendChild(testa);
+
+  var miaA=++GEN_OUTFIT;
+  api('/api/outfit?quanti=3&tetto='+encodeURIComponent(OUTFIT_TETTO)).then(function(d){
+    if(miaA!==GEN_OUTFIT) return;
+    if(!d||!d.proposte||!d.proposte.length){
+      sotto.textContent='nessuna proposta: con questo tetto non ci sono abbastanza capi';
+      return;
+    }
+    sotto.textContent = d.complete
+      ? (d.quante+' terne di capi disponibili. NON sono abbinamenti giudicati: per quelli vai su Abbinamenti')
+      : ('solo '+d.quante+' proposte su '+d.chieste+': con questo tetto i capi non bastano, e non ne invento');
+    d.proposte.forEach(function(pr){
+      var c=document.createElement('div'); c.className='card'; c.style.gridColumn='span 4';
+      var h=document.createElement('div'); h.className='testa';
+      var a=document.createElement('span'); a.className='tit'; a.textContent='Proposta '+pr.n;
+      var b=document.createElement('span'); b.className='etk'; b.textContent=pr.totale_eur+' EUR';
+      h.appendChild(a); h.appendChild(b); c.appendChild(h);
+      pr.capi.forEach(function(capo){
+        var riga=document.createElement('a');
+        riga.href=capo.link||'#'; riga.target='_blank'; riga.rel='noopener noreferrer';
+        riga.style.cssText='display:flex;gap:10px;align-items:center;padding:7px 0;border-top:1px solid var(--riga);text-decoration:none';
+        var img=document.createElement('img');
+        img.width=44; img.height=58; img.loading='lazy'; img.referrerPolicy='no-referrer';
+        img.style.cssText='width:44px;height:58px;object-fit:cover;border-radius:var(--r-chip-s);background:var(--vetro);flex:none';
+        /* src assegnato, mai interpolato in HTML, e solo https */
+        if(capo.immagine && /^https:\/\//.test(capo.immagine)) img.src=capo.immagine;
+        riga.appendChild(img);
+        var testo=document.createElement('div'); testo.style.cssText='min-width:0;flex:1';
+        var n1=document.createElement('div');
+        n1.style.cssText='color:var(--testo1);font:500 12.5px var(--font-ui);overflow:hidden;text-overflow:ellipsis;white-space:nowrap';
+        n1.textContent=capo.titolo||'(senza titolo)';
+        var n2=document.createElement('div');
+        n2.style.cssText='color:var(--testo3);font:400 11px var(--font-ui)';
+        n2.textContent=capo.ruolo+' · '+(capo.negozio||'negozio ignoto')+' · '+capo.prezzo+' EUR';
+        testo.appendChild(n1); testo.appendChild(n2); riga.appendChild(testo);
+        c.appendChild(riga);
+      });
+      p.appendChild(c);
+    });
+  }).catch(function(e){
+    if(miaA!==GEN_OUTFIT) return;
+    sotto.textContent='la fonte degli outfit non risponde: '+(e&&e.message?e.message:'errore');
+  });
+}
+
+/* ═══ CARICAMENTO DATI — ogni fonte che tace resta dichiarata, mai zero ═══ */
+function tenta(p){return p.catch(function(e){return {__errore:e.message};});}
+function ok(x){return x&&!x.__errore?x:null;}
+/* una fonte in ERRORE non è una fonte VUOTA: l'elenco resta dichiarato in testata */
+var FONTI_MUTE=[];
+function caricaSpesa(){
+  return Promise.all([tenta(api('/api/lista_spesa?cosa=tutto')),tenta(api('/api/lista_spesa?cosa=variabile')),tenta(api('/api/lista_spesa?cosa=giri'))])
+    .then(function(r){
+      /* contratto salute_spesa_leggi: giro e' un OGGETTO {id,rev,titolo,stato,righe:[...]} */
+      var tutto=ok(r[0])||{};
+      var giro=tutto.giro||null;
+      DATI.spesa={giro:giro,righe:(giro&&giro.righe)||[],master:tutto.master||[],
+        integratori:tutto.integratori||[],storico:(ok(r[2])||{}).giri||[]};
+      DATI.spesaVariabile=(ok(r[1])||{}).variabile||[];
+      /* OGNI lettura fallita resta un errore con nome, mai un vuoto */
+      DATI.spesaErrore=r[0]&&r[0].__errore?r[0].__errore:null;
+      DATI.spesaVariabileErrore=r[1]&&r[1].__errore?r[1].__errore:null;
+      DATI.spesaGiriErrore=r[2]&&r[2].__errore?r[2].__errore:null;
+    });
+}
+function caricaBrain(){
+  /* salute_terapia_lista risponde con un ARRAY di appunti, uno stato per chiamata */
+  return Promise.all([tenta(api('/api/psicologa?stato=corrente')),tenta(api('/api/psicologa?stato=storico'))])
+    .then(function(r){
+      var c=ok(r[0]), s=ok(r[1]);
+      DATI.psicologa={correnti:Array.isArray(c)?c:[],storico:Array.isArray(s)?s:[]};
+      DATI.brainErrore=(r[0]&&r[0].__errore)||(r[1]&&r[1].__errore)||null;
+    });
+}
+function caricaTutto(){
+  var oggi=new Date(); var iso=function(d){return d.toLocaleDateString('sv-SE');};
+  var a7da=new Date(oggi);a7da.setDate(a7da.getDate()-6);
+  var a28da=new Date(oggi);a28da.setDate(a28da.getDate()-27);
+  return Promise.all([
+    tenta(api('/api/contesto')),                 /*0*/
+    tenta(api('/api/dati?giorni=180')),          /*1*/
+    tenta(api('/api/semaforo')),                 /*2*/
+    tenta(api('/api/tdee')),                     /*3*/
+    tenta(api('/api/qualita')),                  /*4*/
+    tenta(api('/api/aderenza?da='+iso(a7da)+'&a='+iso(oggi))),   /*5*/
+    tenta(api('/api/aderenza?da='+iso(a28da)+'&a='+iso(oggi))),  /*6*/
+    tenta(api('/api/box')),                      /*7*/
+    tenta(api('/api/abitudini')),                /*8*/
+    tenta(api('/api/pliche')),                   /*9*/
+    tenta(api('/api/misure_trend')),             /*10*/
+    tenta(api('/api/nutrizione')),               /*11*/
+    tenta(api('/api/chat_storia')),              /*12*/
+    tenta(api('/api/obiettivi')),                /*13*/
+    tenta(api('/api/check_stats')),              /*14*/
+    tenta(api('/api/ricette')),                  /*15*/
+    caricaSpesa(), caricaBrain()
+  ]).then(function(r){
+    DATI.contesto=ok(r[0])||{};
+    DATI.dati182=Array.isArray(ok(r[1]))?ok(r[1]):((ok(r[1])||{}).giorni||[]);
+    /* REV GRAFICA 14/09: tutte le card assumono la serie in ordine
+       CRESCENTE di data (ult = ultimo elemento). L'API la mandava al
+       contrario e ogni "ultimo" era il piu' VECCHIO: le card mostravano
+       «18 mar · 124,5 kg» al posto di oggi. Si ordina QUI, una volta. */
+    DATI.dati182.sort(function(a,b){return String(a.date||'').localeCompare(String(b.date||''));});
+    DATI.semaforo=ok(r[2])||{}; DATI.tdee=ok(r[3])||{}; DATI.qualita=ok(r[4])||{};
+    DATI.aderenza7=ok(r[5])||{}; DATI.aderenza28=ok(r[6])||{};
+    DATI.box=ok(r[7])||{}; DATI.abitudini=normalizzaAbitudini(ok(r[8]));
+    DATI.pliche=ok(r[9])||[];
+    DATI.misureTrend=ok(r[10])||{};
+    DATI.nutrizione=ok(r[11])||{};
+    DATI.chatStoria=Array.isArray(ok(r[12]))?ok(r[12]):((ok(r[12])||{}).messaggi||[]);
+    DATI.obiettivi=ok(r[13])||null; DATI.checkStats=ok(r[14])||null;
+    DATI.ricette=(ok(r[15])||{}).ricette||[];
+    DATI.statoObiettivi=DATI.obiettivi&&DATI.obiettivi.stato?DATI.obiettivi.stato:null;
+    var nomi=['contesto','dati','semaforo','tdee','qualità','aderenza 7gg','aderenza 28gg','box','abitudini','pliche','misure','nutrizione','chat','obiettivi','check','ricette'];
+    FONTI_MUTE=nomi.filter(function(n,i){return r[i]&&r[i].__errore;});
+    if(DATI.spesaErrore) FONTI_MUTE.push('spesa');
+    if(DATI.spesaVariabileErrore) FONTI_MUTE.push('spesa variabile');
+    if(DATI.spesaGiriErrore) FONTI_MUTE.push('storico giri');
+    if(DATI.brainErrore) FONTI_MUTE.push('brain');
+    aggiornaContesto();
+    /* la stima della giornata e' REALE solo per lettere scelte: si chiede col
+       default mostrato (la prima alternativa di ogni pasto), mai inventata */
+    return caricaStima();
+  });
+}
+function normalizzaAbitudini(a){
+  if(!a) return [];
+  var lista=Array.isArray(a)?a:(a.abitudini||[]);
+  return lista.map(function(x){return{nome:x.nome||x.codice,ultimi_7:x.ultimi_7||x.settimana_giorni||[],
+    fatta_oggi:x.fatta_oggi,riposo_oggi:x.riposo_oggi,saltata_oggi:x.saltata_oggi};});
+}
+function caricaStima(){
+  var piano=(DATI.nutrizione||{}).piano||{}; var alt=piano.alternative||[];
+  DATI.stima=null;
+  if(!alt.length) return Promise.resolve();
+  var prima={};
+  alt.forEach(function(a){if(a.pasto&&!prima[a.pasto])prima[a.pasto]=a.lettera;});
+  var qs=Object.keys(prima).map(function(p){return p+'='+encodeURIComponent(prima[p]);}).join('&');
+  return tenta(api('/api/nutrizione/stima?'+qs)).then(function(s){
+    s=ok(s);
+    if(s&&s.esito==='letto'){DATI.stima=s;DATI.stimaScelte=prima;}
+    else if(s===null){FONTI_MUTE.push('stima');aggiornaContesto();}
+  });
+}
+function aggiornaContesto(){
+  var d=new Date();
+  var giorni=['dom','lun','mar','mer','gio','ven','sab'];
+  var t=giorni[d.getDay()]+' '+d.getDate()+' '+['gen','feb','mar','apr','mag','giu','lug','ago','set','ott','nov','dic'][d.getMonth()]+' · '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+  if(FONTI_MUTE.length)
+    document.getElementById('contestoTesto').innerHTML=esc(t)+' · <span style="color:var(--attenzione)">dati parziali: '+esc(FONTI_MUTE.join(', '))+'</span>';
+  else document.getElementById('contestoTesto').textContent=t;
+  var md=giorni[d.getDay()]+' '+d.getDate()+' '+['gen','feb','mar','apr','mag','giu','lug','ago','set','ott','nov','dic'][d.getMonth()];
+  if(FONTI_MUTE.length)
+    document.getElementById('mobData').innerHTML=esc(md)+' · <span style="color:var(--attenzione)">dati parziali</span>';
+  else document.getElementById('mobData').textContent=md;
+}
+
+/* ═══ ALFRED — barra, risposta in vetro, seguiti, foto/allegati, voce ═══ */
+function mostraRisposta(testo,seguiti){
+  barraApri();   /* quando Ada parla, la barra e la risposta sono in primo piano */
+  var box=document.getElementById('alfredRisposta');
+  document.getElementById('alfredRispTesto').textContent=testo;
+  var sg=document.getElementById('alfredSeguiti'); sg.innerHTML='';
+  (seguiti||[]).slice(0,3).forEach(function(s){
+    var b=document.createElement('button'); b.className='chip'; b.textContent=s;
+    b.onclick=function(){document.getElementById('alfredTesto').value=s;inviaAda();};
+    sg.appendChild(b);
+  });
+  var x=document.createElement('button'); x.className='chip'; x.textContent='chiudi';
+  x.onclick=function(){box.classList.remove('si');document.getElementById('appfusto').classList.remove('ascolta');};
+  sg.appendChild(x);
+  box.classList.add('si');
+}
+function seguitiPer(tab,risposta){
+  var s={oggi:['Come sto andando questa settimana?','Cosa mi manca oggi?'],
+    corpo:['Segna le misure di oggi','Come va il trend del peso?'],
+    obiettivi:['A che punto sono con gli obiettivi?','Porta il target proteine a 170'],
+    dieta:['Cosa mangio stasera?','Genera una ricetta con quello che ho'],
+    spesa:['Cosa manca per la settimana?','Rigenera il giro dalla dieta'],
+    brain:['Segna un pensiero','Cosa porto in seduta?'],
+    coach:['Fammi il punto della giornata','Che aderenza ho oggi?']};
+  return s[tab]||s.oggi;
+}
+/* la barra si chiude nella pallina dopo 5 secondi che non la usi;
+   un tocco sulla sfera la riapre. Mentre Ada lavora o risponde resta aperta. */
+var TIMER_BARRA=null;
+function barraApri(){document.getElementById('barraAlfred').classList.remove('chiusa');barraArma();}
+function barraArma(){
+  clearTimeout(TIMER_BARRA);
+  TIMER_BARRA=setTimeout(function(){
+    var i=document.getElementById('alfredTesto');
+    /* V19 (review visione): nella tab Coach si SCRIVE - la barra li' non
+       si chiude mai nella pallina, o il campo di chat sparisce */
+    var inCoach=(typeof TAB_ATTIVA!=='undefined'&&TAB_ATTIVA==='coach')||location.hash==='#coach';
+    var occupata=inCoach||ALFRED_OCCUPATO||i.value.trim()||document.activeElement===i||
+      document.getElementById('alfredRisposta').classList.contains('si');
+    if(occupata){barraArma();return;}
+    document.getElementById('barraAlfred').classList.add('chiusa');
+  },5000);
+}
+document.getElementById('barraAlfred').addEventListener('click',function(e){
+  if(this.classList.contains('chiusa')){barraApri();document.getElementById('alfredTesto').focus();}
+});
+document.getElementById('alfredTesto').addEventListener('focus',barraApri);
+document.getElementById('alfredTesto').addEventListener('input',barraApri);
+barraArma();
+var ALFRED_OCCUPATO=false;
+function inviaAda(){
+  var i=document.getElementById('alfredTesto'); var q=i.value.trim(); if(!q||ALFRED_OCCUPATO) return;
+  i.value=''; mandaAdAlfred(q);
+}
+function mandaAdAlfred(q){
+  if(ALFRED_OCCUPATO) return;
+  ALFRED_OCCUPATO=true;
+  document.getElementById('appfusto').classList.add('ascolta');
+  mostraRisposta('…',[]);
+  /* ogni messaggio dal SITO vive in una chat del sito, separata da Telegram:
+     se non ce n'e' una attiva, nasce ADESSO (modello di Diego 13/09) */
+  if(!CONV_CHAT||CONV_CHAT.indexOf('app:c')!==0){CONV_CHAT=nuovaConversazione();}
+  api('/api/chat',{domanda:q,conversazione:CONV_CHAT}).then(function(r){
+    mostraRisposta(r.risposta||'(vuoto)',seguitiPer(TAB_ATTIVA,r.risposta));
+    return caricaTutto();
+  }).then(function(){
+    RENDER[TAB_ATTIVA]&&RENDER[TAB_ATTIVA]();
+    if(typeof VISTA_ALFRED!=='undefined'&&VISTA_ALFRED){caricaConversazione(CONV_CHAT);caricaArchivioChat();}
+  })
+  .catch(function(e){
+    /* la bozza torna nel campo solo se nel frattempo non ne hai scritta una nuova */
+    var campo=document.getElementById('alfredTesto');
+    if(!campo.value.trim()) campo.value=q;
+    mostraRisposta(e&&e.scaduto
+      ?'Nessuna conferma entro 2 minuti: la domanda potrebbe essere stata ricevuta comunque. Aspetta un momento e ricarica; non la rimando da solo.'
+      :'Non ho potuto rispondere: '+e.message,[]);
+  })
+  .finally(function(){ALFRED_OCCUPATO=false;});
+}
+function inviaFile(file,tipo){
+  if(!file) return;
+  /* lo stesso lock della chat: un upload puo' produrre REGISTRAZIONI, quindi
+     un secondo invio durante l'attesa non deve partire */
+  if(ALFRED_OCCUPATO){mostraRisposta('Sto ancora lavorando alla richiesta precedente: riprova tra un momento.',[]);return;}
+  if(file.size>4*1024*1024){mostraRisposta('File troppo grande (max 4 MB da qui): passalo su Telegram.',[]);return;}
+  ALFRED_OCCUPATO=true;
+  var r=new FileReader();
+  r.onerror=function(){ALFRED_OCCUPATO=false;mostraRisposta('Non sono riuscito a leggere il file dal dispositivo.',[]);};
+  r.onload=function(){
+    var b64=String(r.result).split(',')[1];
+    document.getElementById('appfusto').classList.add('ascolta');
+    mostraRisposta('Leggo '+file.name+'…',[]);
+    api('/api/chat_file',{nome:file.name,tipo:file.type||tipo,contenuto:b64,
+      domanda:tipo==='image'?'Foto caricata dall\'app. Se è un pasto: riconosci gli alimenti, stima le porzioni, calcola e registra.':'File caricato dall\'app: leggilo, estrai fedelmente il contenuto e salvalo dove va.'})
+      .then(function(x){mostraRisposta(x.risposta||'(vuoto)',seguitiPer(TAB_ATTIVA));return caricaTutto();})
+      .then(function(){RENDER[TAB_ATTIVA]&&RENDER[TAB_ATTIVA]();})
+      .catch(function(e){mostraRisposta(e&&e.scaduto?'Nessuna conferma entro 2 minuti: il file potrebbe essere arrivato comunque. Controlla prima di rimandarlo.':'Non sono riuscito a mandarlo: '+e.message,[]);})
+      .finally(function(){ALFRED_OCCUPATO=false;});
+  };
+  r.readAsDataURL(file);
+}
+document.getElementById('fotoFile').addEventListener('change',function(){inviaFile(this.files[0],'image');this.value='';});
+document.getElementById('allegatoFile').addEventListener('change',function(){inviaFile(this.files[0],'file');this.value='';});
+document.getElementById('alfredTesto').addEventListener('keydown',function(e){if(e.key==='Enter')inviaAda();});
+/* trascina un file sulla barra */
+['dragover','drop'].forEach(function(ev){document.getElementById('barraAlfred').addEventListener(ev,function(e){
+  e.preventDefault(); if(ev==='drop'&&e.dataTransfer.files[0]){var f=e.dataTransfer.files[0];inviaFile(f,f.type.indexOf('image')===0?'image':'file');}});});
+/* voce: ogni azione ha il suo comando parlato */
+var RICON=null;
+document.getElementById('micBtn').addEventListener('click',function(){
+  var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){mostraRisposta('La dettatura vocale non è disponibile in questo browser: scrivi nella barra (o usa la dettatura di sistema del telefono).',[]);return;}
+  if(RICON){RICON.stop();RICON=null;return;}
+  RICON=new SR(); RICON.lang='it-IT'; RICON.interimResults=true;
+  document.getElementById('appfusto').classList.add('ascolta');
+  var campo=document.getElementById('alfredTesto');
+  RICON.onresult=function(e){var t='';for(var i=0;i<e.results.length;i++)t+=e.results[i][0].transcript;campo.value=t;};
+  RICON.onend=function(){RICON=null;if(campo.value.trim())inviaAda();else document.getElementById('appfusto').classList.remove('ascolta');};
+  RICON.start();
+});
+function apriCheck(){mandaAdAlfred('Apriamo il check serale adesso: fammi le domande.');}
+/* Il vendor dei grafici (handoff, cosi' com'e') disegna nel pannello espanso
+   «Inserisci qui / Salva» senza motore dietro. Il motore glielo da' la pagina:
+   il tocco su Salva chiede il valore e lo passa ad Ada (ogni azione UI ha
+   il suo comando in chat), mai un bottone che finge. */
+document.addEventListener('click',function(e){
+  var dentro=e.target&&e.target.closest?e.target.closest('[data-chart-overlay]'):null;
+  if(!dentro) return;
+  var s=e.target.closest('span'); if(!s||s.textContent!=='Salva') return;
+  var titolo=dentro.querySelector('span'); var nome=(titolo&&titolo.textContent)||'la serie';
+  var v=prompt('Valore di oggi per «'+nome+'» (lo registra Ada):');
+  if(v==null||!String(v).trim()) return;
+  dentro.remove();
+  mandaAdAlfred('Registra per oggi '+nome.toLowerCase()+': '+String(v).trim());
+});
+
+/* ═══ RIORDINO WIDGET — tieni premuto una scheda e trascinala, come le app
+   del telefono. Su mobile cambia l'ordine della colonna; su desktop le due
+   schede si SCAMBIANO la cella. L'ordine si salva in contesto (dash_salute_v2)
+   e si RILEGGE: senza conferma del server non si dichiara salvato. ═══ */
+var RIORDINO={timer:null,presa:null,attivo:false,partenza:null};
+function riordinoAvvia(card){
+  var pane=card.parentElement; RIORDINO.attivo=true; RIORDINO.presa=card;
+  /* da qui comanda l'ordine del DOM, non quello del mockup: quello che vedi
+     trascinando è quello che verrà salvato. Prima di togliere il mockup si
+     allinea il DOM all'ordine VISIVO, così niente salti a inizio drag. */
+  if(pane.classList.contains('ordine-mockup')&&window.innerWidth<=760&&window.getComputedStyle){
+    var figli=[].slice.call(pane.children);
+    figli.sort(function(a,b){return (parseInt(window.getComputedStyle(a).order,10)||0)-(parseInt(window.getComputedStyle(b).order,10)||0);});
+    figli.forEach(function(f){pane.appendChild(f);});
+  }
+  pane.classList.remove('ordine-mockup');
+  pane.classList.add('riordino'); card.classList.add('presa');
+  avvisoRiordino('Trascina per spostare · tocca fuori per finire');
+}
+function avvisoRiordino(t){var a=document.getElementById('riordinoAvviso');a.textContent=t;a.classList.add('si');
+  clearTimeout(a._t);a._t=setTimeout(function(){a.classList.remove('si');},2600);}
+function riordinoFine(salva){
+  var pane=document.querySelector('.pane.riordino'); if(!pane) return;
+  if(RIORDINO.presa) RIORDINO.presa.classList.remove('presa');
+  pane.querySelectorAll('.bersaglio').forEach(function(x){x.classList.remove('bersaglio');});
+  pane.classList.remove('riordino');
+  var daSalvare=RIORDINO.attivo&&salva; RIORDINO.attivo=false; RIORDINO.presa=null;
+  if(!daSalvare) return;
+  var tab=pane.getAttribute('data-pane');
+  var blocchi=[].slice.call(pane.querySelectorAll(':scope>[data-blocco]')).map(function(el,i){
+    return {type:el.getAttribute('data-blocco'),order:i+1,
+      col:el.style.gridColumn||undefined,row:el.style.gridRow||undefined};});
+  api('/api/dash',{tab:tab,blocchi:blocchi}).then(function(r){
+    if(!r||r.esito!=='salvato'){avvisoRiordino('Ordine NON salvato: '+((r&&r.esito)||'senza conferma'));return;}
+    avvisoRiordino('Ordine salvato ✓');
+    if(DATI.contesto) DATI.contesto.dash_salute_v2=r.dash||DATI.contesto.dash_salute_v2;
+  }).catch(function(e){
+    avvisoRiordino('Ordine non salvato: '+e.message);
+    RENDER[tab]&&RENDER[tab]();   /* si torna all'ordine vero, non a quello finto */
+  });
+}
+document.addEventListener('pointerdown',function(e){
+  var card=e.target&&e.target.closest?e.target.closest('.pane.on>[data-blocco]'):null;
+  if(RIORDINO.attivo){
+    if(!card){riordinoFine(true);return;}
+    /* seconda pressione in modalita' riordino: prendi questa scheda */
+    RIORDINO.presa&&RIORDINO.presa.classList.remove('presa');
+    RIORDINO.presa=card; card.classList.add('presa');
+    return;
+  }
+  if(!card) return;
+  if(e.target.closest('button,input,select,textarea,a,.chip,.spunta,.cliccabile,[data-chart-expand],[onclick]')) return;
+  RIORDINO.partenza={x:e.clientX,y:e.clientY};
+  clearTimeout(RIORDINO.timer);
+  RIORDINO.timer=setTimeout(function(){riordinoAvvia(card);},550);
+});
+document.addEventListener('pointermove',function(e){
+  if(RIORDINO.timer&&RIORDINO.partenza){
+    if(Math.abs(e.clientX-RIORDINO.partenza.x)+Math.abs(e.clientY-RIORDINO.partenza.y)>12){clearTimeout(RIORDINO.timer);RIORDINO.timer=null;}
+  }
+  if(!RIORDINO.attivo||!RIORDINO.presa) return;
+  e.preventDefault();
+  var sotto=document.elementFromPoint(e.clientX,e.clientY);
+  var altra=sotto&&sotto.closest?sotto.closest('.pane.on>[data-blocco]'):null;
+  var pane=RIORDINO.presa.parentElement;
+  pane.querySelectorAll('.bersaglio').forEach(function(x){x.classList.remove('bersaglio');});
+  if(!altra||altra===RIORDINO.presa) return;
+  altra.classList.add('bersaglio');
+});
+document.addEventListener('pointerup',function(e){
+  clearTimeout(RIORDINO.timer);RIORDINO.timer=null;
+  if(!RIORDINO.attivo||!RIORDINO.presa) return;
+  var sotto=document.elementFromPoint(e.clientX,e.clientY);
+  var altra=sotto&&sotto.closest?sotto.closest('.pane.on>[data-blocco]'):null;
+  if(altra&&altra!==RIORDINO.presa){
+    var io=RIORDINO.presa;
+    if(window.innerWidth<=760){
+      /* colonna mobile: inserisci prima o dopo secondo la posizione */
+      var r=altra.getBoundingClientRect();
+      if(e.clientY<r.top+r.height/2) altra.parentElement.insertBefore(io,altra);
+      else altra.parentElement.insertBefore(io,altra.nextSibling);
+    }else{
+      /* griglia desktop: le due schede si scambiano la cella */
+      var c=io.style.gridColumn,rg=io.style.gridRow;
+      io.style.gridColumn=altra.style.gridColumn;io.style.gridRow=altra.style.gridRow;
+      altra.style.gridColumn=c;altra.style.gridRow=rg;
+      var seg=document.createComment('x');io.parentElement.insertBefore(seg,io);
+      altra.parentElement.insertBefore(io,altra);seg.parentElement.insertBefore(altra,seg);seg.remove();
+    }
+    altra.classList.remove('bersaglio');
+  }
+});
+
+/* ═══ VISTA ALFRED — conversazioni, pin e cartelle (modello di Diego 13/09):
+   TELEGRAM e' UNA chat continua; le chat aperte dal sito sono SEPARATE
+   (chiave app:c<id>); la memoria del coach e' totalmente condivisa. ═══ */
+var VISTA_ALFRED=false, CONV_CHAT=null, ORG_CHAT=null, SEQ_CONV=0;
+function oggiISO(){return new Date().toLocaleDateString('sv-SE');}
+function nuovaConversazione(){return 'app:c'+Math.random().toString(36).slice(2,10);}
+function apriAlfred(){
+  VISTA_ALFRED=true; TAB_ATTIVA=null;
+  document.querySelectorAll('.pane').forEach(function(p){p.classList.remove('on');});
+  document.getElementById('striscia').style.display='none';
+  var tm=document.getElementById('tabsMob'); if(tm) tm.style.display='none';
+  document.getElementById('statoriga').classList.remove('si');
+  document.getElementById('diario30').classList.remove('si');
+  document.getElementById('vistaAlfred').classList.add('on');
+  document.querySelectorAll('#rail .voce').forEach(function(v){v.classList.toggle('on',v.getAttribute('data-amb')==='alfred');});
+  document.querySelectorAll('#dockMobile .voce').forEach(function(v){v.classList.toggle('on',v.id==='dockAda');});
+  var mt=document.getElementById('mobTitolo'); if(mt) mt.textContent='Ada';
+  var md=document.querySelector('#testata .modulo'); if(md) md.textContent='Ada';
+  if(location.hash!=='#alfred') location.hash='alfred';
+  caricaArchivioChat();
+}
+function chiudiAlfred(){
+  VISTA_ALFRED=false;
+  document.getElementById('vistaAlfred').classList.remove('on');
+  document.getElementById('striscia').style.display='';
+  var tm=document.getElementById('tabsMob'); if(tm) tm.style.display='';
+  document.querySelectorAll('#rail .voce').forEach(function(v){v.classList.toggle('on',v.getAttribute('data-amb')==='salute');});
+  document.querySelectorAll('#dockMobile .voce').forEach(function(v,i){v.classList.toggle('on',i===0);});
+  var mt=document.getElementById('mobTitolo'); if(mt) mt.textContent='Salute';
+  var md=document.querySelector('#testata .modulo'); if(md) md.textContent='Salute';
+}
+/* Il comando Salute riporta a casa da DUE posti: dalla vista di Ada e dalla
+   sezione Outfit. Lo fa qui dentro, cosi' chi lo chiama resta una riga sola. */
+function tornaSalute(){
+  if(AMBITO!=='salute'){vaiAmbito('salute');return;}
+  if(VISTA_ALFRED)vai('oggi');
+}
+function caricaArchivioChat(){
+  api('/api/chat_archivio?giorni=365').then(function(r){
+    DATI.chatArchivio=(r&&r.conversazioni)||[];
+    /* org ASSENTE o GUASTA = null = SOLA LETTURA: mai una vuota sovrascrivibile */
+    var o=r&&r.org;
+    var forma=o&&Array.isArray(o.pin)&&o.cartelle&&typeof o.cartelle==='object'&&!Array.isArray(o.cartelle)&&
+      Object.keys(o.cartelle).every(function(n){return Array.isArray(o.cartelle[n]);});
+    ORG_CHAT=forma?o:null;
+    if(r&&r.nota_org) avvisoRiordino(r.nota_org);
+    renderListaChat();
+    if(!CONV_CHAT){var prima=(DATI.chatArchivio[0]&&DATI.chatArchivio[0].chiave)||'telegram';CONV_CHAT=prima;}
+    caricaConversazione(CONV_CHAT);
+  }).catch(function(e){
+    ORG_CHAT=null;
+    document.getElementById('alfListe').innerHTML=muto('archivio non leggibile ora: '+e.message);
+    document.getElementById('alfMsg').innerHTML='';
+  });
+}
+function nomeConversazione(c){
+  if(c.chiave==='telegram') return 'Telegram · chat continua';
+  if(c.chiave==='app') return 'Sito · storico';
+  return (c.apertura||'').trim()||'(conversazione nuova)';
+}
+function pinnata(chiave){return !!(ORG_CHAT&&ORG_CHAT.pin.indexOf(chiave)>=0);}
+function cartellaDi(chiave){
+  if(!ORG_CHAT) return null;
+  var nomi=Object.keys(ORG_CHAT.cartelle);
+  for(var i=0;i<nomi.length;i++){if((ORG_CHAT.cartelle[nomi[i]]||[]).indexOf(chiave)>=0)return nomi[i];}
+  return null;
+}
+function etichettaChat(c){
+  var azioni=ORG_CHAT?'<span class="azioni"><b onclick="event.stopPropagation();togglePin(\''+c.chiave+'\')">'+(pinnata(c.chiave)?'togli pin':'pinna')+'</b>'+
+    '<b onclick="event.stopPropagation();mettiInCartella(\''+c.chiave+'\')">cartella</b></span>':'';
+  return '<span class="tit">'+esc(nomeConversazione(c))+'</span><span class="sotto"><span>'+esc(dataIT(String(c.fine||'').slice(0,10)))+'</span><span>'+c.messaggi+' msg</span>'+
+    (pinnata(c.chiave)?'<span style="color:var(--accento)">pinnata</span>':'')+'</span>'+azioni;
+}
+function renderListaChat(){
+  var out=document.getElementById('alfListe'); var conv=DATI.chatArchivio||[];
+  function riga(c){return '<div class="alfChat'+(c.chiave===CONV_CHAT?' on':'')+'" onclick="CONV_CHAT=\''+c.chiave+'\';caricaConversazione(CONV_CHAT);renderListaChat()">'+etichettaChat(c)+'</div>';}
+  var perChiave=Object.create(null); conv.forEach(function(c){perChiave[c.chiave]=c;});
+  var h='';
+  if(!ORG_CHAT) h+='<div class="nota" style="color:var(--attenzione)">organizzazione non leggibile: pin e cartelle in SOLA LETTURA finché non torna</div>';
+  if(ORG_CHAT){
+    var pinnate=ORG_CHAT.pin.map(function(k){return perChiave[k];}).filter(Boolean);
+    if(pinnate.length){h+='<div class="sez">PINNATE</div>'+pinnate.map(riga).join('');}
+    Object.keys(ORG_CHAT.cartelle).sort().forEach(function(nome){
+      var dentro=(ORG_CHAT.cartelle[nome]||[]).map(function(k){return perChiave[k];}).filter(Boolean);
+      h+='<div class="sez">'+esc(nome.toUpperCase())+' ('+dentro.length+')</div>'+dentro.map(riga).join('');
+    });
+  }
+  var libere=conv.filter(function(c){return !pinnata(c.chiave)&&!cartellaDi(c.chiave);});
+  h+='<div class="sez">CONVERSAZIONI</div>'+(libere.length?libere.map(riga).join(''):muto('parla con Ada e lo storico si riempie'));
+  h+='<div class="nota" style="margin-top:6px">La memoria di Ada è UNICA: ogni chat vede tutto.</div>';
+  out.innerHTML=h;
+}
+function salvaOrgChat(){
+  if(!ORG_CHAT){avvisoRiordino('Organizzazione non leggibile: niente modifiche finché non torna.');return Promise.resolve();}
+  return api('/api/chat_org',{pin:ORG_CHAT.pin,cartelle:ORG_CHAT.cartelle}).then(function(r){
+    if(!r||r.esito!=='salvato'){avvisoRiordino('Organizzazione NON salvata: '+((r&&r.esito)||'senza conferma'));}
+    else avvisoRiordino('Salvato ✓');
+  }).catch(function(e){avvisoRiordino('Organizzazione non salvata: '+e.message);});
+}
+function togglePin(chiave){
+  if(!ORG_CHAT){avvisoRiordino('Organizzazione non leggibile: niente modifiche finché non torna.');return;}
+  var i=ORG_CHAT.pin.indexOf(chiave);
+  if(i>=0)ORG_CHAT.pin.splice(i,1);else ORG_CHAT.pin.unshift(chiave);
+  renderListaChat(); salvaOrgChat();
+}
+function mettiInCartella(chiave){
+  if(!ORG_CHAT){avvisoRiordino('Organizzazione non leggibile: niente modifiche finché non torna.');return;}
+  var attuale=cartellaDi(chiave);
+  var nome=prompt('Cartella per questa conversazione (vuoto = nessuna).'+(attuale?' Ora: '+attuale:''),attuale||'');
+  if(nome===null)return;
+  nome=nome.trim();
+  if(nome&&(nome==='__proto__'||nome==='constructor'||nome==='prototype'||Object.prototype.hasOwnProperty.call(Object.prototype,nome))){
+    avvisoRiordino('Nome cartella riservato («'+nome+'»): scegline un altro.');
+    return;   /* PRIMA di toccare le assegnazioni: niente perdite (R15-3) */
+  }
+  Object.keys(ORG_CHAT.cartelle).forEach(function(n){
+    ORG_CHAT.cartelle[n]=(ORG_CHAT.cartelle[n]||[]).filter(function(k){return k!==chiave;});
+    if(!ORG_CHAT.cartelle[n].length)delete ORG_CHAT.cartelle[n];
+  });
+  if(nome){
+    /* accesso SICURO: 'constructor' e simili non sono le nostre cartelle (R12-4) */
+    var attuali=Object.prototype.hasOwnProperty.call(ORG_CHAT.cartelle,nome)?ORG_CHAT.cartelle[nome]:[];
+    ORG_CHAT.cartelle[nome]=attuali.concat([chiave]);
+  }
+  renderListaChat(); salvaOrgChat();
+}
+function oraIT(ts){
+  try{return new Date(ts).toLocaleTimeString('it-IT',{timeZone:'Europe/Rome',hour:'2-digit',minute:'2-digit'});}
+  catch(e){return String(ts||'').slice(11,16);}
+}
+function caricaConversazione(chiave){
+  var mia=++SEQ_CONV;                     /* la risposta VECCHIA non vince (R12-3) */
+  var out=document.getElementById('alfMsg');
+  var nuova=!((DATI.chatArchivio||[]).some(function(c){return c.chiave===chiave;}));
+  document.getElementById('alfTitolo').innerHTML='<span style="color:var(--testo1);font:500 14px var(--font-ui)">'+
+    esc(chiave==='telegram'?'Telegram · chat continua':(chiave==='app'?'Sito · storico':'Chat del sito'))+'</span>'+
+    '<span style="color:var(--testo4);font:400 10.5px var(--font-mono)">'+(nuova?'nuova conversazione: scrivi qui sotto':'scrivi qui sotto per continuare')+'</span>';
+  if(nuova){out.innerHTML=muto('conversazione nuova: il primo messaggio la fa nascere');return;}
+  out.innerHTML='<div class="nota">carico…</div>';
+  api('/api/chat_conversazione?chiave='+encodeURIComponent(chiave)).then(function(msgs){
+    if(mia!==SEQ_CONV) return;
+    if(!Array.isArray(msgs)||!msgs.length){out.innerHTML=muto('nessun messaggio qui');return;}
+    out.innerHTML=msgs.map(function(m){
+      return '<div class="'+(m.ruolo==='diego'?'msg-io':'msg-coach')+'">'+esc(String(m.testo||'').replace(/^\[[a-z_]+\]\s*/i,''))+
+        '<div style="color:'+(m.ruolo==='diego'?'rgba(var(--inchiostro-rgb),.55)':'var(--testo4)')+';font:400 9px var(--font-mono);margin-top:3px">'+esc(dataIT(String(m.ts||'').slice(0,10)))+' '+esc(oraIT(m.ts))+' · '+esc(m.canale||'')+'</div></div>';
+    }).join('');
+    out.scrollTop=out.scrollHeight;
+  }).catch(function(e){if(mia===SEQ_CONV)out.innerHTML=muto('conversazione non leggibile: '+e.message);});
+}
+/* ═══ SUGGERIMENTI FLASH: al cambio pagina, 5 secondi di consigli ═══ */
+var TIMER_SUGG=null;
+function suggerimentiFlash(tab){
+  var box=document.getElementById('alfredSuggerimenti');
+  box.innerHTML=seguitiPer(tab).map(function(sg){
+    return '<button class="chip" onclick="chiudiSuggerimenti();document.getElementById(\'alfredTesto\').value=this.textContent;inviaAda()">'+esc(sg)+'</button>';
+  }).join('');
+  box.classList.add('si');
+  barraApri();
+  clearTimeout(TIMER_SUGG);
+  TIMER_SUGG=setTimeout(chiudiSuggerimenti,5000);
+}
+function chiudiSuggerimenti(){
+  clearTimeout(TIMER_SUGG);
+  document.getElementById('alfredSuggerimenti').classList.remove('si');
+}
+document.getElementById('alfredTesto').addEventListener('focus',chiudiSuggerimenti);
+
+/* ═══ AVVIO ═══ */
+function etichettaSchermo(){document.getElementById('app').setAttribute('data-screen-label',window.innerWidth<=760?'app mobile':'app desktop');}
+window.addEventListener('resize',etichettaSchermo);
+function avvia(){
+  etichettaSchermo(); montaTabs();
+  var h=(location.hash||'').replace('#','');
+  caricaTutto().then(function(){
+    if(h==='alfred'){apriAlfred();return;}
+    vai(TABS.some(function(t){return t.id===h;})?h:'oggi');
+  });
+}
+window.addEventListener('hashchange',function(){
+  var h=location.hash.replace('#','');
+  if(h==='alfred'){if(!VISTA_ALFRED)apriAlfred();return;}
+  if(TABS.some(function(t){return t.id===h;})&&h!==TAB_ATTIVA)vai(h);
+});
+if(!TOK) document.getElementById('login').classList.add('si');
+else avvia();
+</script>
+
+<!-- FASE 2 — scelta della pelle. Temporaneo: sparisce quando Diego ha scelto. -->
+<div id="pelli" hidden>
+  <span class="eti">pelle</span>
+  <button type="button" data-p="attuale" aria-pressed="false">Attuale</button>
+  <button type="button" data-p="inchiostro" aria-pressed="false">Inchiostro</button>
+  <button type="button" data-p="bronzo" aria-pressed="false">Bronzo</button>
+  <button type="button" data-p="carta" aria-pressed="false">Carta</button>
+</div>
+<script>
+/* Il selettore non deve MAI far morire il boot della pagina: gira dentro un
+   try/catch e si disarma se il DOM non ha i pezzi che gli servono. Il banco
+   frontend esegue tutti gli script della pagina con un DOM minimo, e uno
+   script che muore al boot porta giu' tutta la pagina (lezione della v1). */
+(function(){
+  try{
+    var TINTA={attuale:'#050505',inchiostro:'#080B11',bronzo:'#100F0E',carta:'#F5F4F1'};
+    var box=document.getElementById && document.getElementById('pelli');
+    var radice=document.documentElement;
+    if(!box || !radice || !radice.setAttribute || !box.querySelectorAll) return;
+    var bottoni=box.querySelectorAll('button[data-p]');
+    if(!bottoni || !bottoni.length) return;
+
+    function applica(p,salva){
+      if(!TINTA[p]) p='attuale';
+      if(p==='attuale') radice.removeAttribute('data-pelle');
+      else radice.setAttribute('data-pelle',p);
+      var meta=document.querySelector && document.querySelector('meta[name=\"theme-color\"]');
+      if(meta && meta.setAttribute) meta.setAttribute('content',TINTA[p]);
+      for(var i=0;i<bottoni.length;i++){
+        var b=bottoni[i];
+        if(b.setAttribute) b.setAttribute('aria-pressed', (b.dataset&&b.dataset.p)===p ? 'true':'false');
+      }
+      if(salva){ try{ localStorage.setItem('pelle',p); }catch(e){} }
+    }
+
+    var salvata='attuale';
+    try{ salvata=localStorage.getItem('pelle')||'attuale'; }catch(e){}
+    applica(salvata,false);
+    box.hidden=false;
+    if(box.addEventListener) box.addEventListener('click',function(e){
+      var n=e && e.target;
+      while(n && n!==box && !(n.dataset && n.dataset.p)) n=n.parentNode;
+      if(n && n.dataset && n.dataset.p) applica(n.dataset.p,true);
+    });
+  }catch(e){ /* pelle non applicata: la pagina resta quella di default */ }
+})();
+</script>
+</body>
+</html>

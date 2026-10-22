@@ -1,0 +1,3560 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Tesoreria · Diego OS</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#050505">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&family=Spline+Sans+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ══════════════════════════════════════════════════════════════════════════
+   TESORERIA — linea Diego OS. I token stanno in UN SOLO :root, come impone il
+   design system: nessun colore scritto a mano nei componenti.
+   La bozza chiaro/verde era il contratto delle FUNZIONI, non il tema.
+   ══════════════════════════════════════════════════════════════════════════ */
+:root{
+  --fondo:#050505;
+  --fondo-desktop:radial-gradient(120% 110% at 12% 4%,#A3FF0022 0%,#0d0d0d 30%,#060606 68%,#020202 100%);
+  --fondo-mobile:radial-gradient(120% 70% at 25% 0%,#A3FF0026 0%,#0d0d0d 34%,#060606 70%,#020202 100%);
+  --vetro:rgba(255,255,255,.06);
+  --vetro-filtro:blur(40px) saturate(180%);
+  --bordo:rgba(255,255,255,.12);
+  --bordo-forte:rgba(255,255,255,.14);
+  --luce-interna:inset 0 1px 0 rgba(255,255,255,.07);
+  --riga:rgba(255,255,255,.06);
+  --accento:#A3FF00;
+  --accento-fondo:rgba(163,255,0,.18);
+  --accento-fondo-16:rgba(163,255,0,.16);
+  --accento-bordo:rgba(163,255,0,.4);
+  --accento-45:rgba(163,255,0,.45);
+  --attenzione:#ffb020;
+  --negativo:#ff5f56;
+  --testo1:#F5F5F7; --testo2:#C7C7CC; --testo3:#8E8E93; --testo4:#6b6a68; --testo5:#4d4c4a;
+  --inchiostro-su-lime:#0b1400;
+  --font-ui:'Sora',system-ui,-apple-system,sans-serif;
+  --font-num:'Spline Sans Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+  --ombra-finestra:0 30px 90px rgba(0,0,0,.6);
+  --ombra-hover:0 16px 34px rgba(0,0,0,.5);
+  --r-card:16px; --r-chip:10px; --r-chip-s:6px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;height:100%}
+body{background:var(--fondo);background-image:var(--fondo-desktop);color:var(--testo1);
+  font:400 14px/1.5 var(--font-ui);-webkit-font-smoothing:antialiased}
+/* scrollbar nascoste ovunque, come il resto del sistema */
+*::-webkit-scrollbar{width:0;height:0}
+*{scrollbar-width:none}
+.num,.tabular{font-family:var(--font-num);font-variant-numeric:tabular-nums}
+:focus-visible{outline:2px solid var(--accento);outline-offset:2px}
+button,select,input{font-family:inherit;font-size:inherit;color:inherit}
+
+/* ── SHELL: la catena delle altezze. Ogni anello ha flex:1 1 0 e min-height:0,
+      altrimenti la colonna cresce oltre lo schermo dentro un overflow:hidden e
+      la pagina "non scorre". E' il bug piu' pagato del sistema. ───────────── */
+#app{position:fixed;inset:26px;border-radius:var(--r-card);overflow:hidden;
+  box-shadow:var(--ombra-finestra);display:grid;grid-template-columns:66px 1fr;
+  grid-template-rows:minmax(0,1fr);background:var(--vetro)}
+#rail{position:relative;z-index:20;background:rgba(255,255,255,.05);
+  backdrop-filter:blur(46px) saturate(150%);-webkit-backdrop-filter:blur(46px) saturate(150%);
+  border-right:1px solid rgba(255,255,255,.09);display:flex;flex-direction:column;
+  align-items:center;padding:16px 0 14px;gap:6px}
+#rail .logo{width:26px;height:26px;border-radius:8px;background:var(--accento);
+  color:var(--inchiostro-su-lime);display:flex;align-items:center;justify-content:center;
+  font:600 12px var(--font-ui);margin-bottom:12px}
+#rail .voce{width:42px;height:38px;border-radius:11px;display:flex;align-items:center;
+  justify-content:center;color:rgba(255,255,255,.5);cursor:pointer;background:none;border:0}
+#rail .voce.on{background:var(--accento-fondo-16);border:1px solid var(--accento-45);color:var(--accento)}
+#colonna{position:relative;display:flex;flex-direction:column;min-width:0;
+  background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(0,0,0,.14))}
+
+#testata{flex:none;padding:14px 24px 8px;display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap}
+#testata h1{margin:0;font:500 19px var(--font-ui);letter-spacing:-.01em}
+#testata .sotto{color:var(--testo3);font-size:12px;margin-top:2px}
+#fonti-mute{flex-basis:100%;color:var(--attenzione);font-size:12px}
+#fonti-mute:empty{display:none}
+
+/* ── contesto scenario: SEMPRE visibile, in testata, in ogni pagina ───────── */
+#ctx{margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.etichetta{color:var(--testo4);font:500 10px var(--font-num);text-transform:uppercase;letter-spacing:.04em}
+.sel{background:rgba(255,255,255,.05);border:1px solid var(--bordo);border-radius:var(--r-chip);
+  padding:5px 9px;color:var(--testo1);cursor:pointer}
+#ctx.scenario .sel[data-ctx-scenario]{border-color:var(--attenzione);color:var(--attenzione)}
+#bandiera-scenario{display:none;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;
+  background:rgba(255,176,32,.14);border:1px solid rgba(255,176,32,.45);color:var(--attenzione);
+  font:500 11px var(--font-ui)}
+#ctx.scenario #bandiera-scenario{display:inline-flex}
+
+#strisce{flex:none;display:flex;gap:6px;padding:4px 24px 8px;overflow-x:auto}
+#strisce button{background:none;border:1px solid transparent;border-radius:var(--r-chip);
+  padding:6px 12px;color:var(--testo3);cursor:pointer;white-space:nowrap}
+#strisce button.on{background:var(--accento-fondo-16);border-color:var(--accento-45);color:var(--accento)}
+
+.pane{display:none;flex:1;min-height:0;overflow-y:auto;padding:8px 24px 120px}
+.pane.on{display:block}
+.card{background:var(--vetro);backdrop-filter:var(--vetro-filtro);-webkit-backdrop-filter:var(--vetro-filtro);
+  border:1px solid var(--bordo);border-radius:var(--r-card);box-shadow:var(--luce-interna);
+  padding:14px 16px;margin-bottom:12px;overflow:hidden;flex:none;position:relative}
+.card > .tec{position:absolute;top:10px;right:14px;z-index:3;color:var(--testo4);
+  font:500 10px var(--font-num);text-transform:uppercase;letter-spacing:.04em;
+  background:rgba(12,12,14,.9);padding:0 4px;border-radius:4px}
+/* la testata fissa della tabella parte sotto l'etichetta, non sopra */
+#card-prospetto .tab-wrap{padding-top:14px}
+.card h2{margin:0 0 10px;font:500 14px var(--font-ui);color:var(--testo2)}
+.griglia{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+
+/* ── riquadri di sintesi ─────────────────────────────────────────────────── */
+.kpi{background:rgba(255,255,255,.04);border:1px solid var(--bordo);border-radius:var(--r-chip);padding:10px 12px}
+.kpi .et{color:var(--testo3);font-size:12px;display:block}
+.kpi .v{font:500 19px var(--font-num);font-variant-numeric:tabular-nums;display:block;margin-top:2px}
+.kpi .v.neg{color:var(--negativo)}
+.kpi .s{color:var(--testo4);font-size:11px;display:block;margin-top:2px}
+.kpi.tasse{grid-column:1/-1}
+.kpi.tasse .tre{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin:6px 0}
+.kpi.tasse .tre > div{border-left:2px solid var(--bordo);padding-left:10px}
+.chip{display:inline-block;border:1px solid var(--bordo);border-radius:999px;padding:1px 7px;
+  font:500 10px var(--font-num);color:var(--testo3);vertical-align:middle}
+.chip.avv{color:var(--attenzione);border-color:rgba(255,176,32,.45)}
+.chip.ok{color:var(--accento);border-color:var(--accento-bordo)}
+
+/* ── PROSPETTO: tabella snella, settimane in verticale, conti affiancati ─── */
+.tab-wrap{overflow-x:auto;margin:0 -4px}
+table.pro{width:100%;border-collapse:collapse;font-size:13px;min-width:520px}
+table.pro th,table.pro td{padding:5px 8px;text-align:left;border-bottom:1px solid var(--riga);vertical-align:top}
+table.pro th{color:var(--testo4);font:500 10px var(--font-num);text-transform:uppercase;
+  letter-spacing:.04em;position:sticky;top:0;background:rgba(12,12,14,.92);backdrop-filter:blur(8px);z-index:2}
+table.pro td.n,table.pro th.n{text-align:right;font-family:var(--font-num);font-variant-numeric:tabular-nums;white-space:nowrap}
+tr.mese th{background:rgba(163,255,0,.07);color:var(--accento);font-size:11px;text-transform:none;letter-spacing:0}
+tr.sett td{color:var(--testo3);font-size:11px;background:rgba(255,255,255,.02)}
+tr.chiusura td{font-weight:500;background:rgba(255,255,255,.03)}
+td.g{color:var(--testo3);white-space:nowrap;font-family:var(--font-num)}
+td.ignoto{color:var(--testo5)}
+.neg{color:var(--negativo)}
+.voce{display:inline-flex;align-items:center;gap:5px;margin:1px 3px 1px 0;padding:2px 7px;
+  border-radius:var(--r-chip-s);border:1px solid var(--bordo);background:rgba(255,255,255,.04);
+  cursor:pointer;font-size:12px;max-width:100%}
+.voce:hover{border-color:var(--accento-45)}
+.voce.sel{border-color:var(--accento);background:var(--accento-fondo-16)}
+.voce.bloccata{cursor:default;opacity:.62;border-style:dashed}
+.voce.carta{border-color:rgba(255,176,32,.4)}
+.voce .i{font-family:var(--font-num);font-variant-numeric:tabular-nums}
+.voce[draggable="true"]{cursor:grab}
+td.drop{outline:2px dashed var(--accento-45);outline-offset:-3px;background:var(--accento-fondo-16)}
+
+/* ── curve: per conto E aggregata, sempre disponibili ────────────────────── */
+.curva{width:100%;height:190px;display:block}
+.legenda{display:flex;gap:12px;flex-wrap:wrap;margin-top:6px;font-size:12px;color:var(--testo3)}
+.legenda i{display:inline-block;width:10px;height:2px;vertical-align:middle;margin-right:5px}
+
+/* ── dettaglio della voce ────────────────────────────────────────────────── */
+#dettaglio{position:fixed;inset:auto 0 0 0;z-index:60;max-height:82dvh;overflow-y:auto;
+  background:rgba(14,14,16,.96);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);
+  border-top:1px solid var(--bordo-forte);border-radius:18px 18px 0 0;padding:16px 18px 22px;
+  box-shadow:0 -20px 60px rgba(0,0,0,.6);display:none}
+#dettaglio.si{display:block}
+#dettaglio .riga{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:10px}
+#dettaglio label{display:block;color:var(--testo3);font-size:12px;margin-bottom:3px}
+#dettaglio input,#dettaglio select{width:100%;background:rgba(255,255,255,.05);
+  border:1px solid var(--bordo);border-radius:var(--r-chip);padding:7px 9px}
+.bottoni{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.btn{background:rgba(255,255,255,.05);border:1px solid var(--bordo);border-radius:var(--r-chip);
+  padding:7px 13px;cursor:pointer}
+.btn:hover{background:rgba(255,255,255,.09)}
+.btn.p{background:var(--accento);border-color:var(--accento);color:var(--inchiostro-su-lime);font-weight:500}
+.btn:disabled{opacity:.45;cursor:default}
+.nota{color:var(--testo3);font-size:12px;margin:6px 0 0}
+.avviso{border-left:3px solid var(--attenzione);padding-left:10px;color:var(--testo2);font-size:12px;margin:8px 0 0}
+.errore{border-left:3px solid var(--negativo);padding-left:10px;color:var(--testo2);font-size:12px;margin:8px 0 0}
+
+/* ── inbox e import ─────────────────────────────────────────────────────── */
+.dropzone{border:1.5px dashed var(--bordo-forte);border-radius:var(--r-card);padding:18px;
+  text-align:center;color:var(--testo3);cursor:pointer}
+.dropzone.su{border-color:var(--accento);background:var(--accento-fondo-16);color:var(--accento)}
+.riga-inbox{border:1px solid var(--bordo);border-radius:var(--r-chip);padding:10px 12px;margin-bottom:8px;
+  background:rgba(255,255,255,.03)}
+.riga-inbox.bersaglio{outline:2px dashed var(--accento-45);outline-offset:-3px}
+.riga-inbox .banca{font-size:12px;color:var(--testo3)}
+.cand{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:6px;padding:6px 8px;
+  border:1px solid var(--bordo);border-radius:var(--r-chip-s);background:rgba(255,255,255,.02)}
+.cand.proposta{border-color:var(--accento-bordo)}
+.cand.scelto{background:var(--accento-fondo-16)}
+
+/* ── barra di Alfred: galleggia, si chiude nella pallina, si anima solo
+      quando parla ─────────────────────────────────────────────────────────── */
+#alfred{position:fixed;left:50%;transform:translateX(-50%);bottom:22px;z-index:70;
+  width:min(88vw,560px);display:flex;align-items:center;gap:10px;padding:9px 12px;
+  border-radius:26px;background:rgba(22,22,26,.42);backdrop-filter:blur(26px) saturate(160%);
+  -webkit-backdrop-filter:blur(26px) saturate(160%);border:1px solid var(--bordo-forte);
+  transition:width .25s cubic-bezier(.2,.8,.2,1),padding .25s}
+#alfred.chiusa{width:52px;padding:6px;gap:0;justify-content:center}
+#alfred.chiusa #alfredIn,#alfred.chiusa #alfredVai{display:none}
+#sfera{width:30px;height:30px;border-radius:50%;flex:none;cursor:pointer;position:relative;
+  background:radial-gradient(circle at 32% 30%,#d7ff6b,#A3FF00 55%,#5f9c00)}
+#sfera::after{content:"";position:absolute;inset:-7px;border-radius:50%;
+  border:1px solid var(--accento-45);opacity:0;animation:onda 1.6s ease-out infinite;animation-play-state:paused}
+#alfred.ascolta #sfera::after{animation-play-state:running;opacity:1}
+@keyframes onda{0%{transform:scale(.8);opacity:.7}100%{transform:scale(1.5);opacity:0}}
+#alfredIn{flex:1;min-width:0;background:none;border:0;outline:none;color:var(--testo1)}
+#alfredVai{background:none;border:0;color:var(--accento);cursor:pointer;font-weight:500}
+#rispostaAlfred{position:fixed;left:50%;transform:translateX(-50%);bottom:74px;z-index:69;
+  width:min(88vw,560px);max-height:50dvh;overflow-y:auto;padding:12px 14px;border-radius:16px;
+  background:rgba(16,16,19,.95);backdrop-filter:blur(26px);border:1px solid var(--bordo-forte);display:none}
+#rispostaAlfred.si{display:block}
+
+/* ── pagina di Alfred: cartelle e conversazioni a sinistra, i messaggi a
+      destra. Su telefono diventa una colonna sola, nell'ordine in cui si
+      legge: prima cosa aspetta una conferma, poi la conversazione. ───────── */
+#alfPanni{display:grid;grid-template-columns:238px minmax(0,1fr);gap:12px;align-items:start}
+/* senza `min-width:0` una tabella larga allarga la colonna della griglia e la
+   pagina scorre in orizzontale: la traccia `1fr` cresce fino al min-content
+   del figlio. La tabella scorre DENTRO il suo contenitore, non la pagina. */
+#alfLato,#alfCentro{min-width:0}
+#alfLato .card,#alfCentro .card{margin-bottom:12px}
+.alf-cart{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.alf-conv{display:block;width:100%;text-align:left;background:rgba(255,255,255,.03);
+  border:1px solid var(--bordo);border-radius:var(--r-chip);padding:7px 9px;margin-bottom:6px;
+  cursor:pointer;color:var(--testo2);font:400 12px var(--font-ui)}
+.alf-conv:hover{border-color:var(--accento-45)}
+.alf-conv.on{border-color:var(--accento);background:var(--accento-fondo-16)}
+.alf-conv .q{display:block;color:var(--testo4);font:500 10px var(--font-num);margin-top:2px}
+#alfMessaggi{max-height:46dvh;overflow-y:auto;padding-right:2px}
+.alf-msg{max-width:86%;margin:0 0 8px;padding:8px 11px;border-radius:14px;font-size:13px;
+  border:1px solid var(--bordo);background:rgba(255,255,255,.04);white-space:pre-wrap;
+  overflow-wrap:anywhere}
+.alf-msg.diego{margin-left:auto;background:var(--accento-fondo-16);border-color:var(--accento-45)}
+.alf-msg.sistema{max-width:100%;color:var(--testo3);font-size:12px;border-style:dashed}
+.alf-msg .q{display:block;color:var(--testo4);font:500 10px var(--font-num);margin-top:3px}
+.alf-attesa{border:1px solid rgba(255,176,32,.45);background:rgba(255,176,32,.08);
+  border-radius:var(--r-chip);padding:10px 12px;margin-bottom:8px}
+.alf-attesa .frase{color:var(--testo3);font-size:12px;margin:2px 0 0}
+table.mem{width:100%;border-collapse:collapse;font-size:12px}
+table.mem th,table.mem td{padding:5px 6px;text-align:left;border-bottom:1px solid var(--riga);
+  vertical-align:middle}
+table.mem th{color:var(--testo4);font:500 10px var(--font-num);text-transform:uppercase;letter-spacing:.04em}
+table.mem input{width:100%;min-width:90px;background:rgba(255,255,255,.05);border:1px solid var(--bordo);
+  border-radius:var(--r-chip-s);padding:5px 7px;color:var(--testo1)}
+.alf-perm{display:flex;flex-wrap:wrap;gap:6px}
+@media (max-width:760px){
+  #alfPanni{grid-template-columns:minmax(0,1fr)}
+  #alfLato{order:2}
+  #alfMessaggi{max-height:none}
+  .alf-msg{max-width:94%}
+  .alf-msg,table.mem th,table.mem td,.alf-conv{font-size:12px}
+  table.mem{min-width:430px}
+}
+
+/* ── accesso ────────────────────────────────────────────────────────────── */
+#login{position:fixed;inset:0;z-index:99;background:rgba(5,5,5,.94);display:none;
+  align-items:center;justify-content:center;padding:24px}
+#login.si{display:flex}
+#login .box{width:min(92vw,340px)}
+#login input{width:100%;background:rgba(255,255,255,.05);border:1px solid var(--bordo);
+  border-radius:var(--r-chip);padding:10px 12px;margin:10px 0}
+
+/* ── MOBILE: ogni regola qui e' un bug gia' pagato ─────────────────────── */
+@media (max-width:760px){
+  body{background-image:var(--fondo-mobile)}
+  /* 100dvh, non 100vh: Safari iPhone mangia il fondo con 100vh */
+  #app{inset:0;height:100dvh;border-radius:0;display:flex;flex-direction:column;
+    box-shadow:none;background:none}
+  #rail{flex-direction:row;width:100%;border-right:0;border-bottom:1px solid rgba(255,255,255,.09);
+    padding:8px 10px;justify-content:flex-start;overflow-x:auto;flex:none}
+  #rail .logo{margin:0 8px 0 0}
+  /* l'anello della catena: senza questo la colonna cresce e non scorre */
+  #colonna{flex:1 1 0;min-height:0}
+  .pane{padding:8px 14px 150px}
+  #testata{padding:12px 14px 6px}
+  #strisce{padding:4px 14px 8px}
+  table.pro{min-width:460px}
+  /* nessun carattere microscopico sul telefono: il minimo del sistema e' 11px */
+  .chip,.voce .i,.voce,tr.sett td,.card > .tec,.kpi .s,.etichetta,
+  table.pro th,tr.mese th{font-size:11px}
+}
+</style>
+</head>
+<body>
+<div id="appfusto">
+<div id="app">
+  <nav id="rail" aria-label="Moduli">
+    <div class="logo" aria-hidden="true">€</div>
+    <button class="voce on" data-tab="conti" title="Conti e previsione" aria-label="Conti e previsione">◧</button>
+    <button class="voce" data-tab="inbox" title="Import e Inbox" aria-label="Import e Inbox">⇥</button>
+    <button class="voce" data-tab="scenari" title="Scenari e ipotesi" aria-label="Scenari e ipotesi">⑂</button>
+    <button class="voce" data-tab="fissi" title="Costi fissi e finanziamenti" aria-label="Costi fissi e finanziamenti">≡</button>
+    <button class="voce" data-tab="attivo" title="Attivo" aria-label="Attivo">↗</button>
+    <button class="voce" data-tab="tasse" title="Partita IVA e tasse" aria-label="Partita IVA e tasse">%</button>
+    <button class="voce" data-tab="promemoria" title="Promemoria" aria-label="Promemoria">◉</button>
+    <button class="voce" data-tab="alfred" title="Alfred" aria-label="Alfred">✦</button>
+    <button class="voce" data-tab="storico" title="Annulla e storico" aria-label="Annulla e storico">↺</button>
+  </nav>
+
+  <div id="colonna">
+    <header id="testata">
+      <div>
+        <h1 id="titolo">Conti e previsione</h1>
+        <div class="sotto" id="sottotitolo">—</div>
+      </div>
+      <div id="ctx">
+        <span id="bandiera-scenario" role="status">ipotesi: <b id="nomeScenario">—</b></span>
+        <span class="etichetta">Scenario</span>
+        <select class="sel" id="selScenario" data-ctx-scenario aria-label="Scenario"></select>
+        <span class="etichetta">Conto</span>
+        <select class="sel" id="selConto" aria-label="Conto"></select>
+        <span class="etichetta">Periodo</span>
+        <select class="sel" id="selPeriodo" aria-label="Periodo">
+          <option value="1">1 mese</option>
+          <option value="3" selected>3 mesi</option>
+          <option value="6">6 mesi</option>
+          <option value="12">12 mesi</option>
+          <option value="24">24 mesi</option>
+        </select>
+        <select class="sel" id="selGruppo" aria-label="Raggruppamento">
+          <option value="mese" selected>per mese</option>
+          <option value="settimana">per settimana</option>
+        </select>
+      </div>
+      <div id="fonti-mute" role="status" aria-live="polite"></div>
+    </header>
+
+    <div id="strisce" role="tablist" aria-label="Viste">
+      <button class="on" data-vista="prospetto" role="tab">Prospetto</button>
+      <button data-vista="curva" role="tab">Tendenza</button>
+    </div>
+
+    <!-- ════════ CONTI E PREVISIONE ════════ -->
+    <section class="pane on" id="pane-conti" role="tabpanel">
+      <div class="card">
+        <span class="tec">sintesi</span>
+        <div class="griglia" id="kpi"></div>
+        <div id="assunzioni"></div>
+      </div>
+
+      <div class="card" id="box-spostamento" hidden>
+        <span class="tec">selezione</span>
+        <div class="riga" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <span id="contoSel" class="nota">Nessuna voce selezionata</span>
+          <label class="etichetta" for="dataSposta">al giorno</label>
+          <input class="sel" type="date" id="dataSposta">
+          <button class="btn p" id="btnSposta">Sposta</button>
+          <button class="btn" id="btnDeseleziona">Deseleziona</button>
+        </div>
+        <p class="nota" id="msgSposta" role="status" aria-live="polite"></p>
+      </div>
+
+      <div class="card" id="card-prospetto">
+        <span class="tec">prospetto</span>
+        <div class="tab-wrap"><table class="pro" id="prospetto"><tbody></tbody></table></div>
+        <p class="nota" id="didascalia"></p>
+      </div>
+
+      <div class="card" id="card-curva" hidden>
+        <span class="tec">tendenza</span>
+        <svg class="curva" id="curva" role="img" aria-label="Andamento dei saldi"></svg>
+        <div class="legenda" id="legenda"></div>
+        <p class="nota">Una linea per conto piu' l'aggregato: l'aggregato e' la somma dei conti ALLA STESSA DATA, mai la somma di giorni diversi.</p>
+      </div>
+    </section>
+
+    <!-- ════════ IMPORT E INBOX ════════ -->
+    <section class="pane" id="pane-inbox" role="tabpanel">
+      <div class="card">
+        <span class="tec">import</span>
+        <div class="riga" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
+          <label class="etichetta" for="impConto">Conto</label>
+          <select class="sel" id="impConto"></select>
+          <label class="etichetta" for="impCarta">oppure carta</label>
+          <select class="sel" id="impCarta"><option value="">—</option></select>
+        </div>
+        <div class="dropzone" id="dropzone" tabindex="0" role="button"
+             aria-label="Trascina qui l'estratto conto, oppure premi per scegliere il file">
+          Trascina qui l'estratto conto (CSV, TSV o XLSX) oppure premi per scegliere
+          <input type="file" id="file" accept=".csv,.tsv,.txt,.xlsx,.xlsm" hidden>
+        </div>
+        <div id="esitoImport"></div>
+        <div id="apertiBox"></div>
+      </div>
+      <div class="card">
+        <span class="tec">inbox</span>
+        <h2>Righe da riconciliare</h2>
+        <!-- l'esito sta FUORI dall'elenco: ricaricare le righe non deve
+             cancellare la risposta che Diego sta leggendo -->
+        <div id="esitoInbox" role="status" aria-live="polite"></div>
+        <div id="inbox"></div>
+      </div>
+    </section>
+
+    <!-- ════════ SCENARI GLOBALI ════════ -->
+    <section class="pane" id="pane-scenari" role="tabpanel">
+      <div class="card">
+        <span class="tec">ipotesi</span>
+        <h2>Scenari</h2>
+        <p class="nota">Uno scenario e&#768; la previsione di base <b>piu&#768; le sue differenze</b>:
+          la base resta una sola e non viene toccata finche&#768; non porti una voce dentro, una per volta.
+          Trascina per cambiare l&#39;ordine.</p>
+        <div id="elencoScenari"></div>
+        <div class="riga" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px">
+          <input class="sel" id="nuovoScenarioNome" placeholder="nome dell&#39;ipotesi" aria-label="Nome dell'ipotesi">
+          <input class="sel" id="nuovoScenarioNota" placeholder="a cosa serve (facoltativo)" aria-label="Nota">
+          <button class="btn p" id="btnNuovoScenario">Crea l&#39;ipotesi</button>
+        </div>
+        <p class="nota" id="msgScenari" role="status" aria-live="polite"></p>
+      </div>
+
+      <div class="card" id="cardDifferenze">
+        <span class="tec">differenze</span>
+        <h2>Differenze rispetto alla base</h2>
+        <div id="riassuntoDiff"></div>
+        <div id="differenze"></div>
+        <p class="nota" id="msgDiff" role="status" aria-live="polite"></p>
+      </div>
+
+      <div class="card" id="cardVoceIpotesi">
+        <span class="tec">aggiungi</span>
+        <h2>Una voce che esiste solo in questa ipotesi</h2>
+        <div class="riga" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <select class="sel" id="viConto" aria-label="Conto"></select>
+          <input class="sel" type="date" id="viData" aria-label="Giorno">
+          <input class="sel num" id="viImporto" placeholder="-1.234,56" aria-label="Importo">
+          <input class="sel" id="viDescr" placeholder="descrizione" aria-label="Descrizione">
+          <button class="btn p" id="btnVoceIpotesi">Aggiungi all&#39;ipotesi</button>
+        </div>
+        <p class="nota">Un importo negativo e&#768; una uscita, positivo un ingresso. Resta nell&#39;ipotesi
+          finche&#768; non la porti nella base.</p>
+        <p class="nota" id="msgVoceIpotesi" role="status" aria-live="polite"></p>
+      </div>
+    </section>
+
+    <!-- ════════ COSTI FISSI, BOLLETTE, RATE BREVI E FINANZIAMENTI ════════ -->
+    <section class="pane" id="pane-fissi" role="tabpanel">
+      <div class="card">
+        <span class="tec">impegni</span>
+        <div id="strisceFissi" role="tablist" aria-label="Viste degli impegni"
+             style="display:flex;gap:8px;margin-bottom:10px">
+          <button class="btn p" data-vistaf="colonne" role="tab">Colonne</button>
+          <button class="btn" data-vistaf="grafico" role="tab">Grafico</button>
+        </div>
+        <div class="griglia" id="kpiImpegni"></div>
+        <div id="tabellaImpegni"></div>
+        <div id="graficoImpegniBox" hidden>
+          <svg class="curva" id="graficoImpegni" role="img" aria-label="Impegni per mese"></svg>
+          <div class="legenda" id="legendaImpegni"></div>
+        </div>
+        <p class="nota" id="msgImpegni" role="status" aria-live="polite"></p>
+      </div>
+
+      <div class="card" id="box-serie" hidden>
+        <span class="tec">modifica</span>
+        <h2 id="serieTitolo">Costo fisso</h2>
+        <div class="riga" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <input class="sel num" id="msImporto" aria-label="Importo">
+          <label class="etichetta" for="msGiorno">giorno</label>
+          <input class="sel" type="number" id="msGiorno" min="1" max="31" style="width:70px">
+          <label class="etichetta" for="msFine">fino a</label>
+          <input class="sel" type="date" id="msFine">
+          <label class="etichetta" for="msDa">vale da</label>
+          <input class="sel" type="date" id="msDa">
+          <button class="btn p" id="btnSalvaSerie">Salva</button>
+          <button class="btn" id="btnSpegniSerie">Non ce l&#39;ho pi&#249;</button>
+          <button class="btn" id="btnChiudiSerie">Chiudi</button>
+        </div>
+        <p class="nota">Quello che cambi vale <b>da quella data in avanti</b>: i mesi gi&#224; passati
+          restano come sono stati. Le occorrenze gi&#224; pagate non si toccano.</p>
+        <p class="nota" id="msgSerie" role="status" aria-live="polite"></p>
+      </div>
+
+      <div class="card" id="box-piano" hidden>
+        <span class="tec">piano</span>
+        <h2 id="pianoTitolo">Piano di ammortamento</h2>
+        <div id="pianoDati"></div>
+        <div class="tab-wrap"><table class="pro" id="pianoTabella"></table></div>
+        <div id="pianoCompleta"></div>
+        <p class="nota" id="msgPiano" role="status" aria-live="polite"></p>
+      </div>
+
+      <div class="card">
+        <span class="tec">nuovo</span>
+        <h2>Un costo fisso, una bolletta o una rata breve</h2>
+        <div class="riga" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <input class="sel" id="cfNome" placeholder="nome" aria-label="Nome">
+          <select class="sel" id="cfTipo" aria-label="Tipo">
+            <option value="canone">canone</option>
+            <option value="bolletta">bolletta (importo stimato)</option>
+            <option value="rata_breve">rata breve</option>
+          </select>
+          <select class="sel" id="cfConto" aria-label="Conto"></select>
+          <select class="sel" id="cfCategoria" aria-label="Categoria"></select>
+          <select class="sel" id="cfSotto" aria-label="Sottocategoria"></select>
+          <input class="sel num" id="cfImporto" placeholder="-45,00" aria-label="Importo">
+          <label class="etichetta" for="cfGiorno">giorno</label>
+          <input class="sel" type="number" id="cfGiorno" min="1" max="31" value="15" style="width:70px">
+          <select class="sel" id="cfFrequenza" aria-label="Frequenza">
+            <option value="mensile">ogni mese</option>
+            <option value="bimestrale">ogni due mesi</option>
+            <option value="trimestrale">ogni tre mesi</option>
+            <option value="semestrale">ogni sei mesi</option>
+            <option value="annuale">ogni anno</option>
+          </select>
+          <label class="etichetta" for="cfInizio">da</label>
+          <input class="sel" type="date" id="cfInizio">
+          <label class="etichetta" for="cfFine">fino a</label>
+          <input class="sel" type="date" id="cfFine">
+          <button class="btn p" id="btnCostoFisso">Aggiungi</button>
+        </div>
+        <p class="nota">Un importo negativo e&#768; una uscita. Le bollette restano <b>stime dichiarate</b>
+          finche&#768; non arriva l&#39;importo vero.</p>
+        <p class="nota" id="msgCostoFisso" role="status" aria-live="polite"></p>
+      </div>
+
+      <div class="card">
+        <span class="tec">finanziamento</span>
+        <h2>Un finanziamento</h2>
+        <p class="nota">Con capitale, TAN, numero di rate, prima rata e metodo si calcola il
+          <b>piano di ammortamento</b>. Se quei dati non ci sono, bastano <b>rata e data di fine</b>:
+          diventa una <b>sequenza di pagamenti nota</b>, senza capitale ne&#768; interessi inventati.</p>
+        <div class="riga" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <input class="sel" id="fzNome" placeholder="nome" aria-label="Nome">
+          <select class="sel" id="fzConto" aria-label="Conto"></select>
+          <select class="sel" id="fzCategoria" aria-label="Categoria"></select>
+          <select class="sel" id="fzSotto" aria-label="Sottocategoria"></select>
+          <input class="sel num" id="fzCapitale" placeholder="capitale erogato" aria-label="Capitale erogato">
+          <input class="sel num" id="fzTotale" placeholder="totale da rimborsare (se lo sai)" aria-label="Totale da rimborsare">
+          <input class="sel num" id="fzTan" placeholder="TAN % (5,99)" aria-label="TAN">
+          <input class="sel num" id="fzTaeg" placeholder="TAEG % (facoltativo)" aria-label="TAEG">
+          <input class="sel" type="number" id="fzRate" placeholder="rate" min="1" style="width:90px">
+          <label class="etichetta" for="fzPrima">prima rata</label>
+          <input class="sel" type="date" id="fzPrima">
+          <select class="sel" id="fzMetodo" aria-label="Metodo">
+            <option value="">— metodo del piano —</option>
+            <option value="rata_costante">rata costante</option>
+            <option value="quota_capitale_costante">quota capitale costante</option>
+          </select>
+          <select class="sel" id="fzFrequenza" aria-label="Frequenza">
+            <option value="mensile">mensile</option>
+            <option value="bimestrale">bimestrale</option>
+            <option value="trimestrale">trimestrale</option>
+            <option value="semestrale">semestrale</option>
+            <option value="annuale">annuale</option>
+          </select>
+        </div>
+        <div class="riga" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px">
+          <span class="etichetta">senza i dati completi</span>
+          <input class="sel num" id="fzRata" placeholder="rata" aria-label="Rata">
+          <label class="etichetta" for="fzFine">fino a</label>
+          <input class="sel" type="date" id="fzFine">
+        </div>
+        <div class="riga" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px">
+          <span class="etichetta">costi e capitale</span>
+          <input class="sel num" id="fzSpeseRata" placeholder="spese per rata" aria-label="Spese per rata">
+          <input class="sel num" id="fzSpeseIniz" placeholder="spese iniziali" aria-label="Spese iniziali">
+          <label class="etichetta" for="fzSpeseData">il</label>
+          <input class="sel" type="date" id="fzSpeseData">
+          <select class="sel" id="fzErogazione" aria-label="Erogazione">
+            <option value="">— com&#39;e&#768; arrivato il capitale —</option>
+            <option value="sul_conto">sul mio conto</option>
+            <option value="al_fornitore">pagato al fornitore</option>
+          </select>
+          <label class="etichetta" for="fzErogData">il</label>
+          <input class="sel" type="date" id="fzErogData">
+        </div>
+        <div class="bottoni">
+          <button class="btn" id="btnAnteprimaPiano">Fammi vedere il piano</button>
+          <button class="btn p" id="btnFinanziamento">Registra il finanziamento</button>
+        </div>
+        <div id="anteprimaPiano"></div>
+        <p class="nota" id="msgFinanziamento" role="status" aria-live="polite"></p>
+      </div>
+    </section>
+    <!-- ════════ ATTIVO: entrate, salvadanaio, Totale riserva ════════ -->
+    <section class="pane" id="pane-attivo" role="tabpanel">
+      <div class="card">
+        <span class="tec">riserva</span>
+        <h2>Totale riserva</h2>
+        <div class="riga" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
+          <label class="etichetta" for="risData">al giorno</label>
+          <input class="sel" type="date" id="risData">
+          <button class="btn" id="btnRiserva">Aggiorna</button>
+        </div>
+        <div class="griglia" id="kpiRiserva"></div>
+        <div id="componentiRiserva"></div>
+        <p class="nota" id="msgRiserva" role="status" aria-live="polite"></p>
+      </div>
+
+      <div class="card">
+        <span class="tec">salvadanaio</span>
+        <h2>Metto da parte</h2>
+        <div class="riga" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <label class="etichetta" for="sdDa">dal conto</label>
+          <select class="sel" id="sdDa" aria-label="Conto di partenza"></select>
+          <label class="etichetta" for="sdA">al</label>
+          <select class="sel" id="sdA" aria-label="Conto di arrivo"></select>
+          <input class="sel num" id="sdImporto" placeholder="270,00" aria-label="Importo">
+          <input class="sel" type="date" id="sdData" aria-label="Giorno">
+          <label class="etichetta"><input type="checkbox" id="sdFatto"> l&#39;ho gi&#224; fatto</label>
+          <button class="btn p" id="btnSalvadanaio">Sposta</button>
+        </div>
+        <p class="nota">Spostare denaro fra conti tuoi &#232; un <b>giroconto</b>: il patrimonio non cambia,
+          cambia dove sta. Non &#232; n&#233; un guadagno n&#233; una spesa.</p>
+        <p class="nota" id="msgSalvadanaio" role="status" aria-live="polite"></p>
+      </div>
+
+      <div class="card">
+        <span class="tec">entrate</span>
+        <h2>Fatturazione e ingressi</h2>
+        <div class="riga" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
+          <label class="etichetta" for="atAnni">anni a confronto</label>
+          <input class="sel" id="atAnni" style="width:150px" placeholder="2026,2027">
+          <button class="btn" id="btnAnni">Confronta</button>
+        </div>
+        <div id="confrontoAnni"></div>
+        <div id="elencoEntrate"></div>
+        <p class="nota" id="msgEntrate" role="status" aria-live="polite"></p>
+      </div>
+
+      <div class="card" id="box-entrata" hidden>
+        <span class="tec">modifica</span>
+        <h2 id="entrataTitolo">Entrata</h2>
+        <div class="riga" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <input class="sel num" id="meImporto" aria-label="Importo">
+          <label class="etichetta" for="meAttesa">attesa il</label>
+          <input class="sel" type="date" id="meAttesa">
+          <label class="etichetta" for="meEmissione">emessa il</label>
+          <input class="sel" type="date" id="meEmissione">
+          <select class="sel" id="meFisco" aria-label="Rilevanza fiscale">
+            <option value="da_definire">rilevanza fiscale da definire</option>
+            <option value="imponibile">imponibile</option>
+            <option value="escluso">escluso</option>
+          </select>
+          <button class="btn p" id="btnSalvaEntrata">Salva</button>
+          <button class="btn" id="btnTogliAttesa">Togli la data attesa</button>
+          <button class="btn" id="btnChiudiEntrata">Chiudi</button>
+        </div>
+        <p class="nota" id="msgEntrata" role="status" aria-live="polite"></p>
+      </div>
+
+      <div class="card">
+        <span class="tec">nuova</span>
+        <h2>Una fattura o un ingresso fuori partita IVA</h2>
+        <div class="riga" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <select class="sel" id="enTipo" aria-label="Tipo">
+            <option value="fattura">fattura</option>
+            <option value="fuori_piva">ingresso fuori partita IVA</option>
+          </select>
+          <input class="sel" id="enDa" placeholder="da chi" aria-label="Da chi">
+          <input class="sel" id="enNumero" placeholder="numero" aria-label="Numero">
+          <input class="sel num" id="enImporto" placeholder="2.580,00" aria-label="Importo">
+          <select class="sel" id="enConto" aria-label="Conto"></select>
+          <select class="sel" id="enCategoria" aria-label="Categoria"></select>
+          <label class="etichetta" for="enEmissione">emessa il</label>
+          <input class="sel" type="date" id="enEmissione">
+          <label class="etichetta" for="enAttesa">attesa il</label>
+          <input class="sel" type="date" id="enAttesa">
+          <select class="sel" id="enFisco" aria-label="Rilevanza fiscale">
+            <option value="da_definire">rilevanza fiscale da definire</option>
+            <option value="imponibile">imponibile</option>
+            <option value="escluso">escluso</option>
+          </select>
+          <button class="btn p" id="btnEntrata">Registra</button>
+        </div>
+        <p class="nota">Fuori partita IVA <b>non vuol dire esente</b>: la rilevanza fiscale resta
+          quella che dichiari tu. Senza data attesa l&#39;entrata non entra in previsione.</p>
+        <p class="nota" id="msgNuovaEntrata" role="status" aria-live="polite"></p>
+      </div>
+    </section>
+    <!-- ════════ PARTITA IVA E TASSE ════════ -->
+    <section class="pane" id="pane-tasse" role="tabpanel">
+      <div class="card">
+        <span class="tec">copertura</span>
+        <h2>Conto tasse</h2>
+        <div class="griglia" id="kpiFisco"></div>
+        <div id="dovuti"></div>
+        <p class="nota" id="msgFisco" role="status" aria-live="polite"></p>
+      </div>
+
+      <div class="card">
+        <span class="tec">calcolo</span>
+        <div class="riga" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
+          <h2 style="margin:0">Anno d&#39;imposta</h2>
+          <input class="sel" type="number" id="fiAnno" style="width:110px" min="2000" max="2100">
+          <button class="btn" id="btnFisco">Calcola</button>
+        </div>
+        <div id="calcoloFisco"></div>
+        <div id="scadenzeFisco"></div>
+      </div>
+
+      <div class="card">
+        <span class="tec">dovuto</span>
+        <h2>Registra quello che devi</h2>
+        <p class="nota">Questo numero non lo calcola l&#39;app: viene dal tuo F24, dal commercialista
+          o da una comunicazione. Qui si registra con la sua <b>provenienza</b>, e diventa una
+          scadenza sul conto tasse.</p>
+        <div class="riga" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <input class="sel" type="number" id="doAnno" style="width:110px" placeholder="anno">
+          <select class="sel" id="doTipo" aria-label="Tipo">
+            <option value="saldo">saldo</option>
+            <option value="primo_acconto">primo acconto</option>
+            <option value="secondo_acconto">secondo acconto</option>
+            <option value="contributi">contributi</option>
+            <option value="rata">rata</option>
+          </select>
+          <input class="sel num" id="doImporto" placeholder="2.400,00" aria-label="Importo">
+          <label class="etichetta" for="doScadenza">scade il</label>
+          <input class="sel" type="date" id="doScadenza">
+          <label class="etichetta" for="doModo">come lo paghi</label>
+          <select class="sel" id="doModo" aria-label="Come lo paghi">
+            <option value="unica">in una volta</option>
+            <option value="rateazione">a rate, come prevede la norma</option>
+            <option value="finanziamento">con un prestito (TAN)</option>
+          </select>
+          <label class="etichetta" for="doRate">rate</label>
+          <input class="sel" type="number" id="doRate" style="width:70px" value="1" min="1" max="60">
+          <label class="etichetta" for="doTan">TAN %</label>
+          <input class="sel num" id="doTan" style="width:80px" placeholder="6,00" aria-label="TAN">
+          <label class="etichetta" for="doTaeg">TAEG %</label>
+          <input class="sel num" id="doTaeg" style="width:80px" placeholder="6,40" aria-label="TAEG">
+          <select class="sel" id="doMetodo" aria-label="Metodo">
+            <option value="francese">rata costante (francese)</option>
+            <option value="italiano">capitale costante (italiano)</option>
+          </select>
+          <input class="sel" id="doFonte" placeholder="da dove viene (F24, commercialista…)" aria-label="Provenienza">
+          <button class="btn p" id="btnDovuto">Registra</button>
+        </div>
+        <p class="nota" id="notaModo">Tre cose diverse, e l&#39;app non le confonde: una scadenza sola;
+          le rate che la <b>norma</b> prevede, con le sue date e i suoi interessi di legge; oppure un
+          <b>prestito</b> per pagare l&#39;imposta, che ha un TAN e non e&#39; una dilazione dell&#39;erario.</p>
+        <p class="nota" id="msgDovuto" role="status" aria-live="polite"></p>
+      </div>
+
+      <div class="card" id="box-tasse"></div>
+    </section>
+    <!-- ════════ PROMEMORIA ════════ -->
+    <section class="pane" id="pane-promemoria" role="tabpanel">
+      <div class="card">
+        <span class="tec">in arrivo</span>
+        <h2>Promemoria</h2>
+        <div id="canaliPro"></div>
+        <div id="elencoPro"></div>
+        <p class="nota" id="msgPro" role="status" aria-live="polite"></p>
+      </div>
+      <div class="card">
+        <span class="tec">nuovo</span>
+        <h2>Ricordami una cosa</h2>
+        <div class="riga" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <input class="sel" id="prTitolo" placeholder="che cosa devo ricordarti" aria-label="Titolo" style="min-width:220px">
+          <label class="etichetta" for="prQuando">il</label>
+          <input class="sel" type="datetime-local" id="prQuando">
+          <label class="etichetta" for="prAnticipo">avvisami</label>
+          <input class="sel" type="number" id="prAnticipo" style="width:70px" value="0" min="0" max="365">
+          <span class="etichetta">giorni prima</span>
+          <select class="sel" id="prRicorrenza" aria-label="Ricorrenza">
+            <option value="una_tantum">una volta sola</option>
+            <option value="settimanale">ogni settimana</option>
+            <option value="mensile">ogni mese</option>
+            <option value="annuale">ogni anno</option>
+          </select>
+          <label class="etichetta"><input type="checkbox" id="prTelegram"> anche su Telegram</label>
+          <button class="btn p" id="btnPromemoria">Ricordamelo</button>
+        </div>
+        <p class="nota" id="msgNuovoPro" role="status" aria-live="polite"></p>
+      </div>
+    </section>
+
+    <!-- ════════ ALFRED: cartelle, conversazioni, richieste, memoria ════════ -->
+    <section class="pane" id="pane-alfred" role="tabpanel">
+      <div id="alfPanni">
+        <div id="alfLato">
+          <div class="card">
+            <span class="tec">cartelle</span>
+            <h2>Cartelle</h2>
+            <div class="alf-cart" id="alfCartelle"></div>
+            <div class="riga" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+              <input class="sel" id="alfNuovaCartella" placeholder="nuova cartella"
+                     aria-label="Nuova cartella" style="min-width:120px;flex:1">
+              <button class="btn" id="btnAlfCartella">Aggiungi</button>
+            </div>
+            <p class="nota" id="msgAlfCartella" role="status" aria-live="polite"></p>
+          </div>
+          <div class="card">
+            <span class="tec">cronologia</span>
+            <h2>Conversazioni</h2>
+            <div id="alfConversazioni"></div>
+          </div>
+          <div class="card">
+            <span class="tec">consensi</span>
+            <h2>Cosa può fare da solo</h2>
+            <div class="alf-perm" id="alfPermessi"></div>
+            <p class="nota">Per difetto chiede prima. Tre azioni — promuovere
+              un&#39;ipotesi, un bonifico, una cancellazione irreversibile — non
+              diventano automatiche con un flag: serve un tuo <b>consenso
+              esplicito</b>, che resta scritto con la data e si revoca quando
+              vuoi.</p>
+          </div>
+        </div>
+
+        <div id="alfCentro">
+          <div class="card">
+            <span class="tec">da confermare</span>
+            <h2>In attesa di una tua risposta</h2>
+            <div id="alfAttesa"></div>
+            <p class="nota" id="msgAlfAttesa" role="status" aria-live="polite"></p>
+          </div>
+          <div class="card">
+            <span class="tec" id="alfTecConv">nuova</span>
+            <h2 id="alfTitoloConv">Conversazione</h2>
+            <div id="alfMessaggi"></div>
+            <div class="riga" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px">
+              <input class="sel" id="alfFrase" placeholder="dillo a parole tue…"
+                     aria-label="Che cosa dici ad Alfred" style="min-width:200px;flex:1">
+              <button class="btn p" id="btnAlfInvia">Invia</button>
+              <button class="btn" id="btnAlfNuova">Nuova conversazione</button>
+            </div>
+            <p class="nota" id="msgAlf" role="status" aria-live="polite"></p>
+          </div>
+          <div class="card">
+            <span class="tec">in chiaro</span>
+            <h2>Memoria condivisa</h2>
+            <p class="nota" id="alfNotaMemoria"></p>
+            <div class="tab-wrap"><table class="mem" id="alfMemoria"></table></div>
+            <div class="riga" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:8px">
+              <input class="sel" id="alfMemChiave" placeholder="chiave" aria-label="Chiave" style="min-width:110px">
+              <input class="sel" id="alfMemValore" placeholder="valore" aria-label="Valore" style="min-width:140px;flex:1">
+              <input class="sel" id="alfMemNota" placeholder="nota (perché)" aria-label="Nota" style="min-width:120px;flex:1">
+              <button class="btn p" id="btnAlfMemoria">Scrivi</button>
+            </div>
+            <p class="nota" id="msgAlfMemoria" role="status" aria-live="polite"></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════ ANNULLA E STORICO ════════ -->
+    <section class="pane" id="pane-storico" role="tabpanel">
+      <div class="card">
+        <span class="tec">ultimi 20</span>
+        <h2>Annulla</h2>
+        <p class="nota">Gli ultimi venti passaggi si annullano, dalla pagina e da Alfred. Un annullo nell'app non revoca un movimento bancario avvenuto.</p>
+        <div id="journal"></div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<!-- dettaglio della voce: sopra il contenuto, come una scheda in vetro -->
+<div id="dettaglio" role="dialog" aria-modal="false" aria-labelledby="detTitolo"></div>
+
+<div id="rispostaAlfred" role="status" aria-live="polite"></div>
+<div id="alfred" class="chiusa">
+  <div id="sfera" role="button" tabindex="0" aria-label="Alfred"></div>
+  <input id="alfredIn" placeholder="Chiedi ad Alfred…" aria-label="Chiedi ad Alfred">
+  <button id="alfredVai">Invia</button>
+</div>
+
+<div id="login"><div class="box card">
+  <h2>Tesoreria</h2>
+  <p class="nota">Serve il codice dell'app.</p>
+  <input id="tok" type="password" placeholder="codice" autocomplete="current-password">
+  <button class="btn p" id="btnEntra" style="width:100%">Entra</button>
+  <p class="errore" id="loginErr"></p>
+</div></div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════════════════════════════
+   MECCANISMI RIUSATI IDENTICI (frontend/MECCANISMI.md):
+   · api() con AbortController che copre ANCHE il corpo, nessun retry
+     automatico, errori con i FATTI strutturati (err.stato, err.corpo);
+   · l'esito di una scrittura viene SOLO dal corpo del server, mai dal testo
+     del messaggio; un 200 muto non e' una conferma;
+   · esc() su ogni testo prima di innerHTML;
+   · ogni scrittura porta un operation_id e si RILEGGE dopo;
+   · una fonte in ERRORE non diventa una fonte vuota: si dichiara in testata.
+   ══════════════════════════════════════════════════════════════════════════ */
+var API_BASE = (location.hostname === '127.0.0.1' || location.hostname === 'localhost')
+  ? (localStorage.getItem('tesoreria_api') || 'http://127.0.0.1:54811')
+  : 'https://icsafmrkndgdksybagky.supabase.co/functions/v1/soldi-app';
+var TOK = localStorage.getItem('app_token') || localStorage.getItem('dos_token') || '';
+
+function esc(x){return String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;')
+  .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+function $(s){return document.querySelector(s);}
+function $$(s){return Array.prototype.slice.call(document.querySelectorAll(s));}
+function uuid(){
+  if (crypto && crypto.randomUUID) return crypto.randomUUID();
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,function(c){
+    var r=Math.random()*16|0, v=c==='x'?r:(r&0x3|0x8); return v.toString(16);});
+}
+/* i centesimi si formattano dalle CIFRE: (c/100).toFixed(2) perde i centesimi
+   su importi grandi, e Intl dipende dall'ICU dell'host */
+function euro(c){
+  if (c == null) return '—';
+  c = Math.round(Number(c));
+  var neg = c < 0, v = Math.abs(c), interi = String(Math.floor(v/100)), dec = v % 100, g = '';
+  while (interi.length > 3){ g = '.' + interi.slice(-3) + g; interi = interi.slice(0,-3); }
+  return (neg?'−':'') + interi + g + ',' + (dec<10?'0':'') + dec;
+}
+var MESI = ['gennaio','febbraio','marzo','aprile','maggio','giugno','luglio','agosto',
+            'settembre','ottobre','novembre','dicembre'];
+function dataIt(s){ if(!s) return '—'; var p=s.split('-'); return (+p[2])+' '+MESI[+p[1]-1].slice(0,3); }
+function giorniNelMese(a,m){ return new Date(Date.UTC(a,m,0)).getUTCDate(); }
+function dopo(s){ var p=s.split('-').map(Number);
+  if (p[2] < giorniNelMese(p[0],p[1])) return p[0]+'-'+pad(p[1])+'-'+pad(p[2]+1);
+  if (p[1] === 12) return (p[0]+1)+'-01-01';
+  return p[0]+'-'+pad(p[1]+1)+'-01'; }
+function pad(n){ return (n<10?'0':'')+n; }
+function fineMese(s){ var p=s.split('-').map(Number); return p[0]+'-'+pad(p[1])+'-'+pad(giorniNelMese(p[0],p[1])); }
+function piuMesi(s,n){ var p=s.split('-').map(Number), i=p[0]*12+(p[1]-1)+n;
+  var a=Math.floor(i/12), m=i%12+1; return a+'-'+pad(m)+'-'+pad(Math.min(p[2],giorniNelMese(a,m))); }
+/* lunedi = 1 … domenica = 7 */
+function dow(s){ var p=s.split('-').map(Number); var d=new Date(Date.UTC(p[0],p[1]-1,p[2])).getUTCDay(); return d===0?7:d; }
+
+function api(p, corpo, metodo){
+  var c = new AbortController(); var scaduto = false;
+  var t = setTimeout(function(){ scaduto = true; c.abort(); }, 120000);
+  var o = { headers:{'x-app-token':TOK,'content-type':'application/json'}, signal:c.signal };
+  if (corpo !== undefined && corpo !== null){ o.method = metodo || 'POST'; o.body = JSON.stringify(corpo); }
+  else if (metodo){ o.method = metodo; }
+  return fetch(API_BASE + p, o).then(function(r){
+    if (r.status === 401){ $('#login').classList.add('si');
+      var e401 = new Error('accesso scaduto'); e401.stato = 401; throw e401; }
+    if (!r.ok) return r.json().catch(function(){ return null; }).then(function(e){
+      var err = new Error((e && e.errore) || ('Servizio non disponibile (HTTP ' + r.status + ')'));
+      err.stato = r.status; err.corpo = e; throw err;
+    });
+    return r.json();
+  }).catch(function(e){
+    if (scaduto){ var err = new Error('richiesta scaduta dopo 2 minuti: ESITO INCERTO, verifica prima di ripetere');
+      err.scaduto = true; throw err; }
+    throw e;
+  }).finally(function(){ clearTimeout(t); });
+}
+
+/* ── stato della pagina ─────────────────────────────────────────────────── */
+var S = { tab:'conti', vista:'prospetto', conto:'tutti', mesi:3, gruppo:'mese',
+          scenario:'', da:null, a:null, sel:[], prev:null, anag:null, voci:{},
+          scenari:[], diff:null, gen:0, impegni:null, vistaFissi:'colonne',
+          attivo:null, riserva:null, fisco:null, promemoria:null,
+          alfred:null, alfConv:0, alfCartella:'' };
+var FONTI_MUTE = {};
+
+function dichiaraFonte(nome, errore){
+  if (errore) FONTI_MUTE[nome] = errore.message || String(errore);
+  else delete FONTI_MUTE[nome];
+  var k = Object.keys(FONTI_MUTE);
+  /* una fonte in ERRORE non diventa una fonte vuota: si vede sempre */
+  $('#fonti-mute').innerHTML = k.length
+    ? 'dati parziali: ' + k.map(function(n){ return esc(n) + ' — ' + esc(FONTI_MUTE[n]); }).join(' · ')
+    : '';
+}
+
+/* ── caricamento ────────────────────────────────────────────────────────── */
+function caricaAnagrafica(){
+  return api('/anagrafica').then(function(a){
+    S.anag = a; dichiaraFonte('anagrafica', null);
+    var opz = '<option value="tutti">tutti i conti</option>' + (a.conti||[]).map(function(c){
+      return '<option value="c' + c.id + '">' + esc(c.nome) + '</option>'; }).join('');
+    $('#selConto').innerHTML = opz;
+    $('#selConto').value = S.conto;
+    $('#impConto').innerHTML = (a.conti||[]).map(function(c){
+      return '<option value="' + c.id + '">' + esc(c.nome) + '</option>'; }).join('');
+    $('#impCarta').innerHTML = '<option value="">—</option>' + (a.carte||[]).map(function(k){
+      return '<option value="' + k.id + '">' + esc(k.nome) + '</option>'; }).join('');
+    renderTasse(); renderFissi(); renderAttivo(); renderPromemoria();
+  }).catch(function(e){ dichiaraFonte('anagrafica', e); });
+}
+
+function caricaScenari(){
+  return api('/scenari').then(function(x){
+    S.scenari = x || [];
+    dichiaraFonte('scenari', null);
+    $('#selScenario').innerHTML = '<option value="">previsione base</option>' + S.scenari.map(function(y){
+      return '<option value="' + y.id + '">' + esc(y.nome) + '</option>'; }).join('');
+    /* uno scenario cancellato o disattivato non resta selezionato in silenzio */
+    if (S.scenario && !S.scenari.some(function(y){ return String(y.id) === String(S.scenario); })){
+      S.scenario = '';
+      try{ localStorage.removeItem('tesoreria_scenario'); }catch(e){}
+    }
+    $('#selScenario').value = S.scenario;
+    aggiornaBandiera(); renderScenari();
+  }).catch(function(e){
+    dichiaraFonte('scenari', e);
+    $('#selScenario').innerHTML = '<option value="">previsione base</option>';
+    $('#elencoScenari').innerHTML = '<p class="errore">Le ipotesi non sono state lette: ' +
+      esc(e.message) + '. Non e&#768; un elenco vuoto.</p>';
+  });
+}
+
+/* ── SCENARI: elenco, ordine, differenze, promozione ─────────────────────
+   La regola che governa questa pagina: la base non cambia finche' non porti
+   dentro una voce, UNA per volta. Percio' ogni differenza ha il suo bottone,
+   e un conflitto si vede prima di decidere, non dopo. */
+function renderScenari(){
+  var l = S.scenari || [];
+  $('#elencoScenari').innerHTML = l.length ? l.map(function(x){
+    var attivo = String(x.id) === String(S.scenario);
+    return '<div class="cand' + (attivo ? ' proposta' : '') + '" draggable="true" data-scen="' + x.id + '">' +
+      '<b>' + esc(x.nome) + '</b>' +
+      (x.nota ? ' <span class="nota">' + esc(x.nota) + '</span>' : '') +
+      ' <span class="chip">' + x.differenze_aperte + (x.differenze_aperte === 1 ? ' differenza' : ' differenze') + '</span>' +
+      (x.promosse ? ' <span class="chip ok">' + x.promosse + ' nella base</span>' : '') +
+      (x.conflitti ? ' <span class="chip avv">' + x.conflitti + ' in conflitto</span>' : '') +
+      (attivo ? ' <span class="chip ok">contesto attuale</span>'
+              : ' <button class="btn" data-usa="' + x.id + '">Usa come contesto</button>') +
+      ' <button class="btn" data-rinomina="' + x.id + '">Rinomina</button>' +
+      '</div>';
+  }).join('') : '<p class="nota">Nessuna ipotesi. La previsione che vedi e&#768; la base.</p>';
+
+  $$('#elencoScenari [data-usa]').forEach(function(b){
+    b.onclick = function(){ cambiaScenario(b.getAttribute('data-usa')); };
+  });
+  $$('#elencoScenari [data-rinomina]').forEach(function(b){
+    b.onclick = function(){ rinominaScenario(b.getAttribute('data-rinomina')); };
+  });
+  /* trascinamento per riordinare: l'ordine si riscrive TUTTO INSIEME */
+  $$('#elencoScenari [data-scen]').forEach(function(el){
+    el.addEventListener('dragstart', function(ev){
+      ev.dataTransfer.setData('text/plain', el.getAttribute('data-scen'));
+      ev.dataTransfer.effectAllowed = 'move';
+    });
+    el.addEventListener('dragover', function(ev){ ev.preventDefault(); el.classList.add('drop'); });
+    el.addEventListener('dragleave', function(){ el.classList.remove('drop'); });
+    el.addEventListener('drop', function(ev){
+      ev.preventDefault(); el.classList.remove('drop');
+      var mosso = ev.dataTransfer.getData('text/plain');
+      var sopra = el.getAttribute('data-scen');
+      if (!mosso || mosso === sopra) return;
+      var ids = (S.scenari || []).map(function(x){ return String(x.id); });
+      ids.splice(ids.indexOf(mosso), 1);
+      ids.splice(ids.indexOf(sopra), 0, mosso);
+      ordinaScenari(ids);
+    });
+  });
+  $('#viConto').innerHTML = ((S.anag && S.anag.conti) || []).map(function(c){
+    return '<option value="' + c.id + '">' + esc(c.nome) + '</option>'; }).join('');
+  var c = $('#cardDifferenze'), v = $('#cardVoceIpotesi');
+  c.hidden = !S.scenario; v.hidden = !S.scenario;
+  if (!S.scenario){
+    $('#riassuntoDiff').innerHTML = '';
+    $('#differenze').innerHTML = '';
+  }
+}
+
+function msgScen(el, t, errore){
+  var n = $(el); n.className = errore ? 'errore' : 'nota'; n.textContent = t;
+}
+
+function cambiaScenario(id){
+  /* cambiare contesto INVALIDA le risposte in volo: una previsione della base
+     che arriva dopo non deve disegnarsi sopra un'ipotesi, e viceversa */
+  S.gen++;
+  S.scenario = id ? String(id) : '';
+  try{ if (S.scenario) localStorage.setItem('tesoreria_scenario', S.scenario);
+       else localStorage.removeItem('tesoreria_scenario'); }catch(e){}
+  $('#selScenario').value = S.scenario;
+  aggiornaBandiera(); renderScenari();
+  return Promise.all([caricaPrevisione(), caricaDifferenze(),
+                      S.tab === 'fissi' ? caricaImpegni() : null,
+                      S.tab === 'attivo' ? caricaRiserva() : null,
+                      S.tab === 'attivo' ? caricaEntrate() : null]);
+}
+
+function creaScenario(){
+  var nome = $('#nuovoScenarioNome').value.trim();
+  if (!nome){ msgScen('#msgScenari', 'Serve un nome: senza, nel menu sarebbero tutte uguali.', true); return; }
+  $('#btnNuovoScenario').disabled = true;
+  msgScen('#msgScenari', 'creo…');
+  api('/scenari', { nome: nome, nota: $('#nuovoScenarioNota').value.trim(), operation_id: uuid() })
+    .then(function(e){
+      return caricaScenari().then(function(){    /* RILETTURA, poi la verifica */
+        var trovato = (S.scenari || []).filter(function(x){ return x.id === e.id; })[0];
+        if (!trovato){ msgScen('#msgScenari', 'NON VERIFICATO: rileggendo l\u2019elenco non c\u2019e\u0300.', true); return; }
+        $('#nuovoScenarioNome').value = ''; $('#nuovoScenarioNota').value = '';
+        msgScen('#msgScenari', 'Creata l\u2019ipotesi \u00ab' + trovato.nome + '\u00bb.');
+        return cambiaScenario(e.id);
+      });
+    }).catch(function(e){
+      msgScen('#msgScenari', e.scaduto ? ('ESITO INCERTO: ' + e.message) : ('Non creata: ' + e.message), true);
+    }).finally(function(){ $('#btnNuovoScenario').disabled = false; });
+}
+
+function rinominaScenario(id){
+  var att = (S.scenari || []).filter(function(x){ return String(x.id) === String(id); })[0] || {};
+  var nome = prompt('Nuovo nome dell\u2019ipotesi', att.nome || '');
+  if (nome === null) return;
+  api('/scenari/' + id + '/modifica', { nome: nome, operation_id: uuid() })
+    .then(function(){ return caricaScenari(); })
+    .then(function(){
+      var ora = (S.scenari || []).filter(function(x){ return String(x.id) === String(id); })[0];
+      msgScen('#msgScenari', ora && ora.nome === nome.trim()
+        ? 'Rinominata in \u00ab' + ora.nome + '\u00bb.'
+        : 'NON VERIFICATO: rileggendo il nome risulta \u00ab' + (ora ? ora.nome : '?') + '\u00bb.',
+        !(ora && ora.nome === nome.trim()));
+    })
+    .catch(function(e){ msgScen('#msgScenari', 'Non rinominata: ' + e.message, true); });
+}
+
+function ordinaScenari(ids){
+  msgScen('#msgScenari', 'riordino…');
+  /* UNA chiamata con l'elenco completo: un ordine scritto a meta' non e' un ordine */
+  return api('/scenari/ordine', { ids: ids.map(Number), operation_id: uuid() })
+    .then(function(){ return caricaScenari(); })
+    .then(function(){
+      var ora = (S.scenari || []).map(function(x){ return String(x.id); }).join(',');
+      msgScen('#msgScenari', ora === ids.join(',')
+        ? 'Ordine salvato.' : 'NON VERIFICATO: rileggendo l\u2019ordine risulta diverso.',
+        ora !== ids.join(','));
+    })
+    .catch(function(e){ msgScen('#msgScenari', 'Ordine non cambiato: ' + e.message, true); });
+}
+
+function caricaDifferenze(){
+  if (!S.scenario){ renderScenari(); return Promise.resolve(); }
+  var gen = S.gen;
+  return api('/scenari/' + S.scenario + '/differenze').then(function(d){
+    if (gen !== S.gen) return;      /* contesto cambiato mentre leggevo */
+    S.diff = d; dichiaraFonte('differenze', null); renderDifferenze();
+  }).catch(function(e){
+    dichiaraFonte('differenze', e);
+    $('#differenze').innerHTML = '<p class="errore">Le differenze non sono state lette: ' +
+      esc(e.message) + '. Non e&#768; «nessuna differenza».</p>';
+  });
+}
+
+function renderDifferenze(){
+  var d = S.diff; if (!d) return;
+  $('#riassuntoDiff').innerHTML =
+    '<div class="griglia">' +
+      kpi('Differenze aperte', String(d.aperte), 'voci che esistono solo in questa ipotesi') +
+      kpi('Gi\u00e0 nella base', String(d.promosse), 'portate dentro una per volta') +
+      kpi('In conflitto', String(d.conflitti),
+          d.conflitti ? 'la base e&#768; cambiata dopo che l&#39;ipotesi era stata scritta' : 'nessuna',
+          d.conflitti > 0) +
+      kpi('Effetto sul saldo', euro(d.effetto_somma_cents),
+          'somma algebrica delle differenze aperte; il profilo giorno per giorno lo mostra il prospetto',
+          d.effetto_somma_cents < 0) +
+    '</div>';
+  var righe = (d.differenze || []);
+  if (!righe.length){
+    $('#differenze').innerHTML = '<p class="nota">Nessuna differenza: questa ipotesi e&#768; identica alla base. ' +
+      'Cambia una voce dal prospetto, o aggiungine una qui sotto.</p>';
+    return;
+  }
+  $('#differenze').innerHTML = '<div class="tab-wrap"><table class="pro">' +
+    '<thead><tr><th>Voce</th><th class="n">nella base</th><th class="n">in questa ipotesi</th>' +
+    '<th class="n">effetto</th><th>azioni</th></tr></thead><tbody>' +
+    righe.map(function(r){
+      var nome = r.nome || (r.base && r.base.descrizione) || (r.ipotesi && r.ipotesi.descrizione) || 'voce';
+      /* un impegno non e' una voce: e' un finanziamento o un costo fisso con le
+         sue rate, e va detto insieme a quante ne porta */
+      var ENT = { loan:'finanziamento', recurring:'costo fisso', transaction:'voce' };
+      var che = (r.op === 'insert' ? 'aggiunt' : (r.op === 'delete' ? 'toglia' : 'cambiat')) +
+        (r.entita === 'transaction' ? 'a' : 'o');
+      return '<tr data-diff="' + r.id + '">' +
+        '<td>' + esc(nome) + ' <span class="chip">' + esc(ENT[r.entita] || r.entita) + ' ' + che + '</span>' +
+        (r.voci_figlie ? ' <span class="chip">' + r.voci_figlie +
+          (r.voci_figlie === 1 ? ' rata' : ' rate') + '</span>' : '') +
+          (r.promossa ? ' <span class="chip ok">nella base</span>' : '') +
+          (r.conflitto ? ' <span class="chip avv">la base e&#768; cambiata</span>' : '') + '</td>' +
+        '<td class="n">' + (r.base ? euro(r.base.cents) + '<br><span class="s">' + esc(dataIt(r.base.data)) + '</span>'
+                                   : '<span class="ignoto">non c&#39;era</span>') + '</td>' +
+        '<td class="n">' + (r.ipotesi ? euro(r.ipotesi.cents) + '<br><span class="s">' + esc(dataIt(r.ipotesi.data)) + '</span>'
+                                      : '<span class="ignoto">non c&#39;e&#768;</span>') + '</td>' +
+        '<td class="n' + (r.effetto_cents < 0 ? ' neg' : '') + '">' + euro(r.effetto_cents) + '</td>' +
+        '<td>' + (r.promossa
+          ? '<span class="nota">portata nella base' + (r.promossa_il ? ' il ' + esc(String(r.promossa_il).slice(0,10)) : '') + '</span>'
+          : '<button class="btn p" data-prom="' + r.id + '">Porta nella base</button>' +
+            '<button class="btn" data-rinuncia="' + r.id + '">Rinuncia</button>') + '</td>' +
+        '</tr>';
+    }).join('') + '</tbody></table></div>';
+
+  $$('#differenze [data-prom]').forEach(function(b){
+    b.onclick = function(){ promuovi(Number(b.getAttribute('data-prom')), false); };
+  });
+  $$('#differenze [data-rinuncia]').forEach(function(b){
+    b.onclick = function(){ rinunciaDifferenza(Number(b.getAttribute('data-rinuncia'))); };
+  });
+}
+
+function differenzaDi(id){
+  return ((S.diff && S.diff.differenze) || []).filter(function(x){ return x.id === id; })[0];
+}
+
+function promuovi(id, accetta){
+  var r = differenzaDi(id); if (!r) return;
+  var corpo = { operation_id: uuid(), accetta_base_cambiata: !!accetta };
+  /* si dichiara la VERSIONE che si e' letta: se nel frattempo e' cambiata, il
+     servizio ferma la promozione invece di applicarla a un'altra voce */
+  if (r.base_versione != null) corpo.base_vista = r.base_versione;
+  msgScen('#msgDiff', 'porto nella base…');
+  api('/scenari/differenza/' + id + '/promuovi', corpo)
+    .then(function(e){
+      return Promise.all([caricaDifferenze(), caricaPrevisione(), caricaScenari(), caricaJournal()])
+        .then(function(){ return e; });
+    })
+    .then(function(e){
+      var ora = differenzaDi(id);
+      if (ora && !ora.promossa){
+        msgScen('#msgDiff', 'NON VERIFICATO: rileggendo, la differenza risulta ancora aperta.', true);
+        return;
+      }
+      msgScen('#msgDiff', 'Portata nella base. Restano ' + e.restano_aperte +
+        (e.restano_aperte === 1 ? ' differenza' : ' differenze') + ' in questa ipotesi.' +
+        (e.base_cambiata_accettata ? ' Hai confermato su una base cambiata nel frattempo.' : ''));
+    })
+    .catch(function(e){
+      var m = e.message || '';
+      /* Due conflitti diversi, stessa risposta utile: far VEDERE cosa e'
+         cambiato prima di decidere.
+         · «cambiata mentre la guardavi»: la scatola sullo schermo e' vecchia,
+           si rilegge e si ripropone il confronto aggiornato;
+         · «cambiata dopo che l'ipotesi e' stata scritta»: la scatola e' giusta,
+           serve una conferma esplicita. */
+      if (!accetta && /cambiata mentre la guardavi/.test(m)){
+        return caricaDifferenze().then(function(){
+          var d = differenzaDi(id);
+          if (d && d.conflitto) return mostraConflitto(id, m);
+          msgScen('#msgDiff', 'La voce e\u0300 cambiata mentre la guardavi: ho riletto le differenze, ' +
+            'controlla e riprova.', true);
+        });
+      }
+      if (!accetta && /cambiata dopo che l/.test(m)) return mostraConflitto(id, m);
+      msgScen('#msgDiff', e.scaduto ? ('ESITO INCERTO: ' + e.message + '. Verifica prima di ripetere.')
+                                    : ('Non portata nella base: ' + e.message), true);
+    });
+}
+
+/* il confronto fra com'era quando hai scritto l'ipotesi e com'e' adesso */
+function mostraConflitto(id, messaggio){
+  var d = differenzaDi(id) || {};
+  var q = d.base_quando_scritta || {};
+  $('#msgDiff').className = 'avviso';
+  $('#msgDiff').innerHTML = esc(messaggio) +
+    '<br>Quando hai scritto l&#39;ipotesi la voce era: ' + euro(q.amount_cents) + ' il ' + esc(dataIt(q.date)) +
+    '. Adesso e&#768;: ' + euro(d.base ? d.base.cents : null) + ' il ' + esc(dataIt(d.base ? d.base.data : null)) + '.' +
+    '<div class="bottoni"><button class="btn p" id="confermaConflitto">Portala dentro lo stesso</button>' +
+    '<button class="btn" id="lasciaConflitto">Lascia stare</button></div>';
+  $('#confermaConflitto').onclick = function(){ promuovi(id, true); };
+  $('#lasciaConflitto').onclick = function(){ msgScen('#msgDiff', 'Lasciata nell\u2019ipotesi.'); };
+}
+
+function rinunciaDifferenza(id){
+  msgScen('#msgDiff', 'tolgo la differenza…');
+  api('/scenari/differenza/' + id + '/togli', { operation_id: uuid() })
+    .then(function(){ return Promise.all([caricaDifferenze(), caricaPrevisione(), caricaScenari(), caricaJournal()]); })
+    .then(function(){
+      msgScen('#msgDiff', differenzaDi(id)
+        ? 'NON VERIFICATO: rileggendo, la differenza c\u2019e\u0300 ancora.'
+        : 'Differenza tolta: su quella voce l\u2019ipotesi segue di nuovo la base.',
+        !!differenzaDi(id));
+    })
+    .catch(function(e){ msgScen('#msgDiff', 'Non tolta: ' + e.message, true); });
+}
+
+function nuovaVoceIpotesi(){
+  if (!S.scenario) return;
+  var cents = centesimiDa($('#viImporto').value);
+  if (cents == null){
+    msgScen('#msgVoceIpotesi', 'Importo non valido: non viene indovinato. Scrivilo come -1.234,56.', true); return;
+  }
+  if (!$('#viData').value){ msgScen('#msgVoceIpotesi', 'Serve il giorno in cui passa.', true); return; }
+  var descr = $('#viDescr').value.trim();
+  if (!descr){ msgScen('#msgVoceIpotesi', 'Serve una descrizione: senza, nel prospetto non si riconosce.', true); return; }
+  $('#btnVoceIpotesi').disabled = true;
+  msgScen('#msgVoceIpotesi', 'aggiungo…');
+  api('/scenari/' + S.scenario + '/voce', {
+    voce: { account_id: Number($('#viConto').value), date: $('#viData').value,
+            amount_cents: cents, description: descr },
+    operation_id: uuid() })
+    .then(function(e){
+      return Promise.all([caricaDifferenze(), caricaPrevisione(), caricaScenari(), caricaJournal()])
+        .then(function(){ return e; });
+    })
+    .then(function(e){
+      var r = differenzaDi(e.differenza_id);
+      if (!r || !r.ipotesi || r.ipotesi.cents !== cents){
+        msgScen('#msgVoceIpotesi', 'NON VERIFICATO: rileggendo non risulta come l\u2019hai scritta.', true); return;
+      }
+      $('#viImporto').value = ''; $('#viDescr').value = '';
+      msgScen('#msgVoceIpotesi', 'Aggiunta all\u2019ipotesi. Nella base non c\u2019e\u0300.');
+    })
+    .catch(function(e){ msgScen('#msgVoceIpotesi', 'Non aggiunta: ' + e.message, true); })
+    .finally(function(){ $('#btnVoceIpotesi').disabled = false; });
+}
+
+function aggiornaBandiera(){
+  var sc = $('#selScenario');
+  var attivo = !!S.scenario;
+  $('#ctx').classList.toggle('scenario', attivo);
+  if (attivo) $('#nomeScenario').textContent = sc.options[sc.selectedIndex] ? sc.options[sc.selectedIndex].text : S.scenario;
+}
+
+function caricaPrevisione(){
+  var gen = S.gen, ctx = S.scenario;
+  var oggi = new Date().toISOString().slice(0,10);
+  var da = S.da || oggi;
+  var a = S.a || fineMese(piuMesi(da, S.mesi - 1));
+  var q = '/previsione?a=' + a + '&da=' + da;
+  if (S.conto !== 'tutti') q += '&conti=' + encodeURIComponent(S.conto);
+  if (S.scenario) q += '&scenario_id=' + encodeURIComponent(S.scenario);
+  return api(q).then(function(p){
+    if (gen !== S.gen) return;      /* contesto cambiato: questa risposta e' vecchia */
+    S.prev = p; S.prevScenario = ctx; dichiaraFonte('previsione', null);
+    S.voci = {};
+    (p.giorni||[]).forEach(function(g){
+      (g.voci||[]).forEach(function(v){ if (v.dbId) S.voci[v.dbId] = v; });
+      (g.acquistiCarta||[]).forEach(function(v){ if (v.dbId) S.voci[v.dbId] = v; });
+    });
+    renderKpi(); renderProspetto(); renderCurva();
+  }).catch(function(e){
+    dichiaraFonte('previsione', e);
+    $('#prospetto').querySelector('tbody').innerHTML =
+      '<tr><td class="ignoto">La previsione non e\' stata letta: ' + esc(e.message) +
+      '. Non e\' un saldo a zero.</td></tr>';
+    $('#kpi').innerHTML = '';
+  });
+}
+
+/* ── riquadri di sintesi ────────────────────────────────────────────────── */
+function renderKpi(){
+  var p = S.prev; if (!p) return;
+  var noti = (p.giorni||[]).filter(function(g){ return g.noto; });
+  var primo = noti.length ? noti[0] : null;
+  var r = p.riepilogo || {};
+  var periodo = dataIt(p.da) + ' – ' + dataIt(p.a);
+  var h = '';
+  /* l'etichetta dice il giorno DI QUEL saldo: il primo giorno noto del periodo
+     mostrato, che non e' sempre la data del saldo verificato */
+  var operativi = (p.conti||[]).filter(function(c){ return c.tipo !== 'tasse'; });
+  var saldoOperativo = primo ? operativi.reduce(function(x,c){ return x + (primo.perConto[c.id]||0); }, 0) : null;
+  h += kpi('Saldo conto', saldoOperativo == null ? '—' : euro(saldoOperativo),
+    operativi.map(function(c){ return esc(c.nome); }).join(' + ') +
+    (primo ? ' · al ' + dataIt(primo.data) : '') +
+    ((p.conti||[]).length > operativi.length ? ' · il conto tasse e&#768; escluso e sta nel suo riquadro'
+                                             : ' · conto tasse non configurato'));
+  h += kpi('Minimo previsto', p.minimo ? euro(p.minimo.cents) : '—',
+    p.minimo ? (dataIt(p.minimo.data) + ' · ' + periodo + ((p.conti||[]).length>1?' · conti insieme':'')) : periodo,
+    p.minimo && p.minimo.cents < 0);
+  h += kpi('Previsione del periodo',
+    euro((r.ingressi||0) - (r.uscite||0)),
+    'ingressi ' + euro(r.ingressi||0) + ' · uscite ' + euro(r.uscite||0) +
+    (r.giroconti ? ' · giroconti ' + euro(r.giroconti) + ' esclusi' : ' · giroconti esclusi') + ' · ' + periodo,
+    ((r.ingressi||0) - (r.uscite||0)) < 0);
+  h += kpi('Impegni scaduti aperti', String(p.arretrati == null ? '—' : p.arretrati),
+    'previsioni con data passata e non pagate' + (p.arretratiPreTaglio ? ' · ' + p.arretratiPreTaglio + ' anteriori al saldo verificato' : ''));
+  h += riquadroTasse();
+  $('#kpi').innerHTML = h;
+  var ass = (p.assunzioni||[]).map(function(a){
+    return '<p class="avviso">assunzione dichiarata: ' + esc(a.assunzione) + ' (carta ' + esc(a.carta) + ')</p>'; }).join('')
+    + (p.cicliPreTaglio||[]).map(function(c){
+    return '<p class="avviso">ciclo carta ' + esc(c.cartaId) + ' da ' + euro(c.cents) +
+      ' con addebito al ' + dataIt(c.data) + ': presunto giu&#768; incluso nel saldo verificato, non ricalcolato.</p>'; }).join('');
+  $('#assunzioni').innerHTML = ass;
+  $('#sottotitolo').textContent = 'saldo verificato al ' + dataIt(p.taglioMax || p.taglio)
+    + ' · periodo ' + periodo + (S.scenario ? ' · ipotesi' : ' · previsione base');
+}
+function kpi(et, v, s, neg){
+  return '<div class="kpi"><span class="et">' + esc(et) + '</span><span class="v' + (neg?' neg':'') +
+    '">' + esc(v) + '</span><span class="s">' + s + '</span></div>';
+}
+function riquadroTasse(){
+  var par = (S.anag && S.anag.parametri) || [];
+  function p(k){ var x = par.filter(function(y){ return y.chiave===k; })[0]; return x || {valore:null,stato:'da_concordare'}; }
+  var contoTasse = ((S.anag && S.anag.conti) || []).filter(function(c){ return c.tipo === 'tasse'; })[0];
+  var disp = contoTasse ? contoTasse.saldo_taglio_cents : null;
+  var dovuto = null;
+  var diff = (disp != null && dovuto != null) ? disp - dovuto : null;
+  return '<div class="kpi tasse"><span class="et">Conto tasse <span class="chip avv">conto distinto</span></span>' +
+    '<div class="tre">' +
+      '<div><span class="et">Disponibilita&#768;</span><span class="v">' + (disp==null?'—':euro(disp)) +
+        '</span><span class="s">' + (contoTasse ? esc(contoTasse.nome) : 'conto tasse non ancora configurato') + '</span></div>' +
+      '<div><span class="et">Tasse previste da pagare</span><span class="v">—</span>' +
+        '<span class="s">' + (p('conto_tasse.periodo_dovuto').stato === 'da_concordare'
+          ? 'a quale periodo si riferisce: da decidere con te' : 'periodo definito') + '</span></div>' +
+      '<div><span class="et">Differenza</span><span class="v">—</span>' +
+        '<span class="s">disponibilita&#768; meno dovuto</span></div>' +
+    '</div>' +
+    '<span class="s">Nessun calcolo fiscale attestato. Ancora da decidere insieme: ' +
+      esc(par.filter(function(x){ return x.stato==='da_concordare'; })
+             .map(function(x){ return nomeParametro(x.chiave); }).join(' · ') || 'niente') +
+    '</span></div>';
+}
+
+/* ── PROSPETTO: settimane in verticale, conti affiancati, tabella snella ── */
+function renderProspetto(){
+  var p = S.prev; if (!p) return;
+  var conti = p.conti || [];
+  var perData = {}; (p.giorni||[]).forEach(function(g){ perData[g.data] = g; });
+  var h = '';
+  h += '<thead><tr><th>Giorno</th>';
+  conti.forEach(function(c){
+    h += '<th>' + esc(c.nome) + '</th><th class="n">saldo</th>';
+  });
+  h += '<th class="n">' + (conti.length > 1 ? 'totale' : 'totale conto') + '</th></tr></thead><tbody>';
+
+  var mese = null, sett = null, apertura = null, chiusuraSett = null;
+  var gg = (p.giorni||[]);
+  gg.forEach(function(g, i){
+    var m = g.data.slice(0,7);
+    if (m !== mese){
+      mese = m;
+      var pm = m.split('-');
+      h += '<tr class="mese"><th colspan="' + (2 + conti.length*2) + '">' +
+        esc(MESI[+pm[1]-1] + ' ' + pm[0]) + '</th></tr>';
+      apertura = g;
+    }
+    var attivo = (g.voci && g.voci.length) || (g.acquistiCarta && g.acquistiCarta.length);
+    var confine = (i === 0) || (i === gg.length-1) || (g.data === fineMese(g.data)) || (dow(g.data) === 7);
+    /* in raggruppamento MESE si mostrano i giorni con movimenti piu' i confini;
+       in SETTIMANA si mostrano tutti i giorni: scelta di leggibilita' dichiarata */
+    if (S.gruppo === 'mese' && !attivo && !confine) return;
+    h += rigaGiorno(g, conti, attivo);
+    if (dow(g.data) === 7 || g.data === fineMese(g.data)){
+      h += rigaChiusura(g, conti, dow(g.data) === 7 && g.data !== fineMese(g.data) ? 'chiusura settimana' : 'chiusura mese');
+    }
+  });
+  h += '</tbody>';
+  $('#prospetto').innerHTML = h;
+  $('#didascalia').innerHTML = 'Saldo verificato al ' + dataIt(p.taglioMax || p.taglio) +
+    '. Prima di quel giorno il saldo non e&#768; ricostruito e si legge —, non zero.' +
+    (S.conto !== 'tutti' ? ' Il totale e&#768; del <b>conto selezionato</b>, non il patrimonio.' : '') +
+    ' Gli acquisti su carta si vedono alla loro data e non toccano il conto: l&#39;addebito del ciclo compare al suo giorno.';
+  agganciaVoci();
+}
+function rigaGiorno(g, conti, attivo){
+  var h = '<tr data-giorno="' + esc(g.data) + '"><td class="g">' + esc(dataIt(g.data)) +
+    ' <span class="chip">' + ['','lun','mar','mer','gio','ven','sab','dom'][dow(g.data)] + '</span></td>';
+  conti.forEach(function(c){
+    var voci = (g.voci||[]).filter(function(v){ return v.contoId === c.id; })
+      .concat((g.acquistiCarta||[]).filter(function(v){ return v.contoId === c.id; }));
+    h += '<td class="cella-drop" data-conto="' + esc(c.id) + '" data-giorno="' + esc(g.data) + '">' +
+      voci.map(vociHtml).join('') + '</td>';
+    var noto = g.notoPerConto ? g.notoPerConto[c.id] : g.noto;
+    h += '<td class="n' + (noto ? '' : ' ignoto') + (noto && g.perConto[c.id] < 0 ? ' neg' : '') + '">' +
+      (noto ? euro(g.perConto[c.id]) : '—') + '</td>';
+  });
+  h += '<td class="n' + (g.noto ? '' : ' ignoto') + (g.noto && g.totale < 0 ? ' neg' : '') + '">' +
+    (g.noto ? euro(g.totale) : '—') + '</td></tr>';
+  return h;
+}
+function vociHtml(v){
+  var carta = v.toccaSaldo === false || v.derivato;
+  var bloccata = !v.modificabile;
+  return '<span class="voce' + (carta?' carta':'') + (bloccata?' bloccata':'') +
+    (S.sel.indexOf(String(v.dbId)) >= 0 ? ' sel' : '') + '"' +
+    ' data-voce="' + esc(v.dbId || v.id) + '"' +
+    (v.modificabile ? ' draggable="true"' : '') +
+    ' title="' + esc((v.descrizione||'') + (v.nota ? ' — ' + v.nota : '')) + '">' +
+    '<span class="i">' + euro(v.cents) + '</span> ' + esc((v.descrizione||'').slice(0,26)) +
+    (v.derivato ? ' <span class="chip avv">carta</span>' : '') +
+    (v.toccaSaldo === false ? ' <span class="chip avv">non tocca il saldo</span>' : '') +
+    (v.stato === 'rendicontato' ? ' <span class="chip ok">rendicontato</span>' : '') +
+    '</span>';
+}
+function rigaChiusura(g, conti, che){
+  var h = '<tr class="chiusura"><td class="g">' + esc(che) + '</td>';
+  conti.forEach(function(c){
+    h += '<td></td><td class="n' + (g.perConto[c.id] < 0 ? ' neg' : '') + '">' +
+      ((g.notoPerConto ? g.notoPerConto[c.id] : g.noto) ? euro(g.perConto[c.id]) : '—') + '</td>';
+  });
+  h += '<td class="n' + (g.totale < 0 ? ' neg' : '') + '">' + (g.noto ? euro(g.totale) : '—') + '</td></tr>';
+  return h;
+}
+
+/* ── selezione, dettaglio e trascinamento ───────────────────────────────── */
+function agganciaVoci(){
+  $$('#prospetto .voce').forEach(function(el){
+    el.addEventListener('click', function(ev){
+      var id = el.getAttribute('data-voce');
+      var v = S.voci[id];
+      if (!v){ return; }
+      if (ev.shiftKey || ev.metaKey || ev.ctrlKey){
+        if (!v.modificabile){ msg('Un fatto rendicontato non si sposta: è avvenuto.'); return; }
+        var i = S.sel.indexOf(id);
+        if (i >= 0) S.sel.splice(i,1); else S.sel.push(id);
+        renderSelezione(); renderProspetto();
+      } else {
+        apriDettaglio(v);
+      }
+    });
+    el.addEventListener('dragstart', function(ev){
+      var id = el.getAttribute('data-voce');
+      if (S.sel.indexOf(id) < 0){ S.sel = [id]; renderSelezione(); }
+      ev.dataTransfer.setData('text/plain', S.sel.join(','));
+      ev.dataTransfer.effectAllowed = 'move';
+    });
+  });
+  $$('#prospetto .cella-drop').forEach(function(td){
+    td.addEventListener('dragover', function(ev){ ev.preventDefault(); td.classList.add('drop'); });
+    td.addEventListener('dragleave', function(){ td.classList.remove('drop'); });
+    td.addEventListener('drop', function(ev){
+      ev.preventDefault(); td.classList.remove('drop');
+      var ids = (ev.dataTransfer.getData('text/plain')||'').split(',').filter(Boolean);
+      var giorno = td.getAttribute('data-giorno');
+      var conto = td.getAttribute('data-conto');
+      /* Trascinare nella colonna di un altro conto CAMBIA il conto: e'
+         l'interazione approvata. Le regole che carte e giroconti impongono le
+         fa rispettare il servizio, che rifiuta con il motivo invece di
+         spostare qualcosa a meta'. */
+      var cambia = ids.some(function(id){ return S.voci[id] && S.voci[id].contoId !== conto; });
+      sposta(ids, giorno, cambia ? conto : null, null);
+    });
+  });
+}
+function renderSelezione(){
+  var box = $('#box-spostamento');
+  box.hidden = S.sel.length === 0;
+  $('#contoSel').textContent = S.sel.length
+    ? (S.sel.length === 1 ? '1 voce selezionata' : S.sel.length + ' voci selezionate')
+    : 'Nessuna voce selezionata';
+}
+function msg(t, errore){
+  var el = $('#msgSposta');
+  el.className = errore ? 'errore' : 'nota';
+  el.textContent = t;
+}
+function sposta(ids, giorno, contoDestinazione, cartaDestinazione){
+  if (!ids.length){ msg('Nessuna voce selezionata.'); return Promise.resolve(); }
+  if (!giorno && !contoDestinazione && !cartaDestinazione){
+    msg('Serve il giorno di destinazione.'); return Promise.resolve();
+  }
+  var bloccate = ids.filter(function(id){ return !(S.voci[id] && S.voci[id].modificabile); });
+  if (bloccate.length){
+    /* atomico anche qui: se una non si puo' muovere, non si muove NIENTE */
+    msg(bloccate.length + (bloccate.length===1?' voce non e\u0300 modificabile':' voci non sono modificabili') +
+        ': nessuna spostata.', true);
+    return Promise.resolve();
+  }
+  /* IL CONTESTO COMANDA. Guardando un'ipotesi, trascinare una voce della base
+     non deve cambiare la base: scrive una DIFFERENZA. Le voci nate
+     nell'ipotesi invece sono sue, e si spostano davvero. Mischiarle sarebbe
+     una scrittura sola per due cose diverse: si rifiuta e si spiega. */
+  var ctx = S.scenario;
+  var dellIpotesi = ids.filter(function(id){ return (S.voci[id]||{}).scenarioOp === 'insert'; });
+  var dellaBase = ids.filter(function(id){ return (S.voci[id]||{}).scenarioOp !== 'insert'; });
+  if (ctx && dellIpotesi.length && dellaBase.length){
+    msg('Nella selezione ci sono voci della base e voci dell\u2019ipotesi: sono due scritture diverse. '
+      + 'Spostale separatamente.', true);
+    return Promise.resolve();
+  }
+  var scrittura, doveFinisce;
+  if (ctx && dellaBase.length){
+    var patch = {};
+    if (giorno) patch.date = giorno;
+    if (contoDestinazione) patch.account_id = Number(String(contoDestinazione).replace(/^c/,''));
+    if (cartaDestinazione) patch.card_id = Number(String(cartaDestinazione).replace(/^k/,''));
+    doveFinisce = 'ipotesi';
+    msg('scrivo la differenza nell\u2019ipotesi…');
+    /* UNA chiamata per tutto il gruppo: una voce di storico, un annullo solo */
+    scrittura = api('/scenari/' + ctx + '/voci/differenza',
+      { ids: ids.map(Number), op: 'update', patch: patch, operation_id: uuid() })
+      .then(function(e){ return { mosse: e.quante, lati_giroconto: 0, ipotesi: true }; });
+  } else {
+    var corpo = { ids: ids, operation_id: uuid(),
+                  contesto_scenario_id: ctx ? Number(ctx) : null };
+    if (giorno) corpo.data = giorno;
+    if (contoDestinazione) corpo.conto_id = Number(String(contoDestinazione).replace(/^c/,''));
+    if (cartaDestinazione) corpo.carta_id = Number(String(cartaDestinazione).replace(/^k/,''));
+    doveFinisce = ctx ? 'ipotesi' : 'base';
+    msg('sposto…');
+    scrittura = api('/movimenti/sposta', corpo);
+  }
+  return scrittura.then(function(e){
+    return Promise.all([caricaPrevisione(), ctx ? caricaDifferenze() : null])
+      .then(function(){ return e; });
+  }).then(function(e){
+    if (S.scenario !== ctx){
+      /* il contesto e' cambiato mentre la richiesta era in volo: si dice DOVE
+         e' finita, invece di lasciar credere che riguardi quello che si vede */
+      msg('Fatto, ma nel contesto di prima: il contesto e\u0300 cambiato mentre scrivevo.');
+      return;
+    }
+    var t = e.mosse + (e.mosse===1?' voce spostata':' voci spostate')
+      + (doveFinisce === 'ipotesi' ? ' in questa ipotesi (la base non cambia)' : '');
+    if (giorno) t += ' al ' + dataIt(giorno);
+    if (contoDestinazione){
+      var nome = ((S.prev.conti||[]).filter(function(c){ return c.id===contoDestinazione; })[0]||{}).nome;
+      t += ' su ' + (nome || 'un altro conto');
+    }
+    if (e.lati_giroconto) t += '. Spostato anche l\u2019altro lato del giroconto';
+    msg(t + '.');
+    S.sel = []; renderSelezione(); renderProspetto();
+  }).catch(function(e){
+    msg(e.scaduto ? ('ESITO INCERTO: ' + e.message + '. Verifica prima di ripetere.')
+                  : ('Nessuna voce spostata: ' + e.message), true);
+    return caricaPrevisione();
+  });
+}
+function nomeIpotesi(){
+  var x = (S.scenari || []).filter(function(y){ return String(y.id) === String(S.scenario); })[0];
+  return x ? x.nome : S.scenario;
+}
+function apriDettaglio(v){
+  var d = $('#dettaglio');
+  /* con un'ipotesi attiva, una voce DELLA BASE non si modifica nella base:
+     si scrive una differenza. Una voce nata nell'ipotesi invece e' sua, e si
+     modifica direttamente. */
+  var inIpotesi = !!S.scenario && v.scenarioOp !== 'insert';
+  var conti = (S.anag && S.anag.conti) || [];
+  var cat = (S.anag && S.anag.categorie) || [];
+  var sotto = (cat.filter(function(c){ return c.nome === v.categoria; })[0] || {}).sotto || [];
+  d.innerHTML =
+    '<h2 id="detTitolo">' + esc(v.descrizione || 'Voce') + ' <span class="chip">' +
+      esc(v.stato || 'previsto') + '</span>' +
+      (v.toccaSaldo === false ? ' <span class="chip avv">non tocca il saldo</span>' : '') + '</h2>' +
+    (v.previstoCents != null
+      ? '<p class="nota">previsto ' + euro(v.previstoCents) + ' il ' + dataIt(v.previstoData) +
+        ' · reale ' + euro(v.cents) + ' · scarto ' + euro(v.cents - v.previstoCents) + '</p>'
+      : '') +
+    (v.dataContabile ? '<p class="nota">data contabile ' + dataIt(v.dataContabile) + ', data valuta quella della riga</p>' : '') +
+    '<div class="riga">' +
+      campo('Importo', '<input id="dImporto" class="num" value="' + esc(euro(v.cents)) + '"' + (v.modificabile?'':' disabled') + '>') +
+      campo('Giorno in cui passa', '<input id="dData" type="date" value="' + esc(dataGiornoDi(v)) + '"' + (v.modificabile?'':' disabled') + '>') +
+      campo('Dove passa', '<select id="dConto"' + (v.modificabile?'':' disabled') + '>' +
+        conti.map(function(c){ return '<option value="c' + c.id + '"' + (('c'+c.id)===v.contoId?' selected':'') +
+          '>' + esc(c.nome) + '</option>'; }).join('') + '</select>') +
+      campo('Categoria', '<select id="dCat"' + (v.modificabile?'':' disabled') + '>' +
+        '<option value="">— da classificare —</option>' +
+        cat.map(function(c){ return '<option' + (c.nome===v.categoria?' selected':'') + '>' + esc(c.nome) + '</option>'; }).join('') + '</select>') +
+      campo('Sottocategoria', '<select id="dSub"' + (v.modificabile?'':' disabled') + '>' +
+        '<option value="">—</option>' +
+        sotto.map(function(s){ return '<option' + (s.nome===v.sottocategoria?' selected':'') + '>' + esc(s.nome) + '</option>'; }).join('') + '</select>') +
+    '</div>' +
+    (v.modificabile
+      ? '<div class="bottoni"><button class="btn p" id="dSalva">' +
+          (inIpotesi ? 'Salva in questa ipotesi' : 'Salva') + '</button>' +
+        (inIpotesi ? '<button class="btn" id="dTogli">Togli da questa ipotesi</button>' : '') +
+        '<button class="btn" id="dPromemoria">Promemoria su questa voce</button>' +
+        '<button class="btn" id="dChiudi">Chiudi</button></div>' +
+        (inIpotesi ? '<p class="avviso">Stai guardando l&#39;ipotesi &#171;' + esc(nomeIpotesi()) +
+          '&#187;: quello che salvi resta qui e <b>la base non cambia</b>. Per portarlo nella base ' +
+          'vai in Scenari e porta dentro questa voce.</p>' : '')
+      : '<p class="avviso">Voce in sola lettura: ' +
+        (v.derivato ? 'è l’addebito di un ciclo carta, conseguenza di altri movimenti.'
+                    : 'è un fatto già rendicontato.') + '</p>' +
+        '<div class="bottoni"><button class="btn" id="dChiudi">Chiudi</button></div>') +
+    '<p class="nota" id="dMsg" role="status" aria-live="polite"></p>';
+  d.classList.add('si');
+  $('#dChiudi').onclick = function(){ d.classList.remove('si'); };
+  if ($('#dSalva')) $('#dSalva').onclick = function(){ salvaDettaglio(v, inIpotesi); };
+  if ($('#dTogli')) $('#dTogli').onclick = function(){ togliDaIpotesi(v); };
+  if ($('#dPromemoria')) $('#dPromemoria').onclick = function(){
+    /* dal prospetto: il promemoria nasce sulla VOCE, con la sua data e tre
+       giorni di anticipo. Prima questo bottone dichiarava di non fare niente. */
+    var giorno = dataGiornoDi(v);
+    $('#dMsg').className = 'nota';
+    creaPromemoria({ titolo: 'Pagare ' + (v.descrizione || 'questa voce'),
+      entita: 'transaction', entita_id: Number(v.dbId),
+      quando: new Date(giorno + 'T09:00:00').toISOString(), anticipo_giorni: 3 }, '#dMsg')
+      .catch(function(){ $('#dMsg').className = 'errore'; });
+  };
+}
+function campo(et, html){ return '<div><label>' + esc(et) + '</label>' + html + '</div>'; }
+function dataGiornoDi(v){
+  for (var i = 0; i < (S.prev.giorni||[]).length; i++){
+    var g = S.prev.giorni[i];
+    var dentro = (g.voci||[]).concat(g.acquistiCarta||[]).some(function(x){ return String(x.dbId) === String(v.dbId); });
+    if (dentro) return g.data;
+  }
+  return S.prev.da;
+}
+/* Parser RIGOROSO, la controparte di euro(): non ripulisce l'input illegale e
+   non trasforma il vuoto in zero. Le stesse regole del parser degli estratti:
+   virgola decimale, punto per le migliaia in gruppi di tre, niente tre decimali,
+   e il risultato deve restare un intero sicuro. */
+function centesimiDa(testo){
+  if (testo == null) return null;
+  var s = String(testo).trim().replace(/\u00a0/g,' ').replace(/[€\s]/g,'');
+  if (s === '') return null;
+  var neg = false;
+  if (/^\(.*\)$/.test(s)){ neg = true; s = s.slice(1,-1); }
+  if (/^[-−–]/.test(s)){ neg = true; s = s.slice(1); }
+  else if (s.charAt(0) === '+') s = s.slice(1);
+  if (!/^[\d.,]+$/.test(s)) return null;          /* lettere o simboli: non e' un importo */
+  function gruppiOk(parte, sep){
+    if (parte.indexOf(sep) < 0) return true;
+    var pz = parte.split(sep);
+    if (pz[0].length < 1 || pz[0].length > 3) return false;
+    for (var i = 1; i < pz.length; i++) if (pz[i].length !== 3) return false;
+    return true;
+  }
+  var v = s.lastIndexOf(','), pt = s.lastIndexOf('.'), interi, dec = '';
+  if (v >= 0 && v > pt){
+    if (s.slice(v+1).indexOf(',') >= 0) return null;
+    interi = s.slice(0,v); dec = s.slice(v+1);
+    if (!gruppiOk(interi,'.')) return null;
+    interi = interi.replace(/\./g,'');
+  } else if (pt >= 0){
+    var coda = s.slice(pt+1);
+    if (coda.length === 3 && v < 0){
+      if (!gruppiOk(s,'.')) return null;
+      interi = s.replace(/\./g,'');
+    } else {
+      interi = s.slice(0,pt); dec = coda;
+      if (!gruppiOk(interi,',')) return null;
+      interi = interi.replace(/,/g,'');
+      if (interi.indexOf('.') >= 0) return null;
+    }
+  } else {
+    interi = s;
+    if (!gruppiOk(interi,',') || !gruppiOk(interi,'.')) return null;
+    interi = interi.replace(/[.,]/g,'');
+  }
+  if (!/^\d*$/.test(interi) || !/^\d*$/.test(dec)) return null;
+  if (dec.length > 2) return null;                 /* tre decimali: non e' denaro */
+  if (interi === '' && dec === '') return null;
+  var c = Number(interi || '0') * 100 + Number((dec + '00').slice(0,2));
+  if (!Number.isSafeInteger(c)) return null;       /* oltre, i centesimi non sono esatti */
+  return neg ? -c : c;
+}
+function togliDaIpotesi(v){
+  $('#dMsg').className='nota'; $('#dMsg').textContent='tolgo dall\u2019ipotesi…';
+  api('/scenari/' + S.scenario + '/voce/' + Number(v.dbId) + '/togli', { operation_id: uuid() })
+    .then(function(){ return Promise.all([caricaPrevisione(), caricaDifferenze(), caricaScenari()]); })
+    .then(function(){
+      var resta = !!S.voci[String(v.dbId)];
+      if (resta && !(S.voci[String(v.dbId)] || {}).ipotesiIgnorata){
+        $('#dMsg').className='errore';
+        $('#dMsg').textContent='NON VERIFICATO: rileggendo, la voce c\u2019e\u0300 ancora nell\u2019ipotesi.';
+        return;
+      }
+      $('#dMsg').className='nota';
+      $('#dMsg').textContent = resta
+        ? 'La voce e\u0300 gia\u0300 un fatto rendicontato: resta nel saldo, e la differenza risulta in conflitto.'
+        : 'Tolta da questa ipotesi. Nella base c\u2019e\u0300 ancora.';
+      $('#dettaglio').classList.remove('si');
+    })
+    .catch(function(e){
+      $('#dMsg').className='errore'; $('#dMsg').textContent='Non tolta: ' + e.message;
+    });
+}
+function salvaDettaglio(v, inIpotesi){
+  var cents = centesimiDa($('#dImporto').value);
+  if (cents == null){
+    $('#dMsg').className='errore';
+    $('#dMsg').textContent='Importo non valido: non viene indovinato. Scrivilo come 1.234,56.';
+    return;
+  }
+  var cat = $('#dCat').value, sub = $('#dSub').value;
+  var catId = null, subId = null;
+  (S.anag.categorie||[]).forEach(function(c){
+    if (c.nome === cat){ catId = c.id;
+      (c.sotto||[]).forEach(function(x){ if (x.nome === sub) subId = x.id; }); }
+  });
+  var contoSel = $('#dConto').value;
+  var patch = { amount_cents: cents, date: $('#dData').value,
+                account_id: Number(contoSel.replace(/^c/,'')),
+                category_id: catId, subcategory_id: subId };
+  /* nell'ipotesi si manda SOLO cio' che cambia: una differenza che non cambia
+     niente non e' una differenza, e il servizio la rifiuta */
+  var soloCambiati = {};
+  if (cents !== v.cents) soloCambiati.amount_cents = cents;
+  if ($('#dData').value !== dataGiornoDi(v)) soloCambiati.date = $('#dData').value;
+  if (contoSel !== v.contoId) soloCambiati.account_id = patch.account_id;
+  if (cat !== (v.categoria || '')) soloCambiati.category_id = catId;
+  if (sub !== (v.sottocategoria || '')) soloCambiati.subcategory_id = subId;
+  if (inIpotesi && !Object.keys(soloCambiati).length){
+    $('#dMsg').className='errore';
+    $('#dMsg').textContent='Non hai cambiato niente: un\u2019ipotesi identica alla base non e\u0300 una differenza.';
+    return;
+  }
+  $('#dSalva').disabled = true;
+  $('#dMsg').className='nota'; $('#dMsg').textContent = inIpotesi ? 'salvo nell\u2019ipotesi…' : 'salvo…';
+  var scrittura = inIpotesi
+    ? api('/scenari/' + S.scenario + '/voce/' + Number(v.dbId) + '/cambia',
+          { patch: soloCambiati, operation_id: uuid() })
+        .then(function(e){ return caricaDifferenze().then(function(){ return e; }); })
+    : api('/movimenti/modifica', { id: Number(v.dbId), patch: patch, operation_id: uuid(),
+        contesto_scenario_id: S.scenario ? Number(S.scenario) : null });
+  scrittura
+    .then(function(){ return caricaPrevisione(); })     /* RILETTURA dopo la scrittura */
+    .then(function(){
+      var dopo = S.voci[String(v.dbId)];
+      if (!dopo){
+        $('#dMsg').className='nota';
+        $('#dMsg').textContent='Salvato. La voce non e\u0300 piu\u0300 nel periodo mostrato.';
+        return;
+      }
+      /* si verificano TUTTI i campi scritti, non solo l'importo: un salvataggio
+         che cambia una cosa sola e la dichiara riuscita e' un falso successo */
+      var scarti = [];
+      if (dopo.cents !== cents) scarti.push('importo ' + euro(dopo.cents));
+      if (dataGiornoDi(dopo) !== patch.date) scarti.push('giorno ' + dataIt(dataGiornoDi(dopo)));
+      if (dopo.contoId !== contoSel) scarti.push('conto diverso');
+      if (cat && dopo.categoria !== cat) scarti.push('categoria ' + (dopo.categoria || '—'));
+      if (sub && dopo.sottocategoria !== sub) scarti.push('sottocategoria ' + (dopo.sottocategoria || '—'));
+      if (scarti.length){
+        $('#dMsg').className='errore';
+        $('#dMsg').textContent = 'NON VERIFICATO: rileggendo risulta ' + scarti.join(', ') + '.';
+        return;
+      }
+      $('#dMsg').className='nota';
+      $('#dMsg').textContent = inIpotesi
+        ? 'Salvato in questa ipotesi e riletto. Nella base non e\u0300 cambiato niente.'
+        : 'Salvato e riletto.';
+      $('#dettaglio').classList.remove('si');
+    }).catch(function(e){
+      $('#dMsg').className='errore';
+      $('#dMsg').textContent = e.scaduto
+        ? 'ESITO INCERTO: ' + e.message + '. Verifica prima di ripetere.'
+        : 'Non salvato: ' + e.message;
+    }).finally(function(){ if ($('#dSalva')) $('#dSalva').disabled = false; });
+}
+
+/* ── TENDENZA: una linea per conto piu' l'aggregata ─────────────────────── */
+var COLORI = ['#A3FF00','#5ac8fa','#ffb020','#ff5f56','#bf5af2','#32d74b'];
+function renderCurva(){
+  var p = S.prev; if (!p) return;
+  var gg = (p.giorni||[]).filter(function(g){ return g.noto; });
+  if (!gg.length){ $('#curva').innerHTML=''; $('#legenda').innerHTML='Nessun giorno con saldo noto nel periodo.'; return; }
+  var serie = (p.conti||[]).map(function(c, i){
+    return { nome:c.nome, colore:COLORI[i % COLORI.length],
+             punti:gg.map(function(g){ return g.perConto[c.id]; }) };
+  });
+  if ((p.conti||[]).length > 1){
+    serie.push({ nome:'aggregato', colore:'#F5F5F7', spesso:true,
+                 punti:gg.map(function(g){ return g.totale; }) });
+  }
+  var tutti = serie.reduce(function(a,s){ return a.concat(s.punti); }, []);
+  var min = Math.min.apply(null, tutti), max = Math.max.apply(null, tutti);
+  if (min === max){ min -= 100; max += 100; }
+  var W = 800, H = 190, pad = 8;
+  var x = function(i){ return pad + i * (W - pad*2) / Math.max(1, gg.length - 1); };
+  var y = function(v){ return H - pad - (v - min) * (H - pad*2) / (max - min); };
+  var h = '<g>';
+  if (min < 0 && max > 0){
+    h += '<line x1="' + pad + '" x2="' + (W-pad) + '" y1="' + y(0) + '" y2="' + y(0) +
+      '" stroke="#ff5f56" stroke-dasharray="3 3" stroke-width="1" opacity=".6"/>';
+  }
+  serie.forEach(function(s){
+    var d = s.punti.map(function(v,i){ return (i?'L':'M') + x(i).toFixed(1) + ' ' + y(v).toFixed(1); }).join(' ');
+    h += '<path d="' + d + '" fill="none" stroke="' + s.colore + '" stroke-width="' +
+      (s.spesso?2.2:1.4) + '" stroke-linejoin="round"/>';
+  });
+  h += '</g>';
+  $('#curva').setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+  $('#curva').innerHTML = h;
+  $('#legenda').innerHTML = serie.map(function(s){
+    return '<span><i style="background:' + s.colore + '"></i>' + esc(s.nome) + '</span>'; }).join('')
+    + '<span>' + esc(dataIt(gg[0].data) + ' – ' + dataIt(gg[gg.length-1].data)) + '</span>'
+    + '<span>min ' + euro(min) + ' · max ' + euro(max) + '</span>';
+}
+
+/* ── IMPORT → INBOX → CONFERMA → SALDO → ANNULLO ───────────────────────── */
+function leggiFile(f){
+  return new Promise(function(ris, rif){
+    var r = new FileReader();
+    r.onload = function(){
+      var b = new Uint8Array(r.result), s = '';
+      for (var i = 0; i < b.length; i++) s += String.fromCharCode(b[i]);
+      ris(btoa(s));
+    };
+    r.onerror = function(){ rif(new Error('il file non è stato letto')); };
+    r.readAsArrayBuffer(f);
+  });
+}
+var ULTIMO_IMPORT = null;
+function anteprima(f){
+  var box = $('#esitoImport');
+  box.innerHTML = '<p class="nota">lettura di ' + esc(f.name) + '…</p>';
+  return leggiFile(f).then(function(b64){
+    ULTIMO_IMPORT = { nome:f.name, b64:b64 };
+    var corpo = { filename:f.name, contenuto_base64:b64 };
+    var carta = $('#impCarta').value;
+    if (carta) corpo.card_id = Number(carta); else corpo.account_id = Number($('#impConto').value);
+    return api('/ingest/preview', corpo);
+  }).then(function(p){
+    ULTIMO_IMPORT.testa = p;
+    box.innerHTML =
+      '<p class="nota">' + esc(p.formato.toUpperCase()) + (p.foglio ? ' · foglio ' + esc(p.foglio) : '') +
+      ' · <b>' + p.righe_lette + '</b> righe lette · <b>' + p.righe_non_capite + '</b> non comprese' +
+      ' · <span class="chip">nulla e&#768; stato scritto</span></p>' +
+      (p.avvisi||[]).map(function(a){ return '<p class="avviso">' + esc(a) + '</p>'; }).join('') +
+      '<div class="tab-wrap"><table class="pro"><thead><tr><th>Data</th><th>Descrizione</th><th class="n">Importo</th></tr></thead><tbody>' +
+      (p.anteprima||[]).slice(0,12).map(function(r){
+        return '<tr><td class="g">' + esc(dataIt(r.data)) + '</td><td>' + esc(r.descrizione) +
+          '</td><td class="n' + (r.importo_cents<0?' neg':'') + '">' + euro(r.importo_cents) + '</td></tr>'; }).join('') +
+      '</tbody></table></div>' +
+      ((p.non_capite||[]).length
+        ? '<p class="avviso">Righe non comprese, elencate perche&#768; nessuna sparisca: ' +
+          (p.non_capite||[]).slice(0,6).map(function(n){ return 'riga ' + n.indice + ' (' + esc(n.motivo) + ')'; }).join(', ') +
+          ((p.non_capite||[]).length>6 ? ' e altre ' + ((p.non_capite||[]).length-6) : '') + '</p>'
+        : '') +
+      '<div class="bottoni"><button class="btn p" id="btnConferma">Conferma l&#39;import</button>' +
+      '<button class="btn" id="btnAnnullaImport">Lascia stare</button></div>';
+    $('#btnConferma').onclick = conferma;
+    $('#btnAnnullaImport').onclick = function(){ box.innerHTML=''; ULTIMO_IMPORT=null; };
+  }).catch(function(e){
+    box.innerHTML = '<p class="errore">Il file non e&#768; stato letto: ' + esc(e.message) +
+      '. Nessun movimento inserito.</p>';
+  });
+}
+function conferma(){
+  if (!ULTIMO_IMPORT) return;
+  var box = $('#esitoImport');
+  $('#btnConferma').disabled = true;
+  var corpo = { filename:ULTIMO_IMPORT.nome, contenuto_base64:ULTIMO_IMPORT.b64 };
+  var carta = $('#impCarta').value;
+  if (carta) corpo.card_id = Number(carta); else corpo.account_id = Number($('#impConto').value);
+  api('/ingest/confirm', corpo).then(function(e){
+    /* l'esito viene dal CORPO: nuove, duplicate, non comprese, stato */
+    box.innerHTML = '<p class="nota">Import <b>' + e.import_id + '</b>: ' +
+      '<b>' + e.nuove + '</b> nuove · ' + e.duplicate + ' gia&#768; presenti · ' +
+      (e.non_capite_totali||0) + ' non comprese · stato <b>' + esc(e.stato) + '</b></p>' +
+      ((e.non_capite||[]).length ? '<p class="avviso">Le righe non comprese restano leggibili: ' +
+        'sono ' + (e.non_capite_totali||0) + ' e si rivedono anche dopo un ricaricamento.</p>' : '');
+    return Promise.all([caricaInbox(), caricaPrevisione(), caricaAperti()]);
+  }).catch(function(e){
+    box.innerHTML = '<p class="errore">' + esc(e.message) + '</p>' +
+      (e.corpo && e.corpo.ripresa ? '<p class="avviso">' + esc(e.corpo.ripresa) + '</p>' : '');
+    return caricaAperti();
+  }).finally(function(){ if ($('#btnConferma')) $('#btnConferma').disabled = false; });
+}
+function caricaAperti(){
+  return api('/ingest/aperti').then(function(a){
+    $('#apertiBox').innerHTML = (a||[]).length
+      ? '<p class="avviso">Import interrotti, ancora aperti: ' + (a||[]).map(function(x){
+          return 'n. ' + x.import_id + ' (' + esc(x.file) + ', ' + x.righe_viste + ' su ' +
+            (x.righe_attese==null?'?':x.righe_attese) + ' righe)'; }).join(' · ') +
+        '. Ricaricando lo stesso file si riprendono da dove si erano fermati.</p>'
+      : '';
+  }).catch(function(e){ dichiaraFonte('import aperti', e); });
+}
+function caricaInbox(){
+  var q = '/inbox/righe';
+  if (S.conto !== 'tutti') q += '?conto_id=' + encodeURIComponent(S.conto.replace(/^c/,''));
+  return api(q).then(function(righe){
+    dichiaraFonte('inbox', null);
+    if (!righe.length){ $('#inbox').innerHTML = '<p class="nota">Nessuna riga da riconciliare. Si popola caricando un estratto.</p>'; return; }
+    $('#inbox').innerHTML = righe.map(function(r){
+      return '<div class="riga-inbox" data-riga="' + r.row_id + '" id="riga-' + r.row_id + '">' +
+        '<div><b class="num' + (r.importo_cents<0?' neg':'') + '">' + euro(r.importo_cents) + '</b> ' +
+        esc(r.descrizione) + '</div>' +
+        '<div class="banca">' + esc(dataIt(r.data)) + ' · ' + esc(r.file) +
+        ' · <span class="chip">riga bancaria immutabile</span></div>' +
+        '<div class="cand-box" data-per="' + r.row_id + '"><button class="btn" data-cand="' + r.row_id +
+        '">Mostra le destinazioni</button></div></div>';
+    }).join('');
+    $$('#inbox [data-cand]').forEach(function(b){
+      b.onclick = function(){ candidati(b.getAttribute('data-cand')); };
+    });
+  }).catch(function(e){
+    dichiaraFonte('inbox', e);
+    $('#inbox').innerHTML = '<p class="errore">Inbox non letta: ' + esc(e.message) + '. Non e&#768; una inbox vuota.</p>';
+  });
+}
+function candidati(rowId){
+  var box = document.querySelector('.cand-box[data-per="' + rowId + '"]');
+  box.innerHTML = '<p class="nota">cerco…</p>';
+  api('/inbox/riga/' + rowId + '/candidati').then(function(c){
+    box.innerHTML = (c||[]).length
+      ? (c||[]).map(function(x){
+          return '<div class="cand' + (x.proposta?' proposta':'') + '">' +
+            '<b class="num">' + euro(x.importo_cents) + '</b> ' + esc(x.descrizione) +
+            ' <span class="chip">' + esc(dataIt(x.data)) + '</span>' +
+            (x.proposta ? ' <span class="chip ok">proposta</span>' : ' <span class="chip">alternativa</span>') +
+            ' <span class="nota">' + esc(x.motivo) + '</span>' +
+            '<button class="btn p" data-coll="' + rowId + ':' + x.tx_id + '">Collega</button>' +
+            '<button class="btn" data-parz="' + rowId + ':' + x.tx_id + '">Collega come acconto</button>' +
+            '</div>'; }).join('')
+      : '<p class="nota">Nessuna previsione compatibile.</p>';
+    box.innerHTML += '<div class="bottoni"><button class="btn" data-nuova="' + rowId +
+      '">Registra come spesa nuova</button></div>';
+    box.querySelectorAll('[data-coll]').forEach(function(b){
+      b.onclick = function(){ var p = b.getAttribute('data-coll').split(':'); collega(p[0], p[1], false); }; });
+    box.querySelectorAll('[data-parz]').forEach(function(b){
+      b.onclick = function(){ var p = b.getAttribute('data-parz').split(':'); collega(p[0], p[1], true); }; });
+    box.querySelectorAll('[data-nuova]').forEach(function(b){
+      b.onclick = function(){ nuovaSpesa(b.getAttribute('data-nuova')); }; });
+  }).catch(function(e){
+    box.innerHTML = '<p class="errore">' + esc(e.message) + '</p>';
+  });
+}
+function collega(rowId, txId, parziale){
+  var box = document.querySelector('.cand-box[data-per="' + rowId + '"]');
+  api('/inbox/riga/' + rowId + '/collega', { tx_id:Number(txId), operation_id:uuid(), parziale:!!parziale })
+    .then(function(e){
+      $('#esitoInbox').innerHTML = '<p class="nota">Collegato: previsto ' + euro(e.previsto_cents) +
+        ' il ' + dataIt(e.data_prevista) + ', reale ' + euro(e.reale_cents) + ' il ' + dataIt(e.data_reale) +
+        ', scarto <b>' + euro(e.scarto_cents) + '</b>' +
+        (e.residuo_cents ? '. Resta aperto il residuo di ' + euro(e.residuo_cents) : '. Nessun residuo aperto') +
+        '.</p>';
+      return Promise.all([caricaInbox(), caricaPrevisione(), caricaJournal()]);
+    }).catch(function(e){
+      $('#esitoInbox').innerHTML = '<p class="errore">' + esc(e.message) + '</p>';
+    });
+}
+function nuovaSpesa(rowId){
+  var box = document.querySelector('.cand-box[data-per="' + rowId + '"]');
+  var cat = (S.anag && S.anag.categorie) || [];
+  box.innerHTML = '<div class="cand"><label class="etichetta">Categoria</label>' +
+    '<select class="sel" id="nsCat"><option value="">— da classificare —</option>' +
+    cat.map(function(c){ return '<option value="' + c.id + '">' + esc(c.nome) + '</option>'; }).join('') +
+    '</select><button class="btn p" id="nsVai">Registra</button></div>';
+  $('#nsVai').onclick = function(){
+    var c = $('#nsCat').value;
+    api('/inbox/riga/' + rowId + '/nuova',
+        { category_id: c ? Number(c) : null, operation_id: uuid() })
+      .then(function(e){
+        $('#esitoInbox').innerHTML = '<p class="nota">Registrata' +
+          (e.classificata ? '' : ' e lasciata DA CLASSIFICARE: resta visibile in Inbox') + '.</p>';
+        return Promise.all([caricaInbox(), caricaPrevisione(), caricaJournal()]);
+      }).catch(function(e){ $('#esitoInbox').innerHTML = '<p class="errore">' + esc(e.message) + '</p>'; });
+  };
+}
+
+/* ── ANNULLA: gli ultimi venti passaggi ─────────────────────────────────── */
+function caricaJournal(){
+  /* mentre si rilegge, l'elenco NON deve sembrare aggiornato: uno storico
+     vecchio mostrato come corrente farebbe annullare la cosa sbagliata */
+  $('#journal').setAttribute('data-stato','in-lettura');
+  return api('/journal?quanti=20').then(function(j){
+    dichiaraFonte('storico', null);
+    $('#journal').setAttribute('data-stato','pronto');
+    $('#journal').innerHTML = (j||[]).length
+      ? (j||[]).map(function(x){
+          return '<div class="cand">' + esc(x.op) + ' · ' + esc(x.descrizione || '') +
+            (x.annullata ? ' <span class="chip">annullata</span>'
+                         : ' <button class="btn" data-ann="' + esc(x.operation_id) + '">Annulla</button>') +
+            '</div>'; }).join('')
+      : '<p class="nota">Nessun passaggio da annullare.</p>';
+    $$('#journal [data-ann]').forEach(function(b){
+      b.onclick = function(){
+        b.disabled = true;
+        api('/annulla', { operation_id: b.getAttribute('data-ann'), nuovo_op: uuid() })
+          .then(function(){ return Promise.all([caricaJournal(), caricaPrevisione(), caricaInbox()]); })
+          .catch(function(e){
+            b.disabled = false;
+            b.insertAdjacentHTML('afterend', '<span class="errore">' + esc(e.message) + '</span>');
+          });
+      };
+    });
+  }).catch(function(e){
+    dichiaraFonte('storico', e);
+    $('#journal').setAttribute('data-stato','errore');
+    $('#journal').innerHTML = '<p class="errore">Storico non letto: ' + esc(e.message) + '</p>';
+  });
+}
+
+/* ── pagine ancora da completare: si DICHIARANO, non finte ─────────────── */
+function daFare(titolo, cosa, gia){
+  return '<h2>' + esc(titolo) + '</h2>' +
+    (gia ? '<p class="nota">' + gia + '</p>' : '') +
+    '<p class="avviso">Questa pagina non e&#768; ancora implementata. Non mostra dati finti: ' +
+    esc(cosa) + '</p>';
+}
+/* ── IMPEGNI: costi fissi, bollette, rate brevi e finanziamenti ──────────
+   Le due viste (colonne e grafico) leggono LO STESSO corpo: non due query che
+   potrebbero divergere, ma le stesse righe raggruppate in due modi. */
+var TIPI = { canone:'canone', bolletta:'bolletta', rata_breve:'rata breve', finanziamento:'finanziamento' };
+function renderFissi(){
+  /* i menu si riempiono dall'anagrafica gia' letta */
+  var conti = (S.anag && S.anag.conti) || [], cat = (S.anag && S.anag.categorie) || [];
+  var opzC = conti.map(function(c){ return '<option value="' + c.id + '">' + esc(c.nome) + '</option>'; }).join('');
+  var opzK = '<option value="">— categoria —</option>' + cat.filter(function(c){ return c.attiva !== false; })
+    .map(function(c){ return '<option value="' + c.id + '">' + esc(c.nome) + '</option>'; }).join('');
+  if ($('#cfConto')) { $('#cfConto').innerHTML = opzC; $('#fzConto').innerHTML = opzC;
+                       $('#cfCategoria').innerHTML = opzK; $('#fzCategoria').innerHTML = opzK;
+                       sottoDi('#cfCategoria', '#cfSotto'); sottoDi('#fzCategoria', '#fzSotto'); }
+}
+/* Ogni spesa deve poter avere la sua sottocategoria: rate, canoni e bollette
+   comprese. Il menu segue la categoria scelta, perche' una sottocategoria di
+   un'altra categoria il servizio la rifiuta (e ha ragione). */
+function sottoDi(selCat, selSub){
+  var id = Number($(selCat).value || 0);
+  var c = ((S.anag && S.anag.categorie) || []).filter(function(x){ return x.id === id; })[0];
+  var sotto = (c && c.sotto) || [];
+  $(selSub).innerHTML = '<option value="">— sottocategoria —</option>' +
+    sotto.filter(function(x){ return x.attiva !== false; }).map(function(x){
+      return '<option value="' + x.id + '">' + esc(x.nome) + '</option>'; }).join('');
+  $(selSub).disabled = !sotto.length;
+}
+
+function finestraImpegni(){
+  var oggi = new Date().toISOString().slice(0,10);
+  var da = (S.da || oggi).slice(0,8) + '01';
+  return { da: da, a: fineMese(piuMesi(da, Math.max(S.mesi,6) - 1)) };
+}
+function caricaImpegni(){
+  var f = finestraImpegni(), gen = S.gen;
+  var q = '/impegni?da=' + f.da + '&a=' + f.a;
+  if (S.conto !== 'tutti') q += '&conti=' + encodeURIComponent(S.conto);
+  if (S.scenario) q += '&scenario_id=' + encodeURIComponent(S.scenario);
+  return api(q).then(function(v){
+    if (gen !== S.gen) return;
+    S.impegni = v; dichiaraFonte('impegni', null); renderImpegni();
+  }).catch(function(e){
+    dichiaraFonte('impegni', e);
+    $('#tabellaImpegni').innerHTML = '<p class="errore">Gli impegni non sono stati letti: ' +
+      esc(e.message) + '. Non e&#768; «nessun impegno».</p>';
+  });
+}
+function renderImpegni(){
+  var v = S.impegni; if (!v) return;
+  var t = v.totali || {}, perTipo = t.per_tipo || {};
+  $('#kpiImpegni').innerHTML =
+    kpi('Impegni nel periodo', String(t.voci || 0),
+        dataIt(v.finestra.da) + ' – ' + dataIt(v.finestra.a) +
+        (S.conto !== 'tutti' ? ' · un conto solo' : ' · tutti i conti') +
+        (S.scenario ? ' · ipotesi' : ' · previsione base')) +
+    kpi('Totale del periodo', euro(t.totale_cents || 0),
+        Object.keys(perTipo).map(function(k){ return (TIPI[k]||k) + ' ' + euro(perTipo[k]); }).join(' · ') || '—',
+        (t.totale_cents || 0) < 0) +
+    kpi('Media al mese', (v.mesi||[]).length ? euro(Math.round((t.totale_cents||0) / v.mesi.length)) : '—',
+        (v.mesi||[]).length + ' mesi nel periodo', (t.totale_cents||0) < 0) +
+    kpi('Righe considerate', String(v.righe_usate || 0),
+        'le stesse righe per le colonne e per il grafico');
+
+  $('#tabellaImpegni').innerHTML = (v.voci||[]).length
+    ? '<div class="tab-wrap"><table class="pro"><thead><tr><th>Impegno</th><th>Tipo</th><th>Conto</th>' +
+      '<th class="n">importo</th><th>ogni</th><th>prossima</th><th class="n">nel periodo</th><th></th></tr></thead><tbody>' +
+      (v.voci||[]).map(function(r){
+        var f = r.finanziamento, se = r.serie;
+        return '<tr data-impegno="' + esc(r.chiave) + '">' +
+          '<td>' + esc(r.nome) +
+            (r.stimato ? ' <span class="chip avv">stima</span>' : '') +
+            (f && f.completezza === 'parziale' ? ' <span class="chip avv">sequenza nota</span>' : '') +
+            (f && f.rate_parziali ? ' <span class="chip avv">' + f.rate_parziali + ' rata pagata in parte</span>' : '') + '</td>' +
+          '<td>' + esc(TIPI[r.tipo] || r.tipo) + '</td>' +
+          '<td>' + esc(r.conto || '—') + '</td>' +
+          '<td class="n">' + euro(f ? (f.rata_cents || null) : (se ? se.importo_cents : null)) + '</td>' +
+          '<td>' + esc(f ? f.frequenza : (se ? se.frequenza : '—')) + '</td>' +
+          '<td class="g">' + esc(r.prossima_scadenza ? dataIt(r.prossima_scadenza) : '—') + '</td>' +
+          '<td class="n' + (r.totale_periodo_cents < 0 ? ' neg' : '') + '">' + euro(r.totale_periodo_cents) + '</td>' +
+          '<td>' + (f ? '<button class="btn" data-piano="' + f.id + '">Piano</button>'
+                       : (se ? '<button class="btn" data-serie="' + se.id + '">Modifica</button>' : '')) + '</td>' +
+        '</tr>';
+      }).join('') + '</tbody></table></div>'
+    : '<p class="nota">Nessun impegno in questo periodo. Aggiungine uno qui sotto.</p>';
+  $$('#tabellaImpegni [data-piano]').forEach(function(b){
+    b.onclick = function(){ apriPiano(Number(b.getAttribute('data-piano'))); };
+  });
+  $$('#tabellaImpegni [data-serie]').forEach(function(b){
+    b.onclick = function(){ apriSerie(Number(b.getAttribute('data-serie'))); };
+  });
+  renderGraficoImpegni();
+}
+function renderGraficoImpegni(){
+  var v = S.impegni; if (!v) return;
+  var mesi = v.mesi || [];
+  if (!mesi.length){ $('#graficoImpegni').innerHTML = ''; $('#legendaImpegni').innerHTML =
+    'Nessun impegno nel periodo.'; return; }
+  var tipi = Object.keys(v.totali.per_tipo || {});
+  var W = 800, H = 190, pad = 10;
+  var larg = (W - pad*2) / mesi.length;
+  var max = Math.max.apply(null, mesi.map(function(m){ return Math.abs(m.totale_cents); })) || 1;
+  var h = '';
+  mesi.forEach(function(m, i){
+    var y0 = H - pad, alt = 0;
+    tipi.forEach(function(tp, k){
+      var c = Math.abs((m.per_tipo || {})[tp] || 0);
+      if (!c) return;
+      var a = (c / max) * (H - pad*2);
+      h += '<rect x="' + (pad + i*larg + larg*0.15).toFixed(1) + '" y="' + (y0 - alt - a).toFixed(1) +
+        '" width="' + (larg*0.7).toFixed(1) + '" height="' + a.toFixed(1) + '" fill="' +
+        COLORI[k % COLORI.length] + '" opacity=".85"></rect>';
+      alt += a;
+    });
+    h += '<text x="' + (pad + i*larg + larg/2).toFixed(1) + '" y="' + (H - 1) +
+      '" text-anchor="middle" font-size="9" fill="#8A8A8E">' + esc(m.mese.slice(5) + '/' + m.mese.slice(2,4)) + '</text>';
+  });
+  $('#graficoImpegni').setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+  $('#graficoImpegni').innerHTML = h;
+  $('#legendaImpegni').innerHTML = tipi.map(function(tp, k){
+    return '<span><i style="background:' + COLORI[k % COLORI.length] + '"></i>' + esc(TIPI[tp]||tp) +
+      ' ' + euro(v.totali.per_tipo[tp]) + '</span>'; }).join('') +
+    '<span>totale ' + euro(v.totali.totale_cents) + ' · le stesse righe delle colonne</span>';
+}
+function vistaImpegni(quale){
+  S.vistaFissi = quale;
+  $$('#strisceFissi [data-vistaf]').forEach(function(b){
+    b.className = 'btn' + (b.getAttribute('data-vistaf') === quale ? ' p' : ''); });
+  $('#tabellaImpegni').hidden = (quale !== 'colonne');
+  $('#graficoImpegniBox').hidden = (quale !== 'grafico');
+  try { localStorage.setItem('tesoreria_vista_fissi', quale); } catch(e){}
+}
+
+/* ── modificare o spegnere un impegno che esiste gia' ───────────────────── */
+var SERIE_APERTA = null;
+function apriSerie(id){
+  var voce = ((S.impegni && S.impegni.voci) || []).filter(function(r){
+    return r.serie && r.serie.id === id; })[0];
+  if (!voce) return;
+  SERIE_APERTA = id;
+  var se = voce.serie;
+  $('#box-serie').hidden = false;
+  $('#serieTitolo').textContent = voce.nome + (se.stimato ? ' (stima)' : '');
+  $('#msImporto').value = euro(se.importo_cents);
+  $('#msGiorno').value = se.giorno;
+  $('#msFine').value = se.fine || '';
+  $('#msDa').value = new Date().toISOString().slice(0,10);
+  msgScen('#msgSerie', '');
+}
+function salvaSerie(spegni){
+  var id = SERIE_APERTA; if (!id) return;
+  var imp = importoDi('#msImporto', 'l\u2019importo', true);
+  if (!spegni && imp.errore){ msgScen('#msgSerie', imp.errore, true); return; }
+  if (!$('#msDa').value){ msgScen('#msgSerie', 'Serve la data da cui vale la modifica.', true); return; }
+  var ctx = S.scenario;
+  var corpo = { da_data: $('#msDa').value, operation_id: uuid(),
+                contesto_scenario_id: ctx ? Number(ctx) : null };
+  if (spegni) corpo.attivo = false;
+  else {
+    corpo.importo_cents = imp.cents;
+    corpo.giorno = Number($('#msGiorno').value);
+    corpo.fine = $('#msFine').value || null;
+  }
+  $('#btnSalvaSerie').disabled = true; $('#btnSpegniSerie').disabled = true;
+  msgScen('#msgSerie', spegni ? 'spengo…' : 'salvo…');
+  api('/impegni/serie/' + id + '/modifica', corpo)
+    .then(function(e){
+      return Promise.all([caricaImpegni(), caricaPrevisione(), caricaJournal()]).then(function(){ return e; });
+    })
+    .then(function(e){
+      /* RILETTURA e verifica: non basta il 200 */
+      var voce = ((S.impegni && S.impegni.voci) || []).filter(function(r){
+        return r.serie && r.serie.id === id; })[0];
+      if (spegni){
+        msgScen('#msgSerie', 'Spento dal ' + dataIt(corpo.da_data) +
+          '. Le scadenze future sono sparite, quelle gia\u0300 pagate restano.');
+        $('#box-serie').hidden = true; SERIE_APERTA = null; return;
+      }
+      if (!voce || voce.serie.importo_cents !== corpo.importo_cents){
+        msgScen('#msgSerie', 'NON VERIFICATO: rileggendo, l\u2019importo risulta ' +
+          (voce ? euro(voce.serie.importo_cents) : 'assente') + '.', true);
+        return;
+      }
+      var g = e.generazione || {};
+      msgScen('#msgSerie', 'Salvato dal ' + dataIt(corpo.da_data) + ': ' +
+        (g.aggiornate || 0) + ' scadenze aggiornate, ' + (g.nuove || 0) + ' nuove' +
+        (g.saltate_spostate_a_mano ? ', ' + g.saltate_spostate_a_mano + ' lasciate come le avevi corrette' : '') +
+        (g.saltate_rendicontate ? ', ' + g.saltate_rendicontate + ' gia\u0300 pagate non toccate' : '') + '.');
+    })
+    .catch(function(e){ msgScen('#msgSerie', 'Non salvato: ' + e.message, true); })
+    .finally(function(){ $('#btnSalvaSerie').disabled = false; $('#btnSpegniSerie').disabled = false; });
+}
+
+function apriPiano(id){
+  $('#box-piano').hidden = false;
+  $('#pianoDati').innerHTML = '<p class="nota">leggo il piano…</p>';
+  var voce = ((S.impegni && S.impegni.voci) || []).filter(function(r){
+    return r.finanziamento && r.finanziamento.id === id; })[0];
+  var f = voce ? voce.finanziamento : {};
+  api('/impegni/finanziamento/' + id + '/piano').then(function(piano){
+    $('#pianoTitolo').textContent = (voce ? voce.nome : 'Finanziamento') + ' — ' + (f.tipo_piano || '');
+    var pagate = f.rate_pagate || 0;
+    $('#pianoDati').innerHTML =
+      '<div class="griglia">' +
+        kpi('Capitale', f.capitale_cents == null ? 'non dichiarato' : euro(f.capitale_cents),
+            f.completezza === 'completo' ? 'erogato' : 'in una sequenza nota il capitale non si conosce') +
+        kpi('Residuo', f.residuo_capitale_cents == null ? '—' : euro(f.residuo_capitale_cents),
+            f.residuo_capitale_cents == null
+              ? 'capitale ignoto: il residuo non si calcola, non e&#768; zero'
+              : pagate + (pagate === 1 ? ' rata pagata' : ' rate pagate') +
+                (f.rate_parziali ? ' · ' + f.rate_parziali + ' pagata in parte' : '')) +
+        kpi('Interessi totali', f.interessi_totali_cents == null ? '—' : euro(f.interessi_totali_cents),
+            f.tan_bp == null ? 'senza TAN non si calcolano' : 'TAN ' + percento(f.tan_bp)) +
+        kpi('Uscita totale', euro((f.somma_rate_cents||0) + (f.spese_per_rata_cents||0)*(f.rate_totali||0)),
+            'rate' + (f.spese_per_rata_cents ? ' piu&#768; spese di incasso' : '') +
+            (f.taeg_bp != null ? ' · TAEG dichiarato ' + percento(f.taeg_bp) : '')) +
+      '</div>' +
+      '<p class="nota">' + esc(f.nota_tan_taeg || '') + '</p>' +
+      (f.rate_parziali ? '<p class="avviso">' + esc(f.nota_parziali || '') + '</p>' : '') +
+      (f.erogazione ? '' : '<p class="avviso">Non e&#768; ancora detto se il capitale sia arrivato sul conto o sia stato pagato al fornitore: finche&#768; non lo dici, nessun ingresso viene messo in previsione.</p>') +
+      (f.spese_iniziali_cents != null && !f.spese_iniziali_data
+        ? '<p class="avviso">Spese iniziali dichiarate ' + euro(f.spese_iniziali_cents) +
+          ' senza data: non le metto in previsione, il giorno non lo invento.</p>' : '');
+    $('#pianoTabella').innerHTML = '<thead><tr><th>n.</th><th>scadenza</th><th class="n">rata</th>' +
+      '<th class="n">capitale</th><th class="n">interessi</th><th class="n">residuo</th><th>stato</th></tr></thead><tbody>' +
+      (piano||[]).map(function(r){
+        return '<tr><td>' + r.seq + '</td><td class="g">' + esc(dataIt(r.scadenza)) + '</td>' +
+          '<td class="n">' + euro(r.rata_cents) + '</td>' +
+          '<td class="n">' + (r.capitale_cents == null ? '<span class="ignoto">—</span>' : euro(r.capitale_cents)) + '</td>' +
+          '<td class="n">' + (r.interessi_cents == null ? '<span class="ignoto">—</span>' : euro(r.interessi_cents)) + '</td>' +
+          '<td class="n">' + (r.residuo_cents == null ? '<span class="ignoto">—</span>' : euro(r.residuo_cents)) + '</td>' +
+          '<td><span class="chip' + (r.stato === 'rendicontata' ? ' ok' : (r.stato === 'parziale' ? ' avv' : '')) + '">' +
+            esc(r.stato === 'prevista' ? 'prevista' : r.stato) + '</span></td></tr>';
+      }).join('') + '</tbody>';
+    /* da sequenza nota a piano calcolato, senza duplicare le rate gia' pagate */
+    $('#pianoCompleta').innerHTML = f.completezza === 'parziale'
+      ? '<p class="nota">Questa e&#768; una sequenza di pagamenti nota. Con capitale, TAN, numero di rate e metodo ' +
+        'diventa un piano calcolato: le rate gia&#768; pagate restano come sono state pagate.</p>' +
+        '<div class="riga" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">' +
+        '<input class="sel num" id="pcCapitale" placeholder="capitale" aria-label="Capitale">' +
+        '<input class="sel num" id="pcTan" placeholder="TAN %" aria-label="TAN">' +
+        '<input class="sel" type="number" id="pcRate" placeholder="rate" aria-label="Rate" style="width:90px">' +
+        '<select class="sel" id="pcMetodo" aria-label="Metodo">' +
+          '<option value="rata_costante">rata costante</option>' +
+          '<option value="quota_capitale_costante">quota capitale costante</option></select>' +
+        '<button class="btn p" id="btnCompleta">Completa i dati</button></div>'
+      : '';
+    if ($('#btnCompleta')) $('#btnCompleta').onclick = function(){ completaFinanziamento(id); };
+  }).catch(function(e){
+    $('#pianoDati').innerHTML = '<p class="errore">Il piano non e&#768; stato letto: ' + esc(e.message) + '</p>';
+  });
+}
+/* 599 punti base -> «5,99%»: con il punto non e' un numero italiano */
+function percento(bp){ return bp == null ? '—' : (String(Math.floor(bp/100)) + ',' +
+  (bp % 100 < 10 ? '0' : '') + (bp % 100) + '%'); }
+function percentualeBp(testo){
+  var c = centesimiDa(testo);
+  return c == null ? null : c;      /* 5,99% -> 599 punti base: gli stessi decimali */
+}
+function completaFinanziamento(id){
+  var cap = importoDi('#pcCapitale', 'il capitale', true);
+  var tan = percentualeDi('#pcTan', 'Il TAN');
+  var rate = Number($('#pcRate').value);
+  var errore = cap.errore || tan.errore
+    || (tan.vuoto ? 'Serve il TAN: senza, il piano non si calcola e non si indovina.' : null)
+    || (!(rate > 0) ? 'Serve il numero delle rate.' : null)
+    || (cap.cents < 0 ? 'Il capitale e\u0300 negativo: scrivi quanto vale.' : null);
+  if (errore){ $('#msgPiano').className = 'errore'; $('#msgPiano').textContent = errore; return; }
+  /* IL CONTESTO VIAGGIA ANCHE QUI: completare i dati di un finanziamento della
+     BASE mentre si guarda un'ipotesi cambierebbe la base. Il servizio lo
+     rifiuta, e la pagina dice come uscirne. */
+  var ctx = S.scenario;
+  $('#msgPiano').className = 'nota'; $('#msgPiano').textContent = 'completo…';
+  api('/impegni/finanziamento/' + id + '/completa', {
+    capitale_cents: cap.cents, tan_bp: tan.bp, rate: rate, metodo: $('#pcMetodo').value,
+    contesto_scenario_id: ctx ? Number(ctx) : null, operation_id: uuid() })
+    .then(function(e){
+      return Promise.all([caricaImpegni(), caricaPrevisione(), caricaJournal()]).then(function(){ return e; });
+    })
+    .then(function(e){
+      $('#msgPiano').className = 'nota';
+      $('#msgPiano').textContent = 'Piano calcolato: ' + e.piano.rate + ' rate, ' +
+        e.rate_gia_pagate_conservate + ' gia\u0300 pagate conservate.';
+      apriPiano(id);
+    })
+    .catch(function(e){
+      $('#msgPiano').className = 'errore';
+      $('#msgPiano').textContent = 'Non completato: ' + e.message;
+    });
+}
+
+/* Un campo di denaro SCRITTO MALE non si omette in silenzio: se lo omettessi,
+   il servizio riceverebbe una richiesta diversa da quella che Diego ha scritto
+   e la scrittura andrebbe a buon fine con il dato mancante. */
+function importoDi(sel, nome, obbligatorio){
+  var t = $(sel).value.trim();
+  if (t === '') return obbligatorio ? { errore: 'Serve ' + nome + '.' } : { vuoto: true };
+  var c = centesimiDa(t);
+  if (c == null) return { errore: nome.charAt(0).toUpperCase() + nome.slice(1) +
+    ' non valido: «' + t + '» non e\u0300 un importo. Scrivilo come 1.234,56.' };
+  return { cents: c };
+}
+/* una percentuale si scrive come un importo: 5,99 -> 599 punti base */
+function percentualeDi(sel, nome){
+  var t = $(sel).value.trim();
+  if (t === '') return { vuoto: true };
+  var c = centesimiDa(t);
+  if (c == null) return { errore: nome + ' non valido: «' + t + '» non e\u0300 una percentuale. Scrivila come 5,99.' };
+  if (c < 0) return { errore: nome + ' non puo\u0300 essere negativo.' };
+  return { bp: c };
+}
+function corpoCostoFisso(){
+  if (!$('#cfNome').value.trim()) return { errore: 'Serve un nome.' };
+  var imp = importoDi('#cfImporto', 'l\u2019importo', true);
+  if (imp.errore) return imp;
+  if (!$('#cfInizio').value) return { errore: 'Serve la data da cui parte.' };
+  if (!$('#cfCategoria').value) return { errore: 'Serve una categoria: senza, le occorrenze finirebbero da classificare.' };
+  if ($('#cfTipo').value === 'rata_breve' && !$('#cfFine').value){
+    return { errore: 'Una rata breve ha una fine: senza, sarebbe un canone.' };
+  }
+  return { corpo: { nome: $('#cfNome').value.trim(), tipo: $('#cfTipo').value,
+    conto_id: Number($('#cfConto').value), categoria_id: Number($('#cfCategoria').value),
+    sottocategoria_id: $('#cfSotto').value ? Number($('#cfSotto').value) : null,
+    importo_cents: imp.cents, giorno: Number($('#cfGiorno').value),
+    frequenza: $('#cfFrequenza').value, inizio: $('#cfInizio').value,
+    fine: $('#cfFine').value || null,
+    scenario_id: S.scenario ? Number(S.scenario) : null } };
+}
+function creaCostoFisso(){
+  var b = corpoCostoFisso();
+  if (b.errore){ msgScen('#msgCostoFisso', b.errore, true); return; }
+  var ctx = S.scenario;
+  $('#btnCostoFisso').disabled = true;
+  msgScen('#msgCostoFisso', 'aggiungo…');
+  api('/impegni/serie', Object.assign({ operation_id: uuid() }, b.corpo))
+    .then(function(e){
+      return Promise.all([caricaImpegni(), caricaPrevisione(), caricaJournal(),
+        ctx ? caricaDifferenze() : null]).then(function(){ return e; });
+    })
+    .then(function(e){
+      var g = e.generazione || {};
+      msgScen('#msgCostoFisso', 'Aggiunto: ' + g.nuove + (g.nuove === 1 ? ' scadenza' : ' scadenze') +
+        ' fino al ' + dataIt(g.fino_a) + (e.stimato ? ', come stima dichiarata' : '') +
+        (ctx ? '. Resta in questa ipotesi: la base non cambia.' : '.'));
+      $('#cfNome').value = ''; $('#cfImporto').value = '';
+    })
+    .catch(function(e){ msgScen('#msgCostoFisso', 'Non aggiunto: ' + e.message, true); })
+    .finally(function(){ $('#btnCostoFisso').disabled = false; });
+}
+
+function corpoFinanziamento(){
+  if (!$('#fzNome').value.trim()) return { errore: 'Serve un nome.' };
+  if (!$('#fzCategoria').value) return { errore: 'Serve una categoria per le rate.' };
+  var b = { nome: $('#fzNome').value.trim(), conto_id: Number($('#fzConto').value),
+    categoria_id: Number($('#fzCategoria').value),
+    sottocategoria_id: $('#fzSotto').value ? Number($('#fzSotto').value) : null,
+    frequenza: $('#fzFrequenza').value,
+    scenario_id: S.scenario ? Number(S.scenario) : null };
+  /* ogni campo si legge e, se e' scritto male, si FERMA qui: mandarne uno in
+     meno sarebbe registrare un contratto diverso da quello che hai davanti */
+  var campi = [
+    ['#fzCapitale', 'il capitale erogato', 'capitale_cents', 'importo'],
+    ['#fzTotale', 'il totale da rimborsare', 'totale_dovuto_cents', 'importo'],
+    ['#fzRata', 'la rata', 'rata_cents', 'importo'],
+    ['#fzSpeseRata', 'le spese per rata', 'spese_per_rata_cents', 'importo'],
+    ['#fzSpeseIniz', 'le spese iniziali', 'spese_iniziali_cents', 'importo'],
+    ['#fzTan', 'Il TAN', 'tan_bp', 'percento'],
+    ['#fzTaeg', 'Il TAEG', 'taeg_bp', 'percento']
+  ];
+  for (var i = 0; i < campi.length; i++){
+    var c = campi[i];
+    var r = c[3] === 'importo' ? importoDi(c[0], c[1], false) : percentualeDi(c[0], c[1]);
+    if (r.errore) return r;
+    if (r.vuoto) continue;
+    if (c[3] === 'importo'){
+      if (r.cents < 0){
+        /* il segno non si corregge di nascosto: un capitale negativo e' un
+           dato sbagliato, non un dato da raddrizzare */
+        return { errore: c[1].charAt(0).toUpperCase() + c[1].slice(1) +
+          ' e\u0300 negativo: qui si scrive quanto vale, senza segno. Le rate escono dal conto da sole.' };
+      }
+      b[c[2]] = r.cents;
+    } else {
+      b[c[2]] = r.bp;
+    }
+  }
+  if ($('#fzRate').value){
+    var n = Number($('#fzRate').value);
+    if (!(n > 0)) return { errore: 'Il numero delle rate non e\u0300 valido.' };
+    b.rate = n;
+  }
+  if ($('#fzPrima').value) b.prima_rata = $('#fzPrima').value;
+  if ($('#fzMetodo').value) b.metodo = $('#fzMetodo').value;
+  if ($('#fzFine').value) b.fine = $('#fzFine').value;
+  if ($('#fzSpeseData').value) b.spese_iniziali_data = $('#fzSpeseData').value;
+  if ($('#fzErogazione').value) b.erogazione = $('#fzErogazione').value;
+  if ($('#fzErogData').value) b.erogazione_data = $('#fzErogData').value;
+  if (b.spese_iniziali_cents != null && !b.spese_iniziali_data){
+    /* non e' un errore: e' un dato che resta da completare, e va detto */
+    b.nota_spese = 'spese iniziali senza data';
+  }
+  return { corpo: b };
+}
+function anteprimaPiano(){
+  var b = corpoFinanziamento();
+  if (b.errore){ msgScen('#msgFinanziamento', b.errore, true); return; }
+  var c = b.corpo;
+  if (c.capitale_cents == null || c.tan_bp == null || !c.rate || !c.prima_rata || !c.metodo){
+    $('#anteprimaPiano').innerHTML = '<p class="avviso">Per vedere un piano calcolato servono capitale, TAN, ' +
+      'numero di rate, prima rata e metodo. Con rata e data di fine si registra invece una sequenza di ' +
+      'pagamenti nota, senza capitale ne&#768; interessi inventati.</p>';
+    return;
+  }
+  $('#anteprimaPiano').innerHTML = '<p class="nota">calcolo…</p>';
+  api('/impegni/anteprima-piano', { capitale_cents: c.capitale_cents, tan_bp: c.tan_bp,
+    rate: c.rate, prima_rata: c.prima_rata, frequenza: c.frequenza, metodo: c.metodo })
+    .then(function(r){
+      var piano = r.piano || [];
+      var somma = piano.reduce(function(x, y){ return x + y.rata_cents; }, 0);
+      var inter = piano.reduce(function(x, y){ return x + y.interessi_cents; }, 0);
+      $('#anteprimaPiano').innerHTML =
+        '<p class="nota"><span class="chip">nulla e&#768; stato scritto</span> ' + piano.length +
+        ' rate · somma ' + euro(somma) + ' · interessi ' + euro(inter) +
+        (c.spese_per_rata_cents ? ' · spese di incasso ' + euro(c.spese_per_rata_cents * piano.length) : '') + '</p>' +
+        '<div class="tab-wrap"><table class="pro"><thead><tr><th>n.</th><th>scadenza</th>' +
+        '<th class="n">rata</th><th class="n">capitale</th><th class="n">interessi</th><th class="n">residuo</th>' +
+        '</tr></thead><tbody>' +
+        piano.slice(0, 12).map(function(x){
+          return '<tr><td>' + x.seq + '</td><td class="g">' + esc(dataIt(x.scadenza)) + '</td>' +
+            '<td class="n">' + euro(x.rata_cents) + '</td><td class="n">' + euro(x.capitale_cents) +
+            '</td><td class="n">' + euro(x.interessi_cents) + '</td><td class="n">' + euro(x.residuo_cents) +
+            '</td></tr>'; }).join('') +
+        '</tbody></table></div>' +
+        (piano.length > 12 ? '<p class="nota">mostrate le prime 12 di ' + piano.length + '</p>' : '');
+    })
+    .catch(function(e){
+      $('#anteprimaPiano').innerHTML = '<p class="errore">' + esc(e.message) + '</p>';
+    });
+}
+function creaFinanziamento(){
+  var b = corpoFinanziamento();
+  if (b.errore){ msgScen('#msgFinanziamento', b.errore, true); return; }
+  var ctx = S.scenario;
+  $('#btnFinanziamento').disabled = true;
+  msgScen('#msgFinanziamento', 'registro…');
+  api('/impegni/finanziamento', Object.assign({ operation_id: uuid() }, b.corpo))
+    .then(function(e){
+      return Promise.all([caricaImpegni(), caricaPrevisione(), caricaJournal(),
+        ctx ? caricaDifferenze() : null]).then(function(){ return e; });
+    })
+    .then(function(e){
+      var p = e.piano || {}, i = p.iniziali || {};
+      var testo = e.completezza === 'completo'
+        ? 'Registrato con piano calcolato: ' + p.rate + ' rate, somma ' + euro(p.somma_rate_cents) +
+          ', interessi ' + euro(p.interessi_cents) + '.'
+        : 'Registrato come sequenza di pagamenti nota: ' + p.rate + ' rate. Capitale e interessi non sono stati inventati.';
+      if (p.scarto_dal_dichiarato_cents) testo += ' Attenzione: il totale che hai dichiarato differisce di ' +
+        euro(p.scarto_dal_dichiarato_cents) + ' dalla somma delle rate.';
+      if (p.costi_non_dichiarati) testo += ' Le spese non sono dichiarate: il piano non le comprende.';
+      if (i.da_completare && i.da_completare.length) testo += ' Restano da dire: ' + i.da_completare.join('; ') + '.';
+      if (ctx) testo += ' Resta in questa ipotesi: la base non cambia.';
+      msgScen('#msgFinanziamento', testo);
+      $('#anteprimaPiano').innerHTML = '';
+      $('#fzNome').value = '';
+    })
+    .catch(function(e){ msgScen('#msgFinanziamento', 'Non registrato: ' + e.message, true); })
+    .finally(function(){ $('#btnFinanziamento').disabled = false; });
+}
+/* ── ATTIVO: entrate, salvadanaio, Totale riserva ────────────────────────
+   Le tre distinzioni che questa pagina non deve perdere: fatturato, atteso e
+   incassato sono numeri diversi; fuori partita IVA non vuol dire esente; il
+   Totale riserva e' un patrimonio a una data, non l'incasso del periodo. */
+function renderAttivo(){
+  var conti = (S.anag && S.anag.conti) || [], cat = (S.anag && S.anag.categorie) || [];
+  if (!$('#enConto')) return;
+  var opzC = conti.map(function(c){ return '<option value="' + c.id + '">' + esc(c.nome) + '</option>'; }).join('');
+  $('#enConto').innerHTML = opzC;
+  $('#sdDa').innerHTML = opzC;
+  $('#sdA').innerHTML = opzC;
+  $('#enCategoria').innerHTML = '<option value="">— categoria —</option>' +
+    cat.filter(function(c){ return c.attiva !== false; }).map(function(c){
+      return '<option value="' + c.id + '">' + esc(c.nome) + '</option>'; }).join('');
+  if (!$('#risData').value) $('#risData').value = new Date().toISOString().slice(0,10);
+  if (!$('#atAnni').value){
+    var a = new Date().getFullYear();
+    $('#atAnni').value = (a-1) + ',' + a;
+  }
+}
+
+function caricaRiserva(){
+  var gen = S.gen, al = $('#risData').value || new Date().toISOString().slice(0,10);
+  var q = '/attivo/riserva?al=' + al;
+  if (S.scenario) q += '&scenario_id=' + encodeURIComponent(S.scenario);
+  return api(q).then(function(r){
+    if (gen !== S.gen) return;
+    S.riserva = r; dichiaraFonte('riserva', null);
+    var ignoti = r.conti_non_noti || [];
+    $('#kpiRiserva').innerHTML =
+      kpi('Totale riserva', r.totale_cents == null ? '—' : euro(r.totale_cents),
+          r.totale_cents == null
+            ? 'non calcolabile: ' + esc(ignoti.join(', ')) + ' non hanno un saldo verificato a questa data'
+            : 'al ' + dataIt(r.al) + ' · ' + (r.componenti||[]).length + ' conti, ognuno una volta' +
+              (S.scenario ? ' · ipotesi' : ' · previsione base')) +
+      kpi('Cosa non comprende', 'le carte',
+          esc(r.esclusi ? r.esclusi.carte : '') + '; ' + esc(r.esclusi ? r.esclusi.conti_chiusi : ''));
+    $('#componentiRiserva').innerHTML = (r.componenti||[]).length
+      ? '<div class="tab-wrap"><table class="pro"><thead><tr><th>Conto</th><th>tipo</th>' +
+        '<th class="n">saldo al ' + esc(dataIt(r.al)) + '</th></tr></thead><tbody>' +
+        (r.componenti||[]).map(function(c){
+          return '<tr><td>' + esc(c.nome) + '</td><td>' + esc(c.tipo) + '</td>' +
+            '<td class="n' + (c.noto ? '' : ' ignoto') + (c.cents < 0 ? ' neg' : '') + '">' +
+            (c.noto ? euro(c.cents) : '— non verificato') + '</td></tr>'; }).join('') +
+        '</tbody></table></div><p class="nota">' + esc(r.nota || '') + '</p>'
+      : '<p class="nota">Nessun conto configurato.</p>';
+  }).catch(function(e){
+    dichiaraFonte('riserva', e);
+    $('#componentiRiserva').innerHTML = '<p class="errore">Il totale riserva non e&#768; stato letto: ' +
+      esc(e.message) + '. Non e&#768; zero.</p>';
+  });
+}
+
+function caricaEntrate(altre){
+  var gen = S.gen;
+  var anni = ($('#atAnni').value || '').split(',').map(function(x){ return x.trim(); })
+    .filter(function(x){ return /^\d{4}$/.test(x); });
+  /* «altre» chiede il blocco successivo: le entrate non si perdono dopo la
+     cinquantesima, si caricano a mano a mano */
+  var da = altre ? ((S.attivo && S.attivo.entrate) || []).length : 0;
+  var q = '/attivo?anni=' + anni.join(',') + '&da_riga=' + da;
+  if (S.scenario) q += '&scenario_id=' + encodeURIComponent(S.scenario);
+  return api(q).then(function(v){
+    if (gen !== S.gen) return;
+    if (altre && S.attivo) v.entrate = (S.attivo.entrate || []).concat(v.entrate || []);
+    S.attivo = v; dichiaraFonte('attivo', null); renderEntrate();
+  }).catch(function(e){
+    dichiaraFonte('attivo', e);
+    $('#elencoEntrate').innerHTML = '<p class="errore">Le entrate non sono state lette: ' +
+      esc(e.message) + '. Non e&#768; «nessuna entrata».</p>';
+  });
+}
+function renderEntrate(){
+  var v = S.attivo; if (!v) return;
+  var righe = v.confronto_anni || [];
+  $('#confrontoAnni').innerHTML = righe.length
+    ? '<div class="tab-wrap"><table class="pro"><thead><tr><th>Anno</th><th>tipo</th>' +
+      '<th class="n">fatturato</th><th class="n">di cui certo</th><th class="n">atteso</th>' +
+      '<th class="n">incassato</th></tr></thead><tbody>' +
+      righe.map(function(r){
+        return '<tr><td>' + r.anno + '</td><td>' + esc(r.tipo === 'fuori_piva' ? 'fuori P.IVA' : r.tipo) + '</td>' +
+          '<td class="n">' + euro(r.fatturato_cents) +
+            (r.fatturato_provvisorio_cents ? ' <span class="chip avv">' +
+              euro(r.fatturato_provvisorio_cents) + ' provvisorio</span>' : '') + '</td>' +
+          '<td class="n">' + euro(r.fatturato_certo_cents) + '</td>' +
+          '<td class="n">' + euro(r.atteso_cents) + '</td>' +
+          '<td class="n">' + euro(r.incassato_cents) + '</td></tr>'; }).join('') +
+      '</tbody></table></div>' +
+      '<p class="nota">' + esc(v.nota_anni || '') + '</p>' +
+      '<p class="nota">' + esc(v.nota_fatturato || '') + '</p>'
+    : '<p class="nota">Nessuna entrata negli anni scelti.</p>';
+
+  var e = v.entrate || [];
+  var anni = (v.anni || []).join(', ');
+  $('#elencoEntrate').innerHTML = e.length
+    ? '<div class="tab-wrap"><table class="pro"><thead><tr><th>Da</th><th>tipo</th><th>numero</th>' +
+      '<th class="n">importo</th><th class="n">incassato</th><th>stato</th><th>attesa</th><th></th>' +
+      '</tr></thead><tbody>' +
+      /* SI DISEGNANO TUTTE QUELLE CARICATE. Qui c'era `e.slice(0, 60)`: un
+         limite silenzioso rimasto dopo che l'elenco era diventato paginato.
+         Il risultato era che la pagina chiedeva al servizio centotrenta
+         entrate, le teneva in memoria, e ne mostrava sessanta — le altre
+         sparivano, e con loro il bottone «Mostra altre», perche' quello
+         confronta le CARICATE con il totale e le trovava gia' tutte.
+         Quante se ne caricano lo decide la paginazione, non il disegno. */
+      e.map(function(x){
+        return '<tr data-entrata="' + x.id + '"><td>' + esc(x.da) +
+          (x.senza_data_emissione ? ' <span class="chip avv">senza data di emissione</span>' : '') + '</td>' +
+          '<td>' + esc(x.tipo === 'fuori_piva' ? 'fuori P.IVA' : 'fattura') +
+            (x.tipo === 'fuori_piva' && x.rilevanza_fiscale === 'da_definire'
+              ? ' <span class="chip avv">fisco da definire</span>' : '') + '</td>' +
+          '<td>' + esc(x.numero || '—') + '</td>' +
+          '<td class="n">' + euro(x.importo_cents) + '</td>' +
+          '<td class="n">' + euro(x.incassato_cents) + '</td>' +
+          '<td><span class="chip' + (x.stato === 'incassata' ? ' ok' : (x.stato === 'attesa' ? '' : ' avv')) +
+            '">' + esc(x.stato) + '</span></td>' +
+          '<td class="g">' + esc(x.attesa_il ? dataIt(x.attesa_il) : 'non in previsione') + '</td>' +
+          '<td><button class="btn" data-mod-entrata="' + x.id + '">Modifica</button></td></tr>';
+      }).join('') + '</tbody></table></div>' +
+      (v.da_definire ? '<p class="avviso">' + v.da_definire +
+        ' ingressi fuori partita IVA hanno la rilevanza fiscale ancora da definire: ' +
+        esc(v.nota_fuori_piva || '') + '</p>' : '')
+    : '<p class="nota">Nessuna entrata negli anni ' + esc(anni) + '.</p>';
+  if (e.length){
+    var tot = v.entrate_totali != null ? v.entrate_totali : e.length;
+    $('#elencoEntrate').insertAdjacentHTML('beforeend',
+      '<p class="nota">mostrate <b>' + e.length + '</b> di <b>' + tot + '</b> entrate negli anni ' +
+      esc(anni) + '. ' + esc(v.nota_elenco || '') + '</p>' +
+      (e.length < tot ? '<div class="bottoni"><button class="btn" id="btnAltreEntrate">Mostra altre ' +
+        Math.min(tot - e.length, v.limite || 50) + '</button></div>' : ''));
+    if ($('#btnAltreEntrate')) $('#btnAltreEntrate').onclick = function(){ caricaEntrate(true); };
+  }
+  $$('#elencoEntrate [data-mod-entrata]').forEach(function(b){
+    b.onclick = function(){ apriEntrata(Number(b.getAttribute('data-mod-entrata'))); };
+  });
+}
+
+var ENTRATA_APERTA = null;
+function entrataDi(id){
+  return ((S.attivo && S.attivo.entrate) || []).filter(function(x){ return x.id === id; })[0];
+}
+function apriEntrata(id){
+  var x = entrataDi(id); if (!x) return;
+  ENTRATA_APERTA = x;
+  $('#box-entrata').hidden = false;
+  $('#entrataTitolo').textContent = x.da + (x.numero ? ' · ' + x.numero : '');
+  $('#meImporto').value = euro(x.importo_cents);
+  $('#meImporto').disabled = x.incassato_cents > 0;
+  $('#meAttesa').value = x.attesa_il || '';
+  $('#meEmissione').value = x.emessa_il || '';
+  $('#meFisco').value = x.rilevanza_fiscale || 'da_definire';
+  msgScen('#msgEntrata', x.incassato_cents > 0
+    ? 'Di questa entrata sono già arrivati ' + euro(x.incassato_cents) +
+      ': l’importo non si riscrive sopra un fatto avvenuto.'
+    : '');
+}
+function salvaEntrata(togliAttesa){
+  var x = ENTRATA_APERTA; if (!x) return;
+  var corpo = { versione_vista: x.versione, operation_id: uuid(),
+                contesto_scenario_id: S.scenario ? Number(S.scenario) : null };
+  if (togliAttesa) corpo.data_attesa = null;
+  else {
+    var imp = importoDi('#meImporto', 'l’importo', true);
+    if (imp.errore){ msgScen('#msgEntrata', imp.errore, true); return; }
+    if (!x.incassato_cents) corpo.importo_cents = imp.cents;
+    corpo.data_attesa = $('#meAttesa').value || null;
+    corpo.data_emissione = $('#meEmissione').value || null;
+    corpo.rilevanza_fiscale = $('#meFisco').value;
+  }
+  $('#btnSalvaEntrata').disabled = true;
+  msgScen('#msgEntrata', 'salvo…');
+  api('/attivo/entrata/' + x.id + '/modifica', corpo)
+    .then(function(e){
+      return Promise.all([caricaEntrate(), caricaPrevisione(), caricaRiserva(), caricaJournal()])
+        .then(function(){ return e; });
+    })
+    .then(function(e){
+      var ora = entrataDi(x.id);
+      if (!ora){ msgScen('#msgEntrata', 'NON VERIFICATO: rileggendo non la trovo più.', true); return; }
+      ENTRATA_APERTA = ora;
+      msgScen('#msgEntrata', togliAttesa
+        ? 'Tolta dalla previsione: senza una data attesa non ha un giorno in cui passare.'
+        : 'Salvato e riletto.' + (ora.in_previsione ? '' : ' Non è in previsione: manca la data attesa.'));
+    })
+    .catch(function(e){ msgScen('#msgEntrata', 'Non salvato: ' + e.message, true); })
+    .finally(function(){ $('#btnSalvaEntrata').disabled = false; });
+}
+
+function creaEntrata(){
+  if (!$('#enDa').value.trim()){ msgScen('#msgNuovaEntrata', 'Serve sapere da chi arriva.', true); return; }
+  var imp = importoDi('#enImporto', 'l’importo', true);
+  if (imp.errore){ msgScen('#msgNuovaEntrata', imp.errore, true); return; }
+  if (imp.cents <= 0){ msgScen('#msgNuovaEntrata', 'Un’entrata è positiva: scrivi quanto arriva.', true); return; }
+  var ctx = S.scenario;
+  var corpo = { tipo: $('#enTipo').value, da: $('#enDa').value.trim(),
+    numero: $('#enNumero').value.trim() || null, importo_cents: imp.cents,
+    conto_id: Number($('#enConto').value),
+    categoria_id: $('#enCategoria').value ? Number($('#enCategoria').value) : null,
+    data_emissione: $('#enEmissione').value || null,
+    data_attesa: $('#enAttesa').value || null,
+    rilevanza_fiscale: $('#enFisco').value,
+    scenario_id: ctx ? Number(ctx) : null, operation_id: uuid() };
+  $('#btnEntrata').disabled = true;
+  msgScen('#msgNuovaEntrata', 'registro…');
+  api('/attivo/entrata', corpo)
+    .then(function(e){
+      return Promise.all([caricaEntrate(), caricaPrevisione(), caricaRiserva(), caricaJournal(),
+        ctx ? caricaDifferenze() : null]).then(function(){ return e; });
+    })
+    .then(function(e){
+      var t = 'Registrata.';
+      if (!e.in_previsione) t += ' ' + (e.nota || 'Non entra in previsione.');
+      if (e.avviso_fiscale) t += ' ' + e.avviso_fiscale + '.';
+      if (ctx) t += ' Resta in questa ipotesi: la base non cambia.';
+      msgScen('#msgNuovaEntrata', t);
+      $('#enDa').value = ''; $('#enNumero').value = ''; $('#enImporto').value = '';
+    })
+    .catch(function(e){ msgScen('#msgNuovaEntrata', 'Non registrata: ' + e.message, true); })
+    .finally(function(){ $('#btnEntrata').disabled = false; });
+}
+
+function muoviSalvadanaio(){
+  var imp = importoDi('#sdImporto', 'l’importo', true);
+  if (imp.errore){ msgScen('#msgSalvadanaio', imp.errore, true); return; }
+  if (imp.cents <= 0){ msgScen('#msgSalvadanaio', 'Quanto sposti? serve un importo positivo.', true); return; }
+  if (!$('#sdData').value){ msgScen('#msgSalvadanaio', 'Serve il giorno: non si assume oggi.', true); return; }
+  var ctx = S.scenario;
+  $('#btnSalvadanaio').disabled = true;
+  msgScen('#msgSalvadanaio', 'sposto…');
+  api('/attivo/salvadanaio', { da_conto_id: Number($('#sdDa').value),
+    a_conto_id: Number($('#sdA').value), importo_cents: imp.cents,
+    data: $('#sdData').value, gia_avvenuto: $('#sdFatto').checked,
+    scenario_id: ctx ? Number(ctx) : null, operation_id: uuid() })
+    .then(function(e){
+      return Promise.all([caricaRiserva(), caricaPrevisione(), caricaJournal()]).then(function(){ return e; });
+    })
+    .then(function(e){
+      var t = (e.tipo === 'versamento' ? 'Messo da parte ' : 'Preso dal salvadanaio ') + euro(e.cents) +
+        ' il ' + dataIt(e.data) + (e.stato === 'actual' ? ', come movimento già avvenuto' : ', come previsione') + '. ' + e.nota + '.';
+      if (e.avviso) t += ' ' + e.avviso + '.';
+      if (ctx) t += ' Resta in questa ipotesi.';
+      msgScen('#msgSalvadanaio', t);
+      $('#sdImporto').value = '';
+    })
+    .catch(function(e){ msgScen('#msgSalvadanaio', 'Non spostato: ' + e.message, true); })
+    .finally(function(){ $('#btnSalvadanaio').disabled = false; });
+}
+/* Le chiavi tecniche non si mostrano a Diego: ogni parametro ha il suo nome
+   in italiano. Una chiave senza nome resta leggibile, non criptica. */
+var NOMI_PARAMETRO = {
+  'conto_tasse.natura':'Conto tasse: com\u2019e\u0300 fatto',
+  'conto_tasse.identificativo':'Conto tasse: quale conto',
+  'conto_tasse.alimentazione':'Conto tasse: come viene alimentato',
+  'conto_tasse.periodo_dovuto':'Tasse: a quale periodo si riferisce il dovuto',
+  'salvadanaio.destinazione':'Salvadanaio: a cosa serve',
+  'salvadanaio.regola':'Salvadanaio: quanto e ogni quanto',
+  'riserva.percentuale_politica':'Quota che metti da parte sugli incassi',
+  'riserva.fabbisogno_calcolato':'Quanto servirebbe davvero mettere da parte',
+  'fisco.regime':'Regime fiscale',
+  'fisco.aliquota_dichiarata':'Aliquota dichiarata',
+  'fisco.previdenza':'Previdenza',
+  'fisco.ateco':'Codice ATECO e coefficiente',
+  'fisco.rateazione_pluriennale':'Rateazione su piu\u0300 anni',
+  'avvio.saldo_alla_data':'Saldo dei conti alla data di avvio'
+};
+function nomeParametro(k){
+  return NOMI_PARAMETRO[k] || String(k).replace(/[._]/g,' ').replace(/^./, function(x){ return x.toUpperCase(); });
+}
+/* ── FISCO: nessun numero inventato, e le fonti in chiaro ────────────────
+   Se manca un dato, qui non compare un importo: compare l'elenco di quello
+   che manca. Un numero fiscale plausibile e' piu' pericoloso di un numero
+   assente, e questa pagina e' scritta intorno a quella regola. */
+function annoFiscaleIniziale(){
+  var a = new Date().getFullYear();
+  return new Date().getMonth() >= 6 ? a - 1 : a - 2;   /* l'anno che si sta dichiarando */
+}
+function caricaFisco(){
+  var gen = S.gen;
+  if (!$('#fiAnno')) return Promise.resolve();
+  if (!$('#fiAnno').value) $('#fiAnno').value = String(annoFiscaleIniziale());
+  if (!$('#doAnno').value) $('#doAnno').value = $('#fiAnno').value;
+  var anno = Number($('#fiAnno').value);
+  return Promise.all([
+    api('/fisco/copertura'),
+    api('/fisco/calcolo?anno=' + anno),
+    api('/fisco/scadenze?anno=' + anno)
+  ]).then(function(r){
+    if (gen !== S.gen) return;
+    S.fisco = { copertura: r[0], calcolo: r[1], scadenze: r[2] };
+    dichiaraFonte('fisco', null);
+    renderFisco();
+  }).catch(function(e){
+    dichiaraFonte('fisco', e);
+    $('#calcoloFisco').innerHTML = '<p class="errore">Il fisco non e&#768; stato letto: ' +
+      esc(e.message) + '. Non e&#768; «niente da pagare».</p>';
+  });
+}
+function renderFisco(){
+  var f = S.fisco; if (!f) return;
+  var c = f.copertura;
+  $('#kpiFisco').innerHTML =
+    kpi('Disponibilità sul conto tasse', c.conto_tasse == null ? '—' : euro(c.saldo_verificato_cents),
+        c.conto_tasse == null ? 'nessun conto tasse configurato'
+          : 'saldo verificato al ' + dataIt(c.data_saldo)) +
+    kpi('Quello che devi', c.conto_tasse == null ? '—' : euro(c.dovuto_aperto_cents),
+        'scadenze registrate e non ancora pagate') +
+    kpi('Differenza', c.conto_tasse == null ? '—' : euro(c.differenza_cents),
+        c.conto_tasse == null ? '' : (c.differenza_cents < 0
+          ? 'manca questa cifra sul conto tasse' : 'c’è quello che serve'),
+        c.differenza_cents < 0);
+  $('#dovuti').innerHTML = (c.dovuti && c.dovuti.length)
+    ? '<div class="tab-wrap"><table class="pro"><thead><tr><th>Anno</th><th>tipo</th>' +
+      '<th class="n">dovuto</th><th>scadenza</th><th>rate</th><th>da dove viene</th>' +
+      '</tr></thead><tbody>' + c.dovuti.map(function(d){
+        return '<tr><td>' + d.anno_imposta + '</td><td>' + esc(d.tipo) + '</td>' +
+          '<td class="n">' + euro(d.dovuto_cents) + '</td>' +
+          '<td class="g">' + esc(dataIt(d.scadenza)) + '</td>' +
+          '<td>' + (d.rate || 1) + '</td><td class="nota">' + esc(d.fonte || '—') + '</td></tr>';
+      }).join('') + '</tbody></table></div>' +
+      '<p class="nota">' + esc(c.nota || '') + '</p>'
+    : '<p class="nota">' + esc(c.avviso || 'Nessun dovuto registrato.') + '</p>';
+
+  var k = f.calcolo;
+  if (!k.calcolabile){
+    $('#calcoloFisco').innerHTML =
+      '<p class="avviso"><b>Qui non compare nessun importo</b>, e non e&#768; un errore: ' +
+      esc(k.perche || '') + '</p>' +
+      '<p class="nota">Manca:</p><ul class="nota">' +
+      (k.manca || []).map(function(x){ return '<li>' + esc(x) + '</li>'; }).join('') + '</ul>' +
+      baseFiscale(k.base) + alternativePrevidenza(k);
+  } else {
+    $('#calcoloFisco').innerHTML =
+      '<div class="griglia">' +
+        kpi('Incassato imponibile', euro(k.base.incassato_imponibile_cents),
+            esc(k.base.criterio)) +
+        kpi('Imponibile', euro(k.imponibile_cents),
+            'coefficiente ' + percento(k.coefficiente_bp) + ' dichiarato da te') +
+        kpi('Imposta', euro(k.imposta_cents), 'aliquota ' + percento(k.imposta_bp)) +
+        kpi('Contributi', euro(k.previdenza_cents),
+            percento(k.previdenza_bp) + ' · caso: ' + esc(k.previdenza_caso || '—')) +
+        kpi('Totale stimato', euro(k.totale_cents), 'imposta più contributi') +
+      '</div>' +
+      '<p class="avviso">' + esc(k.nota || '') + '</p>' +
+      baseFiscale(k.base) + alternativePrevidenza(k) + fontiFiscali(k.fonti);
+  }
+
+  var sc = f.scadenze;
+  $('#scadenzeFisco').innerHTML = '<h2>Scadenze</h2>' +
+    ((sc.scadenze || []).length
+      ? '<div class="tab-wrap"><table class="pro"><thead><tr><th>Tipo</th><th>data</th>' +
+        '<th>chi riguarda</th><th>ti riguarda</th><th>fonte</th></tr></thead><tbody>' +
+        sc.scadenze.map(function(x){
+          return '<tr><td>' + esc(x.tipo) + '</td><td class="g">' + esc(dataIt(x.data)) + '</td>' +
+            '<td class="nota">' + esc(x.ambito) + '</td>' +
+            '<td>' + (x.ti_riguarda === null
+              ? '<span class="chip avv">da decidere con te</span>'
+              : (x.ti_riguarda ? '<span class="chip ok">sì</span>'
+                               : '<span class="chip">no</span>')) + '</td>' +
+            '<td>' + (x.fonte ? '<a href="' + esc(x.fonte.url) + '" target="_blank" rel="noreferrer">' +
+              esc(x.fonte.ente) + '</a> <span class="nota">letta il ' + esc(dataIt(x.fonte.letta_il)) +
+              '</span>' : '<span class="ignoto">nessuna fonte</span>') +
+              (x.proiezione ? ' <span class="chip avv">proiezione</span>' : '') + '</td></tr>';
+        }).join('') + '</tbody></table></div>'
+      : '<p class="nota">Per questo anno non risulta registrata nessuna scadenza: non se ne inventano.</p>') +
+    (sc.avviso ? '<p class="avviso">' + esc(sc.avviso) + '</p>' : '') +
+    '<p class="nota">' + esc(sc.nota || '') + '</p>';
+}
+function baseFiscale(b){
+  if (!b) return '';
+  return '<p class="nota">Base ' + b.anno + ': incassato imponibile ' + euro(b.incassato_imponibile_cents) +
+    ', escluso ' + euro(b.incassato_escluso_cents) +
+    (b.entrate_da_definire ? ', e <b>' + b.entrate_da_definire +
+      ' entrate con la rilevanza fiscale ancora da definire</b>' : '') + '. ' + esc(b.criterio) + '.</p>' +
+    (b.avviso ? '<p class="avviso">' + esc(b.avviso) + '</p>' : '');
+}
+function alternativePrevidenza(k){
+  var a = k.alternative_previdenza || [];
+  if (!a.length) return '<p class="avviso">Per questo anno non risulta letta nessuna fonte sulle aliquote: ' +
+    'senza, non si calcola niente e non si prevede la legge futura.</p>';
+  return '<p class="nota">Aliquote previdenziali lette dalla fonte, entrambe:</p><ul class="nota">' +
+    a.map(function(x){
+      return '<li><b>' + percento(x.aliquota_bp) + '</b> — ' + esc(x.descrizione) +
+        (x.fonte ? ' (<a href="' + esc(x.fonte.url) + '" target="_blank" rel="noreferrer">' +
+          esc(x.fonte.ente) + '</a>, letta il ' + esc(dataIt(x.fonte.letta_il)) + ')' : '') +
+        (x.caso === k.previdenza_caso ? ' <span class="chip ok">il tuo caso</span>' : '') + '</li>';
+    }).join('') + '</ul>' +
+    (k.previdenza_caso ? '' : '<p class="avviso">Quale dei due sia il tuo caso non lo decide l&#39;app: ' +
+      'finch&#233; non lo dici, restano due alternative.</p>');
+}
+function fontiFiscali(f){
+  if (!f || !f.length) return '';
+  return '<p class="nota">Fonti di questo calcolo: ' + f.map(function(x){
+    return '<a href="' + esc(x.url) + '" target="_blank" rel="noreferrer">' + esc(x.titolo) +
+      '</a> (' + esc(x.ente) + ', letta il ' + esc(dataIt(x.letta_il)) + ')'; }).join(' · ') + '</p>';
+}
+function registraDovuto(){
+  var imp = importoDi('#doImporto', 'l’importo dovuto', true);
+  if (imp.errore){ msgScen('#msgDovuto', imp.errore, true); return; }
+  var modo = $('#doModo').value;
+  /* la rateazione di legge NON chiede una data: le date sono quelle lette dalla
+     norma, e sceglierne una a mano sarebbe inventare una scadenza */
+  if (modo !== 'rateazione' && !$('#doScadenza').value){
+    msgScen('#msgDovuto', modo === 'finanziamento'
+      ? 'Serve la data della prima rata del prestito.'
+      : 'Serve la data di scadenza: dipende dal tuo caso, non la scelgo io.', true); return;
+  }
+  if (!$('#doFonte').value.trim()){
+    msgScen('#msgDovuto', 'Serve la provenienza: un debito fiscale senza provenienza non si registra.', true); return;
+  }
+  if (!$('#doAnno').value){ msgScen('#msgDovuto', 'Serve l’anno d’imposta.', true); return; }
+  $('#btnDovuto').disabled = true;
+  msgScen('#msgDovuto', 'registro…');
+  var base = { anno_imposta: Number($('#doAnno').value), tipo: $('#doTipo').value,
+    importo_cents: Math.abs(imp.cents), fonte: $('#doFonte').value.trim(),
+    operation_id: uuid() };
+  var chiamata;
+  if (modo === 'rateazione'){
+    chiamata = api('/fisco/rateazione', base);
+  } else if (modo === 'finanziamento'){
+    var tan = percentualeDi('#doTan', 'il TAN');
+    if (tan.errore){ msgScen('#msgDovuto', tan.errore, true); $('#btnDovuto').disabled = false; return; }
+    var taeg = $('#doTaeg').value.trim() ? percentualeDi('#doTaeg', 'il TAEG') : { bp: null };
+    if (taeg.errore){ msgScen('#msgDovuto', taeg.errore, true); $('#btnDovuto').disabled = false; return; }
+    chiamata = api('/fisco/finanziamento', Object.assign({}, base, {
+      rate: Number($('#doRate').value || 0), tan_bp: tan.bp, taeg_bp: taeg.bp,
+      prima_rata: $('#doScadenza').value, frequenza: 'mensile',
+      metodo: $('#doMetodo').value }));
+  } else {
+    chiamata = api('/fisco/dovuto', Object.assign({}, base, { scadenza: $('#doScadenza').value }));
+  }
+  chiamata
+    .then(function(e){
+      return Promise.all([caricaFisco(), caricaPrevisione(), caricaJournal()]).then(function(){ return e; });
+    })
+    .then(function(e){
+      var n = e.rate || 1;
+      msgScen('#msgDovuto', 'Registrato: ' + n + (n === 1 ? ' scadenza' : ' rate') +
+        ' sul conto tasse' + (e.natura ? ' — ' + e.natura : '') + '.' +
+        (e.interessi_cents ? ' Interessi: ' + euro(e.interessi_cents) + '.' : '') +
+        (e.nota_rate ? ' ' + e.nota_rate + '.' : '') +
+        (e.ammissibilita_fiscale ? ' ' + e.ammissibilita_fiscale + '.' : ''));
+      $('#doImporto').value = '';
+    })
+    .catch(function(e){ msgScen('#msgDovuto', 'Non registrato: ' + e.message, true); })
+    .finally(function(){ $('#btnDovuto').disabled = false; });
+}
+function renderTasse(){
+  var par = (S.anag && S.anag.parametri) || [];
+  $('#box-tasse').innerHTML = '<h2>Quello che devi ancora dirmi</h2>' +
+    '<p class="nota">Questi parametri non si deducono: finch&#233; restano «da decidere», il calcolo ' +
+    'qui sopra si rifiuta di mostrare un importo.</p>' +
+    '<div class="tab-wrap"><table class="pro"><thead><tr><th>Parametro</th><th>Valore</th><th>Stato</th></tr></thead><tbody>' +
+    par.map(function(p){
+      return '<tr><td>' + esc(nomeParametro(p.chiave)) + '</td><td>' + (p.valore==null?'<span class="ignoto">—</span>':esc(p.valore)) +
+        '</td><td><span class="chip' + (p.stato==='da_concordare'?' avv':' ok') + '">' +
+        esc(p.stato === 'da_concordare' ? 'da decidere con te' : p.stato) + '</span></td></tr>'; }).join('') +
+    '</tbody></table></div>' +
+    '<p class="nota">Un parametro «da concordare» resta vuoto dichiarato: non diventa zero. ' +
+    'Nessun calcolo qui &#232; una dichiarazione fiscale: &#232; una stima tua, sui dati e sulle fonti ' +
+    'che risultano registrate.</p>';
+}
+/* ── PROMEMORIA: «programmato» non vuol dire «arrivato» ──────────────────
+   La pagina mostra cinque stati diversi e non li confonde: un promemoria su un
+   canale non collegato resta programmato, e lo dice. */
+var STATI_PRO = {
+  programmato: 'programmato',
+  eseguito: 'partito',
+  accettato_dal_canale: 'accettato dal canale',
+  consegna_osservata: 'consegna vista',
+  fallito: 'non partito'
+};
+function caricaPromemoria(){
+  var gen = S.gen;
+  var q = '/promemoria' + (S.scenario ? '?scenario_id=' + encodeURIComponent(S.scenario) : '');
+  return api(q).then(function(v){
+    if (gen !== S.gen) return;
+    S.promemoria = v; dichiaraFonte('promemoria', null); renderPromemoria();
+  }).catch(function(e){
+    dichiaraFonte('promemoria', e);
+    $('#elencoPro').innerHTML = '<p class="errore">I promemoria non sono stati letti: ' +
+      esc(e.message) + '. Non e&#768; «nessun promemoria».</p>';
+  });
+}
+function renderPromemoria(){
+  var v = S.promemoria; if (!v) return;
+  var scollegati = (v.canali || []).filter(function(c){ return !c.collegato; });
+  $('#canaliPro').innerHTML = scollegati.length
+    ? '<p class="avviso">Canali non collegati: ' +
+      scollegati.map(function(c){ return '<b>' + esc(c.nome) + '</b> (' + esc(c.descrizione) + ')'; }).join(' · ') +
+      '. Per quei canali un promemoria resta <b>programmato</b>: nessuna consegna e&#768; stata osservata.</p>'
+    : '';
+  var p = v.promemoria || [];
+  $('#elencoPro').innerHTML = p.length
+    ? '<div class="tab-wrap"><table class="pro"><thead><tr><th>Cosa</th><th>quando</th>' +
+      '<th>ricorrenza</th><th>canali</th><th>stato</th><th></th></tr></thead><tbody>' +
+      p.map(function(x){
+        return '<tr' + (x.in_ritardo ? ' class="chiusura"' : '') + '>' +
+          '<td>' + esc(x.titolo) +
+            (x.entita !== 'generico' ? ' <span class="chip">' + esc(x.entita) + '</span>' : '') +
+            (x.in_ritardo ? ' <span class="chip avv">in ritardo</span>' : '') + '</td>' +
+          '<td class="g">' + esc(x.prossimo_avviso ? dataIt(x.prossimo_avviso.slice(0,10)) : dataIt(x.quando.slice(0,10))) +
+            (x.anticipo_giorni ? ' <span class="nota">(' + x.anticipo_giorni + ' giorni prima)</span>' : '') + '</td>' +
+          '<td>' + esc(x.ricorrenza.replace('_', ' ')) + '</td>' +
+          '<td>' + esc(x.canali) +
+            ((x.canali_non_collegati || []).length
+              ? ' <span class="chip avv">' + esc(x.canali_non_collegati.join(', ')) + ' non collegato</span>' : '') + '</td>' +
+          '<td><span class="chip' + (x.stato === 'consegna_osservata' ? ' ok' :
+              (x.stato === 'fallito' ? ' avv' : '')) + '">' +
+            esc(STATI_PRO[x.stato] || x.stato) + '</span>' +
+            ((x.tentativi || []).length ? ' <span class="nota">' + x.tentativi.length +
+              (x.tentativi.length === 1 ? ' tentativo' : ' tentativi') + '</span>' : '') + '</td>' +
+          '<td>' + (x.attivo ? '<button class="btn" data-spegni="' + x.id + '">Basta</button>' : '') + '</td>' +
+        '</tr>';
+      }).join('') + '</tbody></table></div>' +
+      '<p class="nota">' + esc(v.nota_stati || '') + '</p>'
+    : '<p class="nota">Nessun promemoria. Puoi crearne uno qui sotto, o da una voce del prospetto.</p>';
+  $$('#elencoPro [data-spegni]').forEach(function(b){
+    b.onclick = function(){ spegniPromemoria(Number(b.getAttribute('data-spegni'))); };
+  });
+  ackPromemoria();          /* la pagina dichiara di aver mostrato l'avviso */
+}
+
+/* ── L'ACK: la pagina dichiara di aver MOSTRATO l'avviso ──────────────────
+   Il giro porta un promemoria fino ad «accettato dal canale»: l'avviso e' in
+   coda qui dentro. Che sia comparso sullo schermo lo puo' dire solo questa
+   pagina, e lo dice adesso, dopo aver disegnato la riga. Non dichiara che
+   Diego l'abbia LETTO: quello da qui non si dimostra, e non si scrive.
+   Il servizio e' idempotente: se non c'e' niente in attesa risponde
+   ack:false e non tocca nessuno stato. */
+var ACK_FATTI = {};
+function ackPromemoria(){
+  var v = S.promemoria; if (!v) return;
+  var da = [];
+  (v.promemoria || []).forEach(function(x){
+    (x.in_attesa_di_ack || []).forEach(function(a){
+      if (a.canale !== 'app') return;              /* gli altri canali non passano di qui */
+      if (ACK_FATTI[a.invio_chiave]) return;       /* una volta per occorrenza */
+      ACK_FATTI[a.invio_chiave] = true;
+      da.push({ id: x.id, occorrenza: a.occorrenza, chiave: a.invio_chiave });
+    });
+  });
+  if (!da.length) return;
+  Promise.all(da.map(function(d){
+    return api('/promemoria/' + d.id + '/visto', { operation_id: uuid(),
+      canale: 'app', occorrenza: d.occorrenza, dove: 'pagina Tesoreria' })
+      .catch(function(){
+        /* non e' passato: si toglie il segno, cosi' il prossimo caricamento
+           riprova. Un ack perso non deve diventare una consegna dichiarata. */
+        delete ACK_FATTI[d.chiave];
+        return null;
+      });
+  })).then(function(esiti){
+    if (esiti.some(function(e){ return e && e.ack; })) caricaPromemoria();
+  });
+}
+function creaPromemoria(dati, dove){
+  var msg = dove || '#msgNuovoPro';
+  var corpo = Object.assign({ operation_id: uuid(),
+    scenario_id: S.scenario ? Number(S.scenario) : null }, dati);
+  msgScen(msg, 'registro…');
+  return api('/promemoria', corpo)
+    .then(function(e){
+      return caricaPromemoria().then(function(){ return e; });
+    })
+    .then(function(e){
+      msgScen(msg, e.avviso || 'Programmato.');
+      return e;
+    })
+    .catch(function(e){ msgScen(msg, 'Non registrato: ' + e.message, true); throw e; });
+}
+function nuovoPromemoria(){
+  if (!$('#prTitolo').value.trim()){
+    msgScen('#msgNuovoPro', 'Che cosa devo ricordarti?', true); return;
+  }
+  if (!$('#prQuando').value){
+    msgScen('#msgNuovoPro', 'Quando? la data non la scelgo io.', true); return;
+  }
+  $('#btnPromemoria').disabled = true;
+  creaPromemoria({ titolo: $('#prTitolo').value.trim(),
+    quando: new Date($('#prQuando').value).toISOString(),
+    anticipo_giorni: Number($('#prAnticipo').value || 0),
+    ricorrenza: $('#prRicorrenza').value,
+    canali: $('#prTelegram').checked ? 'app,telegram' : 'app' })
+    .then(function(){ $('#prTitolo').value = ''; })
+    .catch(function(){ /* il messaggio l'ha gia' scritto creaPromemoria */ })
+    .finally(function(){ $('#btnPromemoria').disabled = false; });
+}
+function spegniPromemoria(id){
+  api('/promemoria/' + id + '/spegni', { operation_id: uuid() })
+    .then(function(){ return caricaPromemoria(); })
+    .then(function(){ msgScen('#msgPro', 'Spento: non suonerà più. Lo storico resta.'); })
+    .catch(function(e){ msgScen('#msgPro', 'Non spento: ' + e.message, true); });
+}
+
+/* ── Alfred ─────────────────────────────────────────────────────────────── */
+var ALFRED_OCCUPATO = false, timerBarra = null;
+function barraApri(){
+  $('#alfred').classList.remove('chiusa');
+  clearTimeout(timerBarra);
+  timerBarra = setTimeout(function(){
+    var a = $('#alfred');
+    if (ALFRED_OCCUPATO || $('#alfredIn').value || document.activeElement === $('#alfredIn')
+        || $('#rispostaAlfred').classList.contains('si')) { barraApri(); return; }
+    a.classList.add('chiusa');
+  }, 8000);
+}
+/* Il nucleo: una frase diventa un comando, il SERVIZIO lo interpreta e dice
+   se lo fa o se prima lo chiede. `chiedi_prima` non e' una manualita' aggiunta:
+   e' il consenso del modulo applicato anche quando la frase la scrive Diego,
+   perche' quello che si conferma deve essere quello che si esegue — una frase
+   puo' essere capita in un altro modo, e va vista prima di scriverla. Se
+   l'azione e' marcata automatica, il servizio la esegue subito anche da qui. */
+function alfredManda(frase, conversazione_id){
+  var corpo = { frase: frase, chiedi_prima: true };
+  if (conversazione_id) corpo.conversazione_id = Number(conversazione_id);
+  return api('/alfred/comando', corpo);
+}
+function alfredDecidi(id, decisione){
+  return api('/alfred/richiesta/' + Number(id) + '/' + decisione, {});
+}
+
+function chiediAlfred(){
+  var t = $('#alfredIn').value.trim();
+  if (!t || ALFRED_OCCUPATO) return;
+  ALFRED_OCCUPATO = true;
+  $('#alfred').classList.add('ascolta');
+  var bozza = t; $('#alfredIn').value = '';
+  $('#rispostaAlfred').classList.add('si');
+  $('#rispostaAlfred').innerHTML = '<p class="nota">…</p>';
+  alfredManda(t, S.alfConv)
+    .then(function(r){
+      if (r.conversazione_id) S.alfConv = r.conversazione_id;
+      disegnaRispostaBarra(r);
+      if (S.tab === 'alfred') caricaAlfred();
+    }).catch(function(e){
+      /* la bozza si ripristina solo se non ne e' stata scritta una nuova */
+      if (!$('#alfredIn').value) $('#alfredIn').value = bozza;
+      $('#rispostaAlfred').innerHTML = '<p class="errore">' +
+        (e.scaduto ? 'ESITO INCERTO: ' + esc(e.message) : esc(e.message)) + '</p>' +
+        '<div class="bottoni"><button class="btn" id="chiudiRisp">Chiudi</button></div>';
+      $('#chiudiRisp').onclick = function(){ $('#rispostaAlfred').classList.remove('si'); };
+    }).finally(function(){
+      ALFRED_OCCUPATO = false; $('#alfred').classList.remove('ascolta'); barraApri();
+    });
+}
+
+/* la stessa conferma della pagina, dentro la barra: i due bottoni chiamano le
+   stesse rotte, e finche' non si tocca «Conferma» non e' stato scritto niente */
+function disegnaRispostaBarra(r){
+  var h = '<p>' + esc(r.risposta || r.reply || '(nessuna risposta)') + '</p>';
+  if (r.capito === false && r.so_fare && r.so_fare.length){
+    h += '<p class="nota">So fare queste cose: ' + esc(r.so_fare.join(' · ')) + '</p>';
+  }
+  h += '<p class="nota">contesto: ' + (S.scenario ? 'IPOTESI' : 'previsione base') + ' · ' +
+       (r.chiede_conferma ? 'niente e ancora stato scritto: decidi tu'
+        : (r.scritto ? 'scritto: lo trovi nello storico e si annulla'
+                     : 'nessuna scrittura')) + '</p>';
+  h += '<div class="bottoni">';
+  if (r.chiede_conferma && r.richiesta_id){
+    h += '<button class="btn p" id="barraSi" data-rich="' + Number(r.richiesta_id) + '">Conferma</button>' +
+         '<button class="btn" id="barraNo" data-rich="' + Number(r.richiesta_id) + '">Lascia stare</button>';
+  }
+  h += '<button class="btn" id="chiudiRisp">Chiudi</button></div>' +
+       '<p class="nota" id="msgBarra" role="status" aria-live="polite"></p>';
+  $('#rispostaAlfred').innerHTML = h;
+  $('#chiudiRisp').onclick = function(){ $('#rispostaAlfred').classList.remove('si'); };
+  ['barraSi','barraNo'].forEach(function(k){
+    var b = $('#' + k); if (!b) return;
+    b.onclick = function(){
+      var id = b.getAttribute('data-rich');
+      $('#barraSi').disabled = true; $('#barraNo').disabled = true;
+      msgScen('#msgBarra', k === 'barraSi' ? 'eseguo…' : 'lascio stare…');
+      alfredDecidi(id, k === 'barraSi' ? 'conferma' : 'rifiuta')
+        .then(function(x){
+          msgScen('#msgBarra', k === 'barraSi'
+            ? (x.scritto ? 'Fatto: ' + (x.riassunto || '') : 'Non l ho fatto: ' +
+               ((x.esito && x.esito.errore) || x.errore || 'motivo non detto'))
+            : 'Lasciato stare: non e stato scritto niente', k === 'barraSi' && !x.scritto);
+          return ricaricaDopoAlfred();
+        })
+        .catch(function(e){
+          msgScen('#msgBarra', (e.scaduto ? 'ESITO INCERTO: ' : 'Non fatto: ') + e.message, true);
+          $('#barraSi').disabled = false; $('#barraNo').disabled = false;
+        });
+    };
+  });
+}
+
+/* dopo una scrittura di Alfred la pagina che si sta guardando e' vecchia */
+function ricaricaDopoAlfred(){
+  var p = [caricaPrevisione(), caricaJournal()];
+  if (S.tab === 'alfred') p.push(caricaAlfred());
+  if (S.tab === 'promemoria') p.push(caricaPromemoria());
+  if (S.tab === 'attivo') p.push(caricaEntrate());
+  if (S.tab === 'scenari') p.push(caricaDifferenze());
+  return Promise.all(p);
+}
+
+/* ── pagina di Alfred ───────────────────────────────────────────────────── */
+function caricaAlfred(){
+  var q = S.alfConv ? ('?conversazione_id=' + encodeURIComponent(S.alfConv)) : '';
+  return api('/alfred' + q).then(function(r){
+    S.alfred = r; dichiaraFonte('alfred'); renderAlfred();
+  }).catch(function(e){
+    dichiaraFonte('alfred', e);
+    msgScen('#msgAlf', 'Alfred non risponde: ' + e.message, true);
+  });
+}
+
+function renderAlfred(){
+  var a = S.alfred; if (!a) return;
+
+  /* cartelle: quante conversazioni ci sono dentro, e il filtro */
+  $('#alfCartelle').innerHTML = (a.cartelle || []).map(function(c){
+    return '<button class="btn' + (S.alfCartella === c.nome ? ' p' : '') + '" data-cart="' +
+      esc(c.nome) + '" title="' + esc(c.descrizione) + '">' + esc(c.nome) +
+      ' <span class="chip">' + Number(c.conversazioni || 0) + '</span></button>';
+  }).join('') || '<p class="nota">nessuna cartella</p>';
+  $$('#alfCartelle button[data-cart]').forEach(function(b){
+    b.onclick = function(){
+      var n = b.getAttribute('data-cart');
+      S.alfCartella = (S.alfCartella === n) ? '' : n;
+      renderAlfred();
+    };
+  });
+
+  /* conversazioni: le piu' recenti in cima, filtrate dalla cartella scelta */
+  var conv = (a.conversazioni || []).filter(function(k){
+    return !S.alfCartella || k.cartella === S.alfCartella; });
+  $('#alfConversazioni').innerHTML = conv.length ? conv.map(function(k){
+    return '<button class="alf-conv' + (String(S.alfConv) === String(k.id) ? ' on' : '') +
+      '" data-conv="' + Number(k.id) + '">' + esc(k.titolo) +
+      '<span class="q">' + esc(k.cartella || 'senza cartella') + ' · ' +
+      Number(k.messaggi || 0) + ' messaggi · ' + esc(k.canale) + '</span></button>';
+  }).join('') : '<p class="nota">' + (S.alfCartella
+      ? 'in questa cartella non c e ancora niente'
+      : 'nessuna conversazione: scrivi qui sotto e comincia') + '</p>';
+  $$('#alfConversazioni button[data-conv]').forEach(function(b){
+    b.onclick = function(){ S.alfConv = Number(b.getAttribute('data-conv')); caricaAlfred(); };
+  });
+
+  /* le richieste in attesa: quello che Alfred farebbe, e non ha fatto */
+  var att = a.in_attesa || [];
+  $('#alfAttesa').innerHTML = att.length ? att.map(function(r){
+    return '<div class="alf-attesa" data-att="' + Number(r.id) + '">' +
+      '<b>' + esc(r.riassunto) + '</b>' +
+      '<p class="frase">ha capito questo da: «' + esc(r.frase) + '» · azione ' +
+      esc(r.azione) + ' · dal canale ' + esc(r.canale) + '</p>' +
+      '<div class="bottoni">' +
+      '<button class="btn p" data-si="' + Number(r.id) + '">Conferma</button>' +
+      '<button class="btn" data-no="' + Number(r.id) + '">Lascia stare</button>' +
+      '</div></div>';
+  }).join('') : '<p class="nota">Niente in attesa. Quando Alfred vuole scrivere qualcosa te lo chiede qui, e finche non rispondi non e stato scritto niente.</p>';
+  $$('#alfAttesa button[data-si], #alfAttesa button[data-no]').forEach(function(b){
+    b.onclick = function(){
+      var si = b.hasAttribute('data-si');
+      var id = b.getAttribute(si ? 'data-si' : 'data-no');
+      $$('#alfAttesa button').forEach(function(x){ x.disabled = true; });
+      msgScen('#msgAlfAttesa', si ? 'eseguo…' : 'lascio stare…');
+      alfredDecidi(id, si ? 'conferma' : 'rifiuta').then(function(x){
+        msgScen('#msgAlfAttesa', si
+          ? (x.scritto ? 'Fatto: ' + (x.riassunto || '')
+                       : 'Non fatto: ' + ((x.esito && x.esito.errore) || x.errore || 'motivo non detto'))
+          : 'Lasciato stare: non e stato scritto niente', si && !x.scritto);
+        return ricaricaDopoAlfred();
+      }).catch(function(e){
+        msgScen('#msgAlfAttesa', (e.scaduto ? 'ESITO INCERTO: ' : 'Non fatto: ') + e.message, true);
+        $$('#alfAttesa button').forEach(function(x){ x.disabled = false; });
+      });
+    };
+  });
+
+  /* i messaggi della conversazione aperta */
+  var tit = null;
+  (a.conversazioni || []).forEach(function(k){ if (String(k.id) === String(S.alfConv)) tit = k; });
+  $('#alfTitoloConv').textContent = tit ? tit.titolo : 'Nuova conversazione';
+  $('#alfTecConv').textContent = tit ? (tit.cartella || 'senza cartella') : 'nuova';
+  var msg = a.messaggi || [];
+  $('#alfMessaggi').innerHTML = msg.length ? msg.map(function(m){
+    return '<div class="alf-msg ' + esc(m.ruolo) + '">' + esc(m.testo) +
+      '<span class="q">' + esc(m.ruolo) + ' · ' + esc(String(m.quando || '').slice(0, 16).replace('T', ' ')) +
+      ' · ' + esc(m.canale) + (m.richiesta_id ? ' · richiesta ' + Number(m.richiesta_id) : '') +
+      '</span></div>';
+  }).join('') : '<p class="nota">' + (S.alfConv ? 'conversazione vuota'
+      : 'Scrivi qui sotto: la prima frase apre la conversazione.') + '</p>';
+  $('#alfMessaggi').scrollTop = $('#alfMessaggi').scrollHeight;
+
+  /* i consensi, come li vede il servizio */
+  $('#alfPermessi').innerHTML = (a.permessi || []).map(function(x){
+    var attiva = x.automatica_ora != null ? x.automatica_ora : x.auto;
+    var cl = attiva ? 'chip ok' : (x.richiede_consenso_esplicito ? 'chip avv' : 'chip');
+    var come = attiva
+      ? (x.consenso_esplicito ? 'da sola, col tuo consenso' : 'da sola')
+      : (x.richiede_consenso_esplicito ? 'chiede prima — un flag non basta' : 'chiede prima');
+    var riga = '<span class="' + cl + '">' + esc(x.azione) + ': ' + come + '</span>';
+    /* le tre delicate portano il bottone per dare o togliere il consenso: e'
+       una dichiarazione, non una casella che si spunta distrattamente */
+    if (x.richiede_consenso_esplicito){
+      riga += ' <button class="btn" data-cons="' + esc(x.azione) + '" data-verso="' +
+        (x.consenso_esplicito ? '0' : '1') + '">' +
+        (x.consenso_esplicito ? 'Revoca' : 'Concedi') + '</button>';
+      if (x.consenso_esplicito && x.consenso_il){
+        riga += '<span class="chip">dal ' + esc(String(x.consenso_il).slice(0,10)) +
+          (x.consenso_da ? ', ' + esc(x.consenso_da) : '') + '</span>';
+      }
+    }
+    return '<div style="margin-bottom:6px">' + riga + '</div>';
+  }).join('') || '<p class="nota">nessun consenso dichiarato</p>';
+  $$('#alfPermessi button[data-cons]').forEach(function(b){
+    b.onclick = function(){
+      var az = b.getAttribute('data-cons'), concedi = b.getAttribute('data-verso') === '1';
+      b.disabled = true;
+      api('/alfred/consenso', { azione: az, concedi: concedi,
+        nota: concedi ? 'concesso dalla pagina' : 'revocato dalla pagina', operation_id: uuid() })
+        .then(function(){ return Promise.all([caricaAlfred(), caricaJournal()]); })
+        .catch(function(e){ msgScen('#msgAlf', 'Non fatto: ' + e.message, true); b.disabled = false; });
+    };
+  });
+
+  /* la memoria: in chiaro, con la provenienza, e si corregge qui */
+  $('#alfNotaMemoria').textContent = a.nota_memoria || '';
+  var mem = a.memoria || [];
+  /* se Diego sta correggendo una riga, un ridisegno non gli cancella quello che
+     ha appena scritto: si tiene da parte e si rimette dopo */
+  var inCorso = null, att = document.activeElement;
+  if (att && att.tagName === 'INPUT' && att.closest && att.closest('#alfMemoria tr[data-mem]')){
+    inCorso = { chiave: att.closest('tr').getAttribute('data-mem'), valore: att.value };
+  }
+  $('#alfMemoria').innerHTML =
+    '<thead><tr><th>chiave</th><th>valore</th><th>chi</th><th>nota</th><th>quando</th><th></th></tr></thead>' +
+    '<tbody>' + (mem.length ? mem.map(function(m){
+      return '<tr data-mem="' + esc(m.chiave) + '"><td>' + esc(m.chiave) + '</td>' +
+        '<td><input value="' + esc(m.valore == null ? '' : m.valore) +
+        '" aria-label="valore di ' + esc(m.chiave) + '"></td>' +
+        '<td><span class="chip">' + esc(m.origine) + '</span></td>' +
+        '<td>' + esc(m.nota) + '</td>' +
+        '<td class="g">' + esc(String(m.aggiornata_il || '').slice(0, 10)) + '</td>' +
+        '<td><button class="btn" data-salva="' + esc(m.chiave) + '">Correggi</button></td></tr>';
+    }).join('') : '<tr><td colspan="6"><span class="nota">Alfred non sa ancora niente di Tesoreria.</span></td></tr>') +
+    '</tbody>';
+  if (inCorso){
+    var q = $('#alfMemoria tr[data-mem="' + inCorso.chiave.replace(/"/g,'\\"') + '"] input');
+    if (q){ q.value = inCorso.valore; q.focus(); }
+  }
+  $$('#alfMemoria button[data-salva]').forEach(function(b){
+    b.onclick = function(){
+      var k = b.getAttribute('data-salva');
+      var riga = b.closest('tr');
+      scriviMemoria(k, riga.querySelector('input').value, '', b);
+    };
+  });
+}
+
+function scriviMemoria(chiave, valore, nota, bottone){
+  if (!String(chiave || '').trim()){
+    msgScen('#msgAlfMemoria', 'Una memoria senza chiave non si ritrova piu.', true); return;
+  }
+  if (bottone) bottone.disabled = true;
+  msgScen('#msgAlfMemoria', 'scrivo…');
+  /* origine «diego»: l ha messa lui a mano, e si vede da chi viene */
+  api('/alfred/memoria', { chiave: String(chiave).trim(), valore: valore,
+                           origine: 'diego', nota: nota, operation_id: uuid() })
+    .then(function(){
+      msgScen('#msgAlfMemoria', 'Corretta: Alfred la legge da qui, e si annulla dallo storico.');
+      $('#alfMemChiave').value = ''; $('#alfMemValore').value = ''; $('#alfMemNota').value = '';
+      return Promise.all([caricaAlfred(), caricaJournal()]);
+    })
+    .catch(function(e){
+      msgScen('#msgAlfMemoria', (e.scaduto ? 'ESITO INCERTO: ' : 'Non scritta: ') + e.message, true);
+    })
+    .finally(function(){ if (bottone) bottone.disabled = false; });
+}
+
+function invioAlfredPagina(){
+  var t = $('#alfFrase').value.trim();
+  if (!t) { msgScen('#msgAlf', 'Non hai detto niente.', true); return; }
+  $('#btnAlfInvia').disabled = true;
+  msgScen('#msgAlf', 'sto capendo…');
+  $('#alfFrase').value = '';
+  alfredManda(t, S.alfConv)
+    .then(function(r){
+      if (r.conversazione_id) S.alfConv = r.conversazione_id;
+      msgScen('#msgAlf', r.capito === false
+        ? 'Non ho capito. Queste le so fare: ' + (r.so_fare || []).join(' · ')
+        : (r.chiede_conferma ? 'Prima te lo chiedo: guarda qui sopra, in attesa. Niente e stato scritto.'
+           : (r.scritto ? 'Fatto: ' + (r.riassunto || '') + ' · si annulla dallo storico'
+                        : (r.risposta || 'nessuna scrittura'))),
+        r.capito === false);
+      return ricaricaDopoAlfred();
+    })
+    .catch(function(e){
+      if (!$('#alfFrase').value) $('#alfFrase').value = t;
+      msgScen('#msgAlf', (e.scaduto ? 'ESITO INCERTO: ' : 'Non fatto: ') + e.message, true);
+    })
+    .finally(function(){ $('#btnAlfInvia').disabled = false; });
+}
+
+function creaCartellaAlfred(){
+  var n = $('#alfNuovaCartella').value.trim();
+  if (!n){ msgScen('#msgAlfCartella', 'La cartella ha bisogno di un nome.', true); return; }
+  $('#btnAlfCartella').disabled = true;
+  api('/alfred/cartella', { nome: n, descrizione: '' })
+    .then(function(){ $('#alfNuovaCartella').value = '';
+      msgScen('#msgAlfCartella', 'Creata.'); return caricaAlfred(); })
+    .catch(function(e){ msgScen('#msgAlfCartella', 'Non creata: ' + e.message, true); })
+    .finally(function(){ $('#btnAlfCartella').disabled = false; });
+}
+
+/* ── navigazione e avvio ────────────────────────────────────────────────── */
+function vaiA(tab){
+  S.tab = tab;
+  $$('#rail .voce').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-tab') === tab); });
+  $$('.pane').forEach(function(p){ p.classList.toggle('on', p.id === 'pane-' + tab); });
+  var titoli = { conti:'Conti e previsione', inbox:'Import e Inbox', scenari:'Scenari e ipotesi',
+                 fissi:'Costi fissi e finanziamenti',
+                 attivo:'Attivo', tasse:'Partita IVA e tasse', promemoria:'Promemoria',
+                 alfred:'Alfred', storico:'Annulla e storico' };
+  $('#titolo').textContent = titoli[tab] || tab;
+  $('#strisce').hidden = (tab !== 'conti');
+  /* il contesto dello scenario resta visibile in OGNI pagina: cambiare pagina
+     non torna alla base in silenzio */
+  try { localStorage.setItem('tesoreria_tab', tab); } catch(e){}
+  if (tab === 'inbox'){ caricaInbox(); caricaAperti(); }
+  if (tab === 'scenari'){ caricaScenari(); caricaDifferenze(); }
+  if (tab === 'fissi'){ renderFissi(); caricaImpegni(); }
+  if (tab === 'attivo'){ renderAttivo(); caricaRiserva(); caricaEntrate(); }
+  if (tab === 'tasse'){ renderTasse(); caricaFisco(); }
+  if (tab === 'promemoria'){ caricaPromemoria(); }
+  if (tab === 'alfred'){ caricaAlfred(); }
+  if (tab === 'storico') caricaJournal();
+}
+function vista(v){
+  S.vista = v;
+  $$('#strisce button').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-vista') === v); });
+  $('#card-prospetto').hidden = (v !== 'prospetto');
+  $('#card-curva').hidden = (v !== 'curva');
+  try { localStorage.setItem('tesoreria_vista', v); } catch(e){}
+}
+
+function avvia(){
+  return caricaAnagrafica()
+    .then(caricaScenari)
+    .then(caricaPrevisione)
+    .then(function(){ if (S.tab === 'inbox'){ caricaInbox(); caricaAperti(); } })
+    .then(function(){ if (S.scenario) return caricaDifferenze(); })
+    .then(caricaJournal);
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+  /* persistenza delle preferenze: sopravvivono al reload, restano di questo
+     dispositivo e non sono dati da conservare */
+  try {
+    S.conto = localStorage.getItem('tesoreria_conto') || 'tutti';
+    S.mesi = Number(localStorage.getItem('tesoreria_mesi') || 3);
+    S.gruppo = localStorage.getItem('tesoreria_gruppo') || 'mese';
+    S.scenario = localStorage.getItem('tesoreria_scenario') || '';
+    S.tab = localStorage.getItem('tesoreria_tab') || 'conti';
+    S.vista = localStorage.getItem('tesoreria_vista') || 'prospetto';
+    S.vistaFissi = localStorage.getItem('tesoreria_vista_fissi') || 'colonne';
+  } catch(e){ /* private browsing: si parte dai valori normali */ }
+  $('#selPeriodo').value = String(S.mesi);
+  $('#selGruppo').value = S.gruppo;
+
+  $$('#rail .voce').forEach(function(b){ b.onclick = function(){ vaiA(b.getAttribute('data-tab')); }; });
+  $$('#strisce button').forEach(function(b){ b.onclick = function(){ vista(b.getAttribute('data-vista')); }; });
+  $('#selConto').onchange = function(){ S.conto = this.value;
+    try{ localStorage.setItem('tesoreria_conto', S.conto); }catch(e){}
+    caricaPrevisione(); if (S.tab==='inbox') caricaInbox();
+    if (S.tab==='fissi') caricaImpegni(); };
+  $('#selPeriodo').onchange = function(){ S.mesi = Number(this.value);
+    try{ localStorage.setItem('tesoreria_mesi', String(S.mesi)); }catch(e){}
+    caricaPrevisione(); if (S.tab==='fissi') caricaImpegni(); };
+  $('#selGruppo').onchange = function(){ S.gruppo = this.value;
+    try{ localStorage.setItem('tesoreria_gruppo', S.gruppo); }catch(e){} renderProspetto(); };
+  $('#selScenario').onchange = function(){ cambiaScenario(this.value); };
+  $$('#strisceFissi [data-vistaf]').forEach(function(b){
+    b.onclick = function(){ vistaImpegni(b.getAttribute('data-vistaf')); }; });
+  $('#btnPromemoria').onclick = nuovoPromemoria;
+  $('#btnFisco').onclick = caricaFisco;
+  $('#btnDovuto').onclick = registraDovuto;
+  $('#btnEntrata').onclick = creaEntrata;
+  $('#btnSalvadanaio').onclick = muoviSalvadanaio;
+  $('#btnRiserva').onclick = caricaRiserva;
+  $('#btnAnni').onclick = function(){ caricaEntrate(false); };
+  $('#btnSalvaEntrata').onclick = function(){ salvaEntrata(false); };
+  $('#btnTogliAttesa').onclick = function(){ salvaEntrata(true); };
+  $('#btnChiudiEntrata').onclick = function(){ $('#box-entrata').hidden = true; ENTRATA_APERTA = null; };
+  $('#btnCostoFisso').onclick = creaCostoFisso;
+  $('#cfCategoria').onchange = function(){ sottoDi('#cfCategoria', '#cfSotto'); };
+  $('#fzCategoria').onchange = function(){ sottoDi('#fzCategoria', '#fzSotto'); };
+  $('#btnSalvaSerie').onclick = function(){ salvaSerie(false); };
+  $('#btnSpegniSerie').onclick = function(){ salvaSerie(true); };
+  $('#btnChiudiSerie').onclick = function(){ $('#box-serie').hidden = true; SERIE_APERTA = null; };
+  $('#btnFinanziamento').onclick = creaFinanziamento;
+  $('#btnAnteprimaPiano').onclick = anteprimaPiano;
+  $('#btnNuovoScenario').onclick = creaScenario;
+  $('#nuovoScenarioNome').onkeydown = function(e){ if (e.key === 'Enter') creaScenario(); };
+  $('#btnVoceIpotesi').onclick = nuovaVoceIpotesi;
+  $('#btnSposta').onclick = function(){ sposta(S.sel.slice(), $('#dataSposta').value, null); };
+  $('#btnDeseleziona').onclick = function(){ S.sel = []; renderSelezione(); renderProspetto(); };
+
+  $('#dropzone').onclick = function(){ $('#file').click(); };
+  $('#dropzone').onkeydown = function(e){ if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); $('#file').click(); } };
+  $('#file').onchange = function(){ if (this.files[0]) anteprima(this.files[0]); };
+  ['dragenter','dragover'].forEach(function(t){
+    $('#dropzone').addEventListener(t, function(e){ e.preventDefault(); $('#dropzone').classList.add('su'); }); });
+  ['dragleave','drop'].forEach(function(t){
+    $('#dropzone').addEventListener(t, function(e){ e.preventDefault(); $('#dropzone').classList.remove('su'); }); });
+  $('#dropzone').addEventListener('drop', function(e){
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) anteprima(e.dataTransfer.files[0]); });
+
+  $('#btnAlfInvia').onclick = invioAlfredPagina;
+  $('#alfFrase').onkeydown = function(e){ if (e.key === 'Enter') invioAlfredPagina(); };
+  $('#btnAlfNuova').onclick = function(){
+    /* una conversazione nuova non cancella la vecchia: resta nella cronologia */
+    S.alfConv = 0; $('#alfFrase').value = ''; msgScen('#msgAlf', '');
+    caricaAlfred().then(function(){ $('#alfFrase').focus(); });
+  };
+  $('#btnAlfCartella').onclick = creaCartellaAlfred;
+  $('#alfNuovaCartella').onkeydown = function(e){ if (e.key === 'Enter') creaCartellaAlfred(); };
+  $('#btnAlfMemoria').onclick = function(){
+    scriviMemoria($('#alfMemChiave').value, $('#alfMemValore').value,
+                  $('#alfMemNota').value, $('#btnAlfMemoria'));
+  };
+  $('#sfera').onclick = function(){ barraApri(); $('#alfredIn').focus(); };
+  $('#alfredVai').onclick = chiediAlfred;
+  $('#alfredIn').onkeydown = function(e){ if (e.key === 'Enter') chiediAlfred(); };
+  $('#alfredIn').onfocus = barraApri;
+  $('#btnEntra').onclick = entra;
+  $('#tok').onkeydown = function(e){ if (e.key === 'Enter') entra(); };
+
+  vaiA(S.tab); vista(S.vista); vistaImpegni(S.vistaFissi); barraApri();
+  if (!TOK) $('#login').classList.add('si');
+  else avvia();
+});
+function entra(){
+  var t = $('#tok').value.trim(); if (!t) return;
+  TOK = t;
+  api('/anagrafica').then(function(){
+    try { localStorage.setItem('app_token', t); } catch(e){}
+    $('#login').classList.remove('si'); avvia();
+  }).catch(function(e){
+    $('#loginErr').textContent = (e && e.stato === 401)
+      ? 'Codice sbagliato.'
+      : 'Servizio non raggiungibile ora (' + e.message + '): il codice potrebbe essere giusto, riprova.';
+  });
+}
+</script>
+</body>
+</html>
