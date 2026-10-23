@@ -1,0 +1,185 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   PELLE — il vocabolario dei colori di Diego OS, in un posto solo.
+   Estratto da salute.html il 23/10/2026 (restyling C2): prima ogni pagina
+   portava la sua copia dei token e le tre pelli esistevano solo su salute.
+   Ora le pagine vive (salute, tesoreria, index) includono QUESTO file e non
+   scrivono colori a mano: la rete frontend-pelli.test.mjs legge i token da
+   qui e pretende conformita' esatta sulle pagine.
+
+   Regola invariata dal piano del 04/10: si cambia la pelle, non lo scheletro.
+   Ogni blocco pelle riscrive SOLO token di colore, zero regole di layout.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ═══ TOKEN — un solo :root, nessun colore a mano nei componenti ═══ */
+:root{
+  --fondo:#050505;
+  --fondo-desktop:radial-gradient(120% 110% at 12% 4%,#A3FF0022 0%,#0d0d0d 30%,#060606 68%,#020202 100%);
+  --fondo-mobile:radial-gradient(120% 70% at 25% 0%,#A3FF0026 0%,#0d0d0d 34%,#060606 70%,#020202 100%);
+  --vetro:rgba(var(--luce-rgb),.06);
+  --vetro-forte:rgba(var(--luce-rgb),.07);
+  --vetro-filtro:blur(40px) saturate(180%);
+  --vetro-filtro-forte:blur(44px) saturate(200%);
+  --bordo:rgba(var(--luce-rgb),.12);
+  --bordo-forte:rgba(var(--luce-rgb),.14);
+  --luce-interna:inset 0 1px 0 rgba(var(--luce-rgb),.07);
+  --riga:rgba(var(--luce-rgb),.06);
+  --luce-rgb:255,255,255;
+  --ombra-rgb:0,0,0;
+  --accento-rgb:163,255,0;
+  --attenzione-rgb:255,176,32;
+  --viola-rgb:168,85,247;
+  --inchiostro-rgb:11,18,0;
+  --superficie-rgb:20,20,24;
+  --velo-rgb:6,6,8;
+  --accento:#A3FF00;
+  --accento-2:#8FE000;
+  --accento-fondo:rgba(var(--accento-rgb),.18);
+  --accento-fondo-16:rgba(var(--accento-rgb),.16);
+  --accento-bordo:rgba(var(--accento-rgb),.4);
+  --accento-45:rgba(var(--accento-rgb),.45);
+  --attenzione:#ffb020;
+  --testo1:#F5F5F7;
+  --testo2:#C7C7CC;
+  --testo3:#8E8E93;
+  --testo4:#6b6a68;
+  --testo5:#4d4c4a;
+  --inchiostro-su-lime:#0b1200;
+  --sfera:#2b1b4d;
+  --sfera-rosa:#f0abfc;
+  --sfera-blu:#60a5fa;
+  --alone-lime:rgba(var(--accento-rgb),.12);
+  --alone-viola:rgba(var(--viola-rgb),.10);
+  --barra-fondo:rgba(var(--luce-rgb),.09);
+  --tacca-vuota:rgba(var(--luce-rgb),.14);
+  --ombra-hover:0 16px 34px rgba(var(--ombra-rgb),.5);
+  --ombra-alfred:0 18px 44px rgba(var(--ombra-rgb),.5);
+  --ombra-finestra:0 40px 90px rgba(9,5,20,.6),0 0 0 1px rgba(var(--luce-rgb),.22);
+  --font-ui:'Sora',system-ui,sans-serif;
+  --font-mono:'Spline Sans Mono',ui-monospace,monospace;
+  --r-scheda:16px;
+  --r-chip:10px;
+  --r-chip-s:6px;
+  --r-barra:4px;
+  --transizione:transform .22s cubic-bezier(.2,.8,.2,1),box-shadow .22s ease;
+  /* ── riconciliazione tesoreria (23/10): il dialetto diventa vocabolario ──
+     Tesoreria aveva un :root suo con nomi diversi: dove il nome era nuovo il
+     token entra qui, dove era un sinonimo diventa un alias. Niente colore
+     resta scritto nella pagina. */
+  --negativo:#ff5f56;
+  --serie-blu:#5ac8fa;
+  --serie-viola:#bf5af2;
+  --serie-verde:#32d74b;
+  --font-num:var(--font-mono);
+  --r-card:var(--r-scheda);
+}
+
+/* ═══ FASE 2 — le tre direzioni nuove. Si cambia la pelle, non lo scheletro:
+   ogni blocco riscrive SOLO i token di colore, zero regole di layout. ═══ */
+
+/* A · INCHIOSTRO — blu-nero profondo, neutri freddi, accento acciaio */
+html[data-pelle="inchiostro"]{
+  --fondo:#080B11;
+  --fondo-desktop:radial-gradient(120% 110% at 12% 4%,#7AA2F733 0%,#0e131c 30%,#080b11 68%,#04060a 100%);
+  --fondo-mobile:radial-gradient(120% 70% at 25% 0%,#7AA2F72e 0%,#0e131c 34%,#080b11 70%,#04060a 100%);
+  --accento:#7AA2F7;
+  --accento-rgb:122,162,247;
+  --attenzione-rgb:242,177,85;
+  --viola-rgb:94,234,212;
+  --inchiostro-rgb:5,8,15;
+  --superficie-rgb:14,19,28;
+  --velo-rgb:4,6,10;
+  --accento-2:#5B8DEF;
+  --accento-fondo:rgba(122,162,247,.18);
+  --accento-fondo-16:rgba(122,162,247,.16);
+  --accento-bordo:rgba(122,162,247,.42);
+  --accento-45:rgba(122,162,247,.45);
+  --attenzione:#F2B155;
+  --negativo:#F7768E;
+  --testo1:#E8ECF4;
+  --testo2:#AEB8CC;
+  --testo3:#76819A;
+  --testo4:#5B6579;
+  --testo5:#434B5C;
+  --inchiostro-su-lime:#05080f;
+  --sfera:#1b2a4d;
+  --sfera-rosa:#9db4f7;
+  --sfera-blu:#5eead4;
+  --alone-lime:rgba(122,162,247,.14);
+  --alone-viola:rgba(94,234,212,.09);
+}
+
+/* B · BRONZO — grafite calda, accento ambra: la piu' calda delle tre */
+html[data-pelle="bronzo"]{
+  --fondo:#100F0E;
+  --fondo-desktop:radial-gradient(120% 110% at 12% 4%,#E8894A2b 0%,#17140f 30%,#100f0e 68%,#070605 100%);
+  --fondo-mobile:radial-gradient(120% 70% at 25% 0%,#E8894A26 0%,#17140f 34%,#100f0e 70%,#070605 100%);
+  --accento:#E8894A;
+  --accento-rgb:232,137,74;
+  --attenzione-rgb:227,198,90;
+  --viola-rgb:158,199,180;
+  --inchiostro-rgb:20,11,4;
+  --superficie-rgb:23,20,15;
+  --velo-rgb:7,6,5;
+  --accento-2:#C96F37;
+  --accento-fondo:rgba(232,137,74,.18);
+  --accento-fondo-16:rgba(232,137,74,.16);
+  --accento-bordo:rgba(232,137,74,.42);
+  --accento-45:rgba(232,137,74,.45);
+  --attenzione:#E3C65A;
+  --negativo:#E8655A;
+  --testo1:#F4F0EB;
+  --testo2:#C9BFB3;
+  --testo3:#938A7E;
+  --testo4:#6F675D;
+  --testo5:#524C44;
+  --inchiostro-su-lime:#140b04;
+  --sfera:#3a2416;
+  --sfera-rosa:#f0b49a;
+  --sfera-blu:#9ec7b4;
+  --alone-lime:rgba(232,137,74,.13);
+  --alone-viola:rgba(158,199,180,.09);
+}
+
+/* C · CARTA — chiara, per quando apri l'app di giorno. I veli si invertono:
+   --luce-rgb diventa inchiostro, quindi i veli dei componenti si scuriscono da soli. */
+html[data-pelle="carta"]{
+  --luce-rgb:17,20,26;
+  --fondo:#F5F4F1;
+  --fondo-desktop:radial-gradient(120% 110% at 12% 4%,#2E5AAC14 0%,#f7f6f3 30%,#f2f1ee 68%,#eceae6 100%);
+  --fondo-mobile:radial-gradient(120% 70% at 25% 0%,#2E5AAC12 0%,#f7f6f3 34%,#f2f1ee 70%,#eceae6 100%);
+  --vetro:rgba(255,255,255,.72);
+  --vetro-forte:rgba(255,255,255,.84);
+  --vetro-filtro:blur(24px) saturate(140%);
+  --vetro-filtro-forte:blur(28px) saturate(150%);
+  --bordo:rgba(17,20,26,.12);
+  --bordo-forte:rgba(17,20,26,.16);
+  --luce-interna:inset 0 1px 0 rgba(255,255,255,.9);
+  --accento:#2E5AAC;
+  --accento-rgb:46,90,172;
+  --attenzione-rgb:184,118,26;
+  --viola-rgb:180,138,216;
+  --inchiostro-rgb:255,255,255;
+  --superficie-rgb:250,250,248;
+  --velo-rgb:236,234,230;
+  --accento-2:#24478A;
+  --accento-fondo:rgba(46,90,172,.14);
+  --accento-fondo-16:rgba(46,90,172,.12);
+  --accento-bordo:rgba(46,90,172,.38);
+  --accento-45:rgba(46,90,172,.45);
+  --attenzione:#B8761A;
+  --negativo:#C0392B;
+  --testo1:#14171D;
+  --testo2:#3C434F;
+  --testo3:#6B7280;
+  --testo4:#8A909B;
+  --testo5:#A8ADB6;
+  --inchiostro-su-lime:#FFFFFF;
+  --sfera:#dfe4f2;
+  --sfera-rosa:#b48ad8;
+  --sfera-blu:#3b82f6;
+  --alone-lime:rgba(46,90,172,.10);
+  --alone-viola:rgba(180,138,216,.10);
+  --ombra-hover:0 14px 30px rgba(17,20,26,.12);
+  --ombra-alfred:0 16px 38px rgba(17,20,26,.14);
+  --ombra-finestra:0 30px 70px rgba(17,20,26,.18),0 0 0 1px rgba(17,20,26,.10);
+}

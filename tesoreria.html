@@ -9,37 +9,34 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&family=Spline+Sans+Mono:wght@400;500&display=swap" rel="stylesheet">
+<!-- i TOKEN e le tre pelli vivono in pelle.css (vocabolario unico, 23/10):
+     il vecchio :root dialettale di questa pagina e' riconciliato la' dentro
+     (--negativo, --serie-*, gli alias --font-num e --r-card) -->
+<link rel="stylesheet" href="pelle.css">
+<script>
+/* PELLE (23/10): la tesoreria REAGISCE alla pelle scelta su salute.html (la
+   scelta vive in localStorage). Il selettore resta solo su salute: qui si
+   applica e basta, prima del primo paint per non far lampeggiare la pagina.
+   Dentro try: uno script che muore al boot porta giu' la pagina (lezione v1). */
+(function(){
+  try{
+    var TINTA={attuale:'#050505',inchiostro:'#080B11',bronzo:'#100F0E',carta:'#F5F4F1'};
+    var p='attuale';
+    try{ p=localStorage.getItem('pelle')||'attuale'; }catch(e){}
+    if(!TINTA[p]) p='attuale';
+    var radice=document.documentElement;
+    if(p!=='attuale' && radice && radice.setAttribute) radice.setAttribute('data-pelle',p);
+    var meta=document.querySelector && document.querySelector('meta[name="theme-color"]');
+    if(meta && meta.setAttribute) meta.setAttribute('content',TINTA[p]);
+  }catch(e){ /* pelle non applicata: la pagina resta quella di default */ }
+})();
+</script>
 <style>
 /* ══════════════════════════════════════════════════════════════════════════
-   TESORERIA — linea Diego OS. I token stanno in UN SOLO :root, come impone il
+   TESORERIA — linea Diego OS. I token stanno in pelle.css, come impone il
    design system: nessun colore scritto a mano nei componenti.
    La bozza chiaro/verde era il contratto delle FUNZIONI, non il tema.
    ══════════════════════════════════════════════════════════════════════════ */
-:root{
-  --fondo:#050505;
-  --fondo-desktop:radial-gradient(120% 110% at 12% 4%,#A3FF0022 0%,#0d0d0d 30%,#060606 68%,#020202 100%);
-  --fondo-mobile:radial-gradient(120% 70% at 25% 0%,#A3FF0026 0%,#0d0d0d 34%,#060606 70%,#020202 100%);
-  --vetro:rgba(255,255,255,.06);
-  --vetro-filtro:blur(40px) saturate(180%);
-  --bordo:rgba(255,255,255,.12);
-  --bordo-forte:rgba(255,255,255,.14);
-  --luce-interna:inset 0 1px 0 rgba(255,255,255,.07);
-  --riga:rgba(255,255,255,.06);
-  --accento:#A3FF00;
-  --accento-fondo:rgba(163,255,0,.18);
-  --accento-fondo-16:rgba(163,255,0,.16);
-  --accento-bordo:rgba(163,255,0,.4);
-  --accento-45:rgba(163,255,0,.45);
-  --attenzione:#ffb020;
-  --negativo:#ff5f56;
-  --testo1:#F5F5F7; --testo2:#C7C7CC; --testo3:#8E8E93; --testo4:#6b6a68; --testo5:#4d4c4a;
-  --inchiostro-su-lime:#0b1400;
-  --font-ui:'Sora',system-ui,-apple-system,sans-serif;
-  --font-num:'Spline Sans Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
-  --ombra-finestra:0 30px 90px rgba(0,0,0,.6);
-  --ombra-hover:0 16px 34px rgba(0,0,0,.5);
-  --r-card:16px; --r-chip:10px; --r-chip-s:6px;
-}
 *{box-sizing:border-box}
 html,body{margin:0;padding:0;height:100%}
 body{background:var(--fondo);background-image:var(--fondo-desktop);color:var(--testo1);
@@ -57,18 +54,18 @@ button,select,input{font-family:inherit;font-size:inherit;color:inherit}
 #app{position:fixed;inset:26px;border-radius:var(--r-card);overflow:hidden;
   box-shadow:var(--ombra-finestra);display:grid;grid-template-columns:66px 1fr;
   grid-template-rows:minmax(0,1fr);background:var(--vetro)}
-#rail{position:relative;z-index:20;background:rgba(255,255,255,.05);
+#rail{position:relative;z-index:20;background:rgba(var(--luce-rgb),.05);
   backdrop-filter:blur(46px) saturate(150%);-webkit-backdrop-filter:blur(46px) saturate(150%);
-  border-right:1px solid rgba(255,255,255,.09);display:flex;flex-direction:column;
+  border-right:1px solid rgba(var(--luce-rgb),.09);display:flex;flex-direction:column;
   align-items:center;padding:16px 0 14px;gap:6px}
 #rail .logo{width:26px;height:26px;border-radius:8px;background:var(--accento);
   color:var(--inchiostro-su-lime);display:flex;align-items:center;justify-content:center;
   font:600 12px var(--font-ui);margin-bottom:12px}
 #rail .voce{width:42px;height:38px;border-radius:11px;display:flex;align-items:center;
-  justify-content:center;color:rgba(255,255,255,.5);cursor:pointer;background:none;border:0}
+  justify-content:center;color:rgba(var(--luce-rgb),.5);cursor:pointer;background:none;border:0}
 #rail .voce.on{background:var(--accento-fondo-16);border:1px solid var(--accento-45);color:var(--accento)}
 #colonna{position:relative;display:flex;flex-direction:column;min-width:0;
-  background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(0,0,0,.14))}
+  background:linear-gradient(180deg,rgba(var(--luce-rgb),.02),rgba(var(--ombra-rgb),.14))}
 
 #testata{flex:none;padding:14px 24px 8px;display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap}
 #testata h1{margin:0;font:500 19px var(--font-ui);letter-spacing:-.01em}
@@ -79,11 +76,11 @@ button,select,input{font-family:inherit;font-size:inherit;color:inherit}
 /* ── contesto scenario: SEMPRE visibile, in testata, in ogni pagina ───────── */
 #ctx{margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .etichetta{color:var(--testo4);font:500 10px var(--font-num);text-transform:uppercase;letter-spacing:.04em}
-.sel{background:rgba(255,255,255,.05);border:1px solid var(--bordo);border-radius:var(--r-chip);
+.sel{background:rgba(var(--luce-rgb),.05);border:1px solid var(--bordo);border-radius:var(--r-chip);
   padding:5px 9px;color:var(--testo1);cursor:pointer}
 #ctx.scenario .sel[data-ctx-scenario]{border-color:var(--attenzione);color:var(--attenzione)}
 #bandiera-scenario{display:none;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;
-  background:rgba(255,176,32,.14);border:1px solid rgba(255,176,32,.45);color:var(--attenzione);
+  background:rgba(var(--attenzione-rgb),.14);border:1px solid rgba(var(--attenzione-rgb),.45);color:var(--attenzione);
   font:500 11px var(--font-ui)}
 #ctx.scenario #bandiera-scenario{display:inline-flex}
 
@@ -99,14 +96,14 @@ button,select,input{font-family:inherit;font-size:inherit;color:inherit}
   padding:14px 16px;margin-bottom:12px;overflow:hidden;flex:none;position:relative}
 .card > .tec{position:absolute;top:10px;right:14px;z-index:3;color:var(--testo4);
   font:500 10px var(--font-num);text-transform:uppercase;letter-spacing:.04em;
-  background:rgba(12,12,14,.9);padding:0 4px;border-radius:4px}
+  background:rgba(var(--velo-rgb),.9);padding:0 4px;border-radius:4px}
 /* la testata fissa della tabella parte sotto l'etichetta, non sopra */
 #card-prospetto .tab-wrap{padding-top:14px}
 .card h2{margin:0 0 10px;font:500 14px var(--font-ui);color:var(--testo2)}
 .griglia{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
 
 /* ── riquadri di sintesi ─────────────────────────────────────────────────── */
-.kpi{background:rgba(255,255,255,.04);border:1px solid var(--bordo);border-radius:var(--r-chip);padding:10px 12px}
+.kpi{background:rgba(var(--luce-rgb),.04);border:1px solid var(--bordo);border-radius:var(--r-chip);padding:10px 12px}
 .kpi .et{color:var(--testo3);font-size:12px;display:block}
 .kpi .v{font:500 19px var(--font-num);font-variant-numeric:tabular-nums;display:block;margin-top:2px}
 .kpi .v.neg{color:var(--negativo)}
@@ -116,7 +113,7 @@ button,select,input{font-family:inherit;font-size:inherit;color:inherit}
 .kpi.tasse .tre > div{border-left:2px solid var(--bordo);padding-left:10px}
 .chip{display:inline-block;border:1px solid var(--bordo);border-radius:999px;padding:1px 7px;
   font:500 10px var(--font-num);color:var(--testo3);vertical-align:middle}
-.chip.avv{color:var(--attenzione);border-color:rgba(255,176,32,.45)}
+.chip.avv{color:var(--attenzione);border-color:rgba(var(--attenzione-rgb),.45)}
 .chip.ok{color:var(--accento);border-color:var(--accento-bordo)}
 
 /* ── PROSPETTO: tabella snella, settimane in verticale, conti affiancati ─── */
@@ -124,21 +121,21 @@ button,select,input{font-family:inherit;font-size:inherit;color:inherit}
 table.pro{width:100%;border-collapse:collapse;font-size:13px;min-width:520px}
 table.pro th,table.pro td{padding:5px 8px;text-align:left;border-bottom:1px solid var(--riga);vertical-align:top}
 table.pro th{color:var(--testo4);font:500 10px var(--font-num);text-transform:uppercase;
-  letter-spacing:.04em;position:sticky;top:0;background:rgba(12,12,14,.92);backdrop-filter:blur(8px);z-index:2}
+  letter-spacing:.04em;position:sticky;top:0;background:rgba(var(--velo-rgb),.92);backdrop-filter:blur(8px);z-index:2}
 table.pro td.n,table.pro th.n{text-align:right;font-family:var(--font-num);font-variant-numeric:tabular-nums;white-space:nowrap}
-tr.mese th{background:rgba(163,255,0,.07);color:var(--accento);font-size:11px;text-transform:none;letter-spacing:0}
-tr.sett td{color:var(--testo3);font-size:11px;background:rgba(255,255,255,.02)}
-tr.chiusura td{font-weight:500;background:rgba(255,255,255,.03)}
+tr.mese th{background:rgba(var(--accento-rgb),.07);color:var(--accento);font-size:11px;text-transform:none;letter-spacing:0}
+tr.sett td{color:var(--testo3);font-size:11px;background:rgba(var(--luce-rgb),.02)}
+tr.chiusura td{font-weight:500;background:rgba(var(--luce-rgb),.03)}
 td.g{color:var(--testo3);white-space:nowrap;font-family:var(--font-num)}
 td.ignoto{color:var(--testo5)}
 .neg{color:var(--negativo)}
 .voce{display:inline-flex;align-items:center;gap:5px;margin:1px 3px 1px 0;padding:2px 7px;
-  border-radius:var(--r-chip-s);border:1px solid var(--bordo);background:rgba(255,255,255,.04);
+  border-radius:var(--r-chip-s);border:1px solid var(--bordo);background:rgba(var(--luce-rgb),.04);
   cursor:pointer;font-size:12px;max-width:100%}
 .voce:hover{border-color:var(--accento-45)}
 .voce.sel{border-color:var(--accento);background:var(--accento-fondo-16)}
 .voce.bloccata{cursor:default;opacity:.62;border-style:dashed}
-.voce.carta{border-color:rgba(255,176,32,.4)}
+.voce.carta{border-color:rgba(var(--attenzione-rgb),.4)}
 .voce .i{font-family:var(--font-num);font-variant-numeric:tabular-nums}
 .voce[draggable="true"]{cursor:grab}
 td.drop{outline:2px dashed var(--accento-45);outline-offset:-3px;background:var(--accento-fondo-16)}
@@ -150,18 +147,18 @@ td.drop{outline:2px dashed var(--accento-45);outline-offset:-3px;background:var(
 
 /* ── dettaglio della voce ────────────────────────────────────────────────── */
 #dettaglio{position:fixed;inset:auto 0 0 0;z-index:60;max-height:82dvh;overflow-y:auto;
-  background:rgba(14,14,16,.96);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);
+  background:rgba(var(--superficie-rgb),.96);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);
   border-top:1px solid var(--bordo-forte);border-radius:18px 18px 0 0;padding:16px 18px 22px;
-  box-shadow:0 -20px 60px rgba(0,0,0,.6);display:none}
+  box-shadow:0 -20px 60px rgba(var(--ombra-rgb),.6);display:none}
 #dettaglio.si{display:block}
 #dettaglio .riga{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:10px}
 #dettaglio label{display:block;color:var(--testo3);font-size:12px;margin-bottom:3px}
-#dettaglio input,#dettaglio select{width:100%;background:rgba(255,255,255,.05);
+#dettaglio input,#dettaglio select{width:100%;background:rgba(var(--luce-rgb),.05);
   border:1px solid var(--bordo);border-radius:var(--r-chip);padding:7px 9px}
 .bottoni{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
-.btn{background:rgba(255,255,255,.05);border:1px solid var(--bordo);border-radius:var(--r-chip);
+.btn{background:rgba(var(--luce-rgb),.05);border:1px solid var(--bordo);border-radius:var(--r-chip);
   padding:7px 13px;cursor:pointer}
-.btn:hover{background:rgba(255,255,255,.09)}
+.btn:hover{background:rgba(var(--luce-rgb),.09)}
 .btn.p{background:var(--accento);border-color:var(--accento);color:var(--inchiostro-su-lime);font-weight:500}
 .btn:disabled{opacity:.45;cursor:default}
 .nota{color:var(--testo3);font-size:12px;margin:6px 0 0}
@@ -173,11 +170,11 @@ td.drop{outline:2px dashed var(--accento-45);outline-offset:-3px;background:var(
   text-align:center;color:var(--testo3);cursor:pointer}
 .dropzone.su{border-color:var(--accento);background:var(--accento-fondo-16);color:var(--accento)}
 .riga-inbox{border:1px solid var(--bordo);border-radius:var(--r-chip);padding:10px 12px;margin-bottom:8px;
-  background:rgba(255,255,255,.03)}
+  background:rgba(var(--luce-rgb),.03)}
 .riga-inbox.bersaglio{outline:2px dashed var(--accento-45);outline-offset:-3px}
 .riga-inbox .banca{font-size:12px;color:var(--testo3)}
 .cand{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:6px;padding:6px 8px;
-  border:1px solid var(--bordo);border-radius:var(--r-chip-s);background:rgba(255,255,255,.02)}
+  border:1px solid var(--bordo);border-radius:var(--r-chip-s);background:rgba(var(--luce-rgb),.02)}
 .cand.proposta{border-color:var(--accento-bordo)}
 .cand.scelto{background:var(--accento-fondo-16)}
 
@@ -185,22 +182,44 @@ td.drop{outline:2px dashed var(--accento-45);outline-offset:-3px;background:var(
       quando parla ─────────────────────────────────────────────────────────── */
 #alfred{position:fixed;left:50%;transform:translateX(-50%);bottom:22px;z-index:70;
   width:min(88vw,560px);display:flex;align-items:center;gap:10px;padding:9px 12px;
-  border-radius:26px;background:rgba(22,22,26,.42);backdrop-filter:blur(26px) saturate(160%);
+  border-radius:26px;background:rgba(var(--superficie-rgb),.42);backdrop-filter:blur(26px) saturate(160%);
   -webkit-backdrop-filter:blur(26px) saturate(160%);border:1px solid var(--bordo-forte);
   transition:width .25s cubic-bezier(.2,.8,.2,1),padding .25s}
 #alfred.chiusa{width:52px;padding:6px;gap:0;justify-content:center}
 #alfred.chiusa #alfredIn,#alfred.chiusa #alfredVai{display:none}
+/* LA SFERA DI ADA — ridisegno 23/10 (collaudo Diego 22/10: «il pallino e'
+   fatto male»). Stessa identita' di salute.html: corpo scuro dal token
+   --sfera, aurora rosa/blu morbida, velo d'accento in basso, riflesso
+   speculare, ombra dai canali. Niente overflow:hidden qui: l'anello ::after
+   dell'ascolto vive FUORI dal cerchio e non va tagliato. */
 #sfera{width:30px;height:30px;border-radius:50%;flex:none;cursor:pointer;position:relative;
-  background:radial-gradient(circle at 32% 30%,#d7ff6b,#A3FF00 55%,#5f9c00)}
+  background:radial-gradient(85% 85% at 30% 24%,var(--sfera-rosa),transparent 58%),
+    radial-gradient(105% 105% at 74% 80%,var(--sfera-blu),transparent 62%),
+    radial-gradient(130% 130% at 70% 82%,rgba(var(--accento-rgb),.30),transparent 52%),
+    var(--sfera);
+  box-shadow:inset 0 1px 1px rgba(var(--luce-rgb),.5),inset 0 0 0 1px rgba(var(--luce-rgb),.14),
+    inset 0 -2px 4px rgba(var(--ombra-rgb),.35),0 2px 6px rgba(var(--ombra-rgb),.35),0 0 12px var(--alone-viola);
+  transition:transform .2s cubic-bezier(.2,.8,.2,1),box-shadow .2s ease}
+/* il riflesso che fa leggere la palla come vetro (il ::after e' dell'anello) */
+#sfera::before{content:"";position:absolute;left:16%;top:8%;width:42%;height:30%;border-radius:50%;
+  background:radial-gradient(closest-side,rgba(var(--luce-rgb),.8),transparent 72%);pointer-events:none}
+#sfera:hover{transform:scale(1.1)}
+#sfera:active{transform:scale(.94)}
 #sfera::after{content:"";position:absolute;inset:-7px;border-radius:50%;
   border:1px solid var(--accento-45);opacity:0;animation:onda 1.6s ease-out infinite;animation-play-state:paused}
 #alfred.ascolta #sfera::after{animation-play-state:running;opacity:1}
-@keyframes onda{0%{transform:scale(.8);opacity:.7}100%{transform:scale(1.5);opacity:0}}
+/* mentre Alfred lavora la sfera si accende: alone d'accento vivo */
+#alfred.ascolta #sfera{box-shadow:inset 0 1px 1px rgba(var(--luce-rgb),.5),inset 0 0 0 1px rgba(var(--luce-rgb),.14),
+  0 0 0 2px rgba(var(--accento-rgb),.35),0 0 18px var(--alone-lime),0 2px 8px rgba(var(--ombra-rgb),.4)}
+/* il fotogramma 0 e' INVISIBILE di proposito: l'animazione in pausa mostra il
+   suo primo fotogramma, e con opacity .7 l'anello restava stampato attorno
+   alla sfera anche da ferma (difetto visto al collaudo del 23/10) */
+@keyframes onda{0%{transform:scale(.8);opacity:0}25%{opacity:.7}100%{transform:scale(1.5);opacity:0}}
 #alfredIn{flex:1;min-width:0;background:none;border:0;outline:none;color:var(--testo1)}
 #alfredVai{background:none;border:0;color:var(--accento);cursor:pointer;font-weight:500}
 #rispostaAlfred{position:fixed;left:50%;transform:translateX(-50%);bottom:74px;z-index:69;
   width:min(88vw,560px);max-height:50dvh;overflow-y:auto;padding:12px 14px;border-radius:16px;
-  background:rgba(16,16,19,.95);backdrop-filter:blur(26px);border:1px solid var(--bordo-forte);display:none}
+  background:rgba(var(--superficie-rgb),.95);backdrop-filter:blur(26px);border:1px solid var(--bordo-forte);display:none}
 #rispostaAlfred.si{display:block}
 
 /* ── pagina di Alfred: cartelle e conversazioni a sinistra, i messaggi a
@@ -213,7 +232,7 @@ td.drop{outline:2px dashed var(--accento-45);outline-offset:-3px;background:var(
 #alfLato,#alfCentro{min-width:0}
 #alfLato .card,#alfCentro .card{margin-bottom:12px}
 .alf-cart{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
-.alf-conv{display:block;width:100%;text-align:left;background:rgba(255,255,255,.03);
+.alf-conv{display:block;width:100%;text-align:left;background:rgba(var(--luce-rgb),.03);
   border:1px solid var(--bordo);border-radius:var(--r-chip);padding:7px 9px;margin-bottom:6px;
   cursor:pointer;color:var(--testo2);font:400 12px var(--font-ui)}
 .alf-conv:hover{border-color:var(--accento-45)}
@@ -221,19 +240,19 @@ td.drop{outline:2px dashed var(--accento-45);outline-offset:-3px;background:var(
 .alf-conv .q{display:block;color:var(--testo4);font:500 10px var(--font-num);margin-top:2px}
 #alfMessaggi{max-height:46dvh;overflow-y:auto;padding-right:2px}
 .alf-msg{max-width:86%;margin:0 0 8px;padding:8px 11px;border-radius:14px;font-size:13px;
-  border:1px solid var(--bordo);background:rgba(255,255,255,.04);white-space:pre-wrap;
+  border:1px solid var(--bordo);background:rgba(var(--luce-rgb),.04);white-space:pre-wrap;
   overflow-wrap:anywhere}
 .alf-msg.diego{margin-left:auto;background:var(--accento-fondo-16);border-color:var(--accento-45)}
 .alf-msg.sistema{max-width:100%;color:var(--testo3);font-size:12px;border-style:dashed}
 .alf-msg .q{display:block;color:var(--testo4);font:500 10px var(--font-num);margin-top:3px}
-.alf-attesa{border:1px solid rgba(255,176,32,.45);background:rgba(255,176,32,.08);
+.alf-attesa{border:1px solid rgba(var(--attenzione-rgb),.45);background:rgba(var(--attenzione-rgb),.08);
   border-radius:var(--r-chip);padding:10px 12px;margin-bottom:8px}
 .alf-attesa .frase{color:var(--testo3);font-size:12px;margin:2px 0 0}
 table.mem{width:100%;border-collapse:collapse;font-size:12px}
 table.mem th,table.mem td{padding:5px 6px;text-align:left;border-bottom:1px solid var(--riga);
   vertical-align:middle}
 table.mem th{color:var(--testo4);font:500 10px var(--font-num);text-transform:uppercase;letter-spacing:.04em}
-table.mem input{width:100%;min-width:90px;background:rgba(255,255,255,.05);border:1px solid var(--bordo);
+table.mem input{width:100%;min-width:90px;background:rgba(var(--luce-rgb),.05);border:1px solid var(--bordo);
   border-radius:var(--r-chip-s);padding:5px 7px;color:var(--testo1)}
 .alf-perm{display:flex;flex-wrap:wrap;gap:6px}
 @media (max-width:760px){
@@ -246,11 +265,11 @@ table.mem input{width:100%;min-width:90px;background:rgba(255,255,255,.05);borde
 }
 
 /* ── accesso ────────────────────────────────────────────────────────────── */
-#login{position:fixed;inset:0;z-index:99;background:rgba(5,5,5,.94);display:none;
+#login{position:fixed;inset:0;z-index:99;background:rgba(var(--velo-rgb),.94);display:none;
   align-items:center;justify-content:center;padding:24px}
 #login.si{display:flex}
 #login .box{width:min(92vw,340px)}
-#login input{width:100%;background:rgba(255,255,255,.05);border:1px solid var(--bordo);
+#login input{width:100%;background:rgba(var(--luce-rgb),.05);border:1px solid var(--bordo);
   border-radius:var(--r-chip);padding:10px 12px;margin:10px 0}
 
 /* ── MOBILE: ogni regola qui e' un bug gia' pagato ─────────────────────── */
@@ -259,7 +278,7 @@ table.mem input{width:100%;min-width:90px;background:rgba(255,255,255,.05);borde
   /* 100dvh, non 100vh: Safari iPhone mangia il fondo con 100vh */
   #app{inset:0;height:100dvh;border-radius:0;display:flex;flex-direction:column;
     box-shadow:none;background:none}
-  #rail{flex-direction:row;width:100%;border-right:0;border-bottom:1px solid rgba(255,255,255,.09);
+  #rail{flex-direction:row;width:100%;border-right:0;border-bottom:1px solid rgba(var(--luce-rgb),.09);
     padding:8px 10px;justify-content:flex-start;overflow-x:auto;flex:none}
   #rail .logo{margin:0 8px 0 0}
   /* l'anello della catena: senza questo la colonna cresce e non scorre */
@@ -1801,7 +1820,14 @@ function salvaDettaglio(v, inIpotesi){
 }
 
 /* ── TENDENZA: una linea per conto piu' l'aggregata ─────────────────────── */
-var COLORI = ['#A3FF00','#5ac8fa','#ffb020','#ff5f56','#bf5af2','#32d74b'];
+/* la tavolozza viene dai TOKEN della pelle (pelle.css), non da hex scritti
+   qui: cosi' i grafici cambiano colore con la pelle scelta, come il resto.
+   Letta al boot: la pelle si applica prima del primo paint, non cambia dopo. */
+function tokenColore(nome){
+  try{ return getComputedStyle(document.documentElement).getPropertyValue(nome).trim(); }
+  catch(e){ return ''; }
+}
+var COLORI = ['--accento','--serie-blu','--attenzione','--negativo','--serie-viola','--serie-verde'].map(tokenColore);
 function renderCurva(){
   var p = S.prev; if (!p) return;
   var gg = (p.giorni||[]).filter(function(g){ return g.noto; });
@@ -1811,7 +1837,7 @@ function renderCurva(){
              punti:gg.map(function(g){ return g.perConto[c.id]; }) };
   });
   if ((p.conti||[]).length > 1){
-    serie.push({ nome:'aggregato', colore:'#F5F5F7', spesso:true,
+    serie.push({ nome:'aggregato', colore:tokenColore('--testo1'), spesso:true,
                  punti:gg.map(function(g){ return g.totale; }) });
   }
   var tutti = serie.reduce(function(a,s){ return a.concat(s.punti); }, []);
@@ -1823,7 +1849,7 @@ function renderCurva(){
   var h = '<g>';
   if (min < 0 && max > 0){
     h += '<line x1="' + pad + '" x2="' + (W-pad) + '" y1="' + y(0) + '" y2="' + y(0) +
-      '" stroke="#ff5f56" stroke-dasharray="3 3" stroke-width="1" opacity=".6"/>';
+      '" stroke="' + tokenColore('--negativo') + '" stroke-dasharray="3 3" stroke-width="1" opacity=".6"/>';
   }
   serie.forEach(function(s){
     var d = s.punti.map(function(v,i){ return (i?'L':'M') + x(i).toFixed(1) + ' ' + y(v).toFixed(1); }).join(' ');
@@ -2155,7 +2181,7 @@ function renderGraficoImpegni(){
       alt += a;
     });
     h += '<text x="' + (pad + i*larg + larg/2).toFixed(1) + '" y="' + (H - 1) +
-      '" text-anchor="middle" font-size="9" fill="#8A8A8E">' + esc(m.mese.slice(5) + '/' + m.mese.slice(2,4)) + '</text>';
+      '" text-anchor="middle" font-size="9" fill="' + tokenColore('--testo3') + '">' + esc(m.mese.slice(5) + '/' + m.mese.slice(2,4)) + '</text>';
   });
   $('#graficoImpegni').setAttribute('viewBox', '0 0 ' + W + ' ' + H);
   $('#graficoImpegni').innerHTML = h;
