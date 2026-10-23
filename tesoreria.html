@@ -322,13 +322,20 @@ table.mem input{width:100%;min-width:90px;background:rgba(var(--luce-rgb),.05);b
         <span class="etichetta">Conto</span>
         <select class="sel" id="selConto" aria-label="Conto"></select>
         <span class="etichetta">Periodo</span>
+        <!-- PERIODO UNICO (decisione 1 del 19/09): elenco chiuso di cinque
+             durate — il vecchio «24 mesi» e' fuori elenco ed e' SUPERATO —
+             e navigazione avanti/indietro a passi del periodo scelto,
+             con «oggi» per tornare all'ancora di partenza. -->
         <select class="sel" id="selPeriodo" aria-label="Periodo">
+          <option value="s1">1 settimana</option>
           <option value="1">1 mese</option>
           <option value="3" selected>3 mesi</option>
           <option value="6">6 mesi</option>
-          <option value="12">12 mesi</option>
-          <option value="24">24 mesi</option>
+          <option value="12">1 anno</option>
         </select>
+        <button class="btn" id="perPrec" title="Periodo precedente" aria-label="Periodo precedente">‹</button>
+        <button class="btn" id="perOggi" title="Torna a oggi" aria-label="Torna a oggi">oggi</button>
+        <button class="btn" id="perSucc" title="Periodo successivo" aria-label="Periodo successivo">›</button>
         <select class="sel" id="selGruppo" aria-label="Raggruppamento">
           <option value="mese" selected>per mese</option>
           <option value="settimana">per settimana</option>
@@ -924,6 +931,10 @@ function pad(n){ return (n<10?'0':'')+n; }
 function fineMese(s){ var p=s.split('-').map(Number); return p[0]+'-'+pad(p[1])+'-'+pad(giorniNelMese(p[0],p[1])); }
 function piuMesi(s,n){ var p=s.split('-').map(Number), i=p[0]*12+(p[1]-1)+n;
   var a=Math.floor(i/12), m=i%12+1; return a+'-'+pad(m)+'-'+pad(Math.min(p[2],giorniNelMese(a,m))); }
+/* in UTC, come le altre funzioni di data: coi fusi locali il +7 giorni a
+   cavallo dell'ora legale scivolerebbe di un giorno */
+function piuGiorni(s,n){ var p=s.split('-').map(Number);
+  var d=new Date(Date.UTC(p[0],p[1]-1,p[2]+n)); return d.toISOString().slice(0,10); }
 /* lunedi = 1 … domenica = 7 */
 function dow(s){ var p=s.split('-').map(Number); var d=new Date(Date.UTC(p[0],p[1]-1,p[2])).getUTCDay(); return d===0?7:d; }
 
@@ -949,8 +960,12 @@ function api(p, corpo, metodo){
 }
 
 /* ── stato della pagina ─────────────────────────────────────────────────── */
-var S = { tab:'conti', vista:'prospetto', conto:'tutti', mesi:3, gruppo:'mese',
-          scenario:'', da:null, a:null, sel:[], prev:null, anag:null, voci:{},
+/* `periodo` e' la scelta unica della decisione 1: 's1' (una settimana) oppure
+   il numero di mesi come stringa ('1','3','6','12'). `mesi` resta il numero
+   di mesi equivalente, per i calcoli. `da` e' l'ancora della navigazione:
+   null = ancorata a oggi (lo stato normale, che non congela il passato). */
+var S = { tab:'conti', vista:'prospetto', conto:'tutti', periodo:'3', mesi:3, gruppo:'mese',
+          scenario:'', da:null, sel:[], prev:null, anag:null, voci:{},
           scenari:[], diff:null, gen:0, impegni:null, vistaFissi:'colonne',
           attivo:null, riserva:null, fisco:null, promemoria:null,
           alfred:null, alfConv:0, alfCartella:'' };
@@ -1307,12 +1322,46 @@ function aggiornaBandiera(){
   if (attivo) $('#nomeScenario').textContent = sc.options[sc.selectedIndex] ? sc.options[sc.selectedIndex].text : S.scenario;
 }
 
-function caricaPrevisione(){
-  var gen = S.gen, ctx = S.scenario;
+/* ── PERIODO UNICO (decisione 1 del 19/09) ──────────────────────────────────
+   Elenco, calendario, grafici e riepiloghi leggono TUTTI questa finestra: una
+   sola scelta fra 1 settimana / 1 mese / 3 / 6 / 1 anno. La settimana sono
+   sette giorni esatti; i mesi chiudono a fine mese come prima. */
+function finestraPeriodo(){
   var oggi = new Date().toISOString().slice(0,10);
   var da = S.da || oggi;
-  var a = S.a || fineMese(piuMesi(da, S.mesi - 1));
-  var q = '/previsione?a=' + a + '&da=' + da;
+  if (S.periodo === 's1') return { da: da, a: piuGiorni(da, 6) };
+  return { da: da, a: fineMese(piuMesi(da, S.mesi - 1)) };
+}
+/* Navigazione: il passo E' il periodo scelto (una settimana avanti, un mese
+   avanti, tre mesi avanti…), mai un salto diverso da quello che si vede. */
+function passoPeriodo(verso){
+  var da = finestraPeriodo().da;
+  S.da = (S.periodo === 's1') ? piuGiorni(da, 7 * verso) : piuMesi(da, S.mesi * verso);
+  salvaPeriodo(); ricaricaFinestra();
+}
+function salvaPeriodo(){
+  try {
+    localStorage.setItem('tesoreria_periodo', S.periodo);
+    /* l'ancora si salva solo quando NON e' oggi: cosi' il reload di domani
+       riparte da domani, non da un oggi congelato per sbaglio */
+    if (S.da) localStorage.setItem('tesoreria_da', S.da);
+    else localStorage.removeItem('tesoreria_da');
+  } catch(e){}
+}
+function ricaricaFinestra(){
+  aggiornaNavPeriodo();
+  caricaPrevisione();
+  if (S.tab === 'fissi') caricaImpegni();
+}
+function aggiornaNavPeriodo(){
+  /* ancorati a oggi, «oggi» non ha niente da fare: si vede che e' spento */
+  $('#perOggi').disabled = !S.da;
+}
+
+function caricaPrevisione(){
+  var gen = S.gen, ctx = S.scenario;
+  var f = finestraPeriodo();
+  var q = '/previsione?a=' + f.a + '&da=' + f.da;
   if (S.conto !== 'tutti') q += '&conti=' + encodeURIComponent(S.conto);
   if (S.scenario) q += '&scenario_id=' + encodeURIComponent(S.scenario);
   return api(q).then(function(p){
@@ -1822,12 +1871,31 @@ function salvaDettaglio(v, inIpotesi){
 /* ── TENDENZA: una linea per conto piu' l'aggregata ─────────────────────── */
 /* la tavolozza viene dai TOKEN della pelle (pelle.css), non da hex scritti
    qui: cosi' i grafici cambiano colore con la pelle scelta, come il resto.
-   Letta al boot: la pelle si applica prima del primo paint, non cambia dopo. */
-function tokenColore(nome){
-  try{ return getComputedStyle(document.documentElement).getPropertyValue(nome).trim(); }
-  catch(e){ return ''; }
+   Letta al boot: la pelle si applica prima del primo paint, non cambia dopo.
+   Se un token manca (pelle.css non caricata, nome cambiato) il valore e'
+   stringa vuota e stroke="" disegna un tratto INVISIBILE, in silenzio: il
+   grafico sembra vuoto e nessuno sa perche' (bloccante della review del
+   23/10). Quindi ogni lettura porta una RISERVA dichiarata: per le serie
+   l'accento della pelle (colore di famiglia, sempre visibile) e come ultima
+   spiaggia currentColor, cioe' il colore del testo — brutto ma visibile.
+   Niente hex scritto qui: la pagina resta senza colori suoi, come pretende
+   la rete frontend-pelli. E il fallback non e' muto: console.warn una volta
+   per token mancante, cosi' la console dice COSA e' sparito. */
+var TOKEN_AVVISATI = {};
+function tokenColore(nome, riserva){
+  var v = '';
+  try{ v = getComputedStyle(document.documentElement).getPropertyValue(nome).trim(); }
+  catch(e){ v = ''; }
+  if (v) return v;
+  if (!TOKEN_AVVISATI[nome]){
+    TOKEN_AVVISATI[nome] = true;
+    console.warn('pelle: token ' + nome + ' mancante o vuoto, uso la riserva "' + riserva + '"');
+  }
+  return riserva;
 }
-var COLORI = ['--accento','--serie-blu','--attenzione','--negativo','--serie-viola','--serie-verde'].map(tokenColore);
+var RISERVA_SERIE = tokenColore('--accento', 'currentColor');
+var COLORI = ['--accento','--serie-blu','--attenzione','--negativo','--serie-viola','--serie-verde']
+  .map(function(n){ return tokenColore(n, RISERVA_SERIE); });
 function renderCurva(){
   var p = S.prev; if (!p) return;
   var gg = (p.giorni||[]).filter(function(g){ return g.noto; });
@@ -1837,7 +1905,7 @@ function renderCurva(){
              punti:gg.map(function(g){ return g.perConto[c.id]; }) };
   });
   if ((p.conti||[]).length > 1){
-    serie.push({ nome:'aggregato', colore:tokenColore('--testo1'), spesso:true,
+    serie.push({ nome:'aggregato', colore:tokenColore('--testo1', 'currentColor'), spesso:true,
                  punti:gg.map(function(g){ return g.totale; }) });
   }
   var tutti = serie.reduce(function(a,s){ return a.concat(s.punti); }, []);
@@ -1849,7 +1917,7 @@ function renderCurva(){
   var h = '<g>';
   if (min < 0 && max > 0){
     h += '<line x1="' + pad + '" x2="' + (W-pad) + '" y1="' + y(0) + '" y2="' + y(0) +
-      '" stroke="' + tokenColore('--negativo') + '" stroke-dasharray="3 3" stroke-width="1" opacity=".6"/>';
+      '" stroke="' + tokenColore('--negativo', RISERVA_SERIE) + '" stroke-dasharray="3 3" stroke-width="1" opacity=".6"/>';
   }
   serie.forEach(function(s){
     var d = s.punti.map(function(v,i){ return (i?'L':'M') + x(i).toFixed(1) + ' ' + y(v).toFixed(1); }).join(' ');
@@ -2096,9 +2164,10 @@ function sottoDi(selCat, selSub){
 }
 
 function finestraImpegni(){
-  var oggi = new Date().toISOString().slice(0,10);
-  var da = (S.da || oggi).slice(0,8) + '01';
-  return { da: da, a: fineMese(piuMesi(da, Math.max(S.mesi,6) - 1)) };
+  /* decisione 1 (19/09): gli impegni COINCIDONO col periodo unico. La vecchia
+     forzatura a >=6 mesi, con l'aggancio al primo del mese, e' SUPERATA: se
+     il periodo e' corto, anche la pagina impegni mostra il periodo scelto. */
+  return finestraPeriodo();
 }
 function caricaImpegni(){
   var f = finestraImpegni(), gen = S.gen;
@@ -2181,7 +2250,7 @@ function renderGraficoImpegni(){
       alt += a;
     });
     h += '<text x="' + (pad + i*larg + larg/2).toFixed(1) + '" y="' + (H - 1) +
-      '" text-anchor="middle" font-size="9" fill="' + tokenColore('--testo3') + '">' + esc(m.mese.slice(5) + '/' + m.mese.slice(2,4)) + '</text>';
+      '" text-anchor="middle" font-size="9" fill="' + tokenColore('--testo3', 'currentColor') + '">' + esc(m.mese.slice(5) + '/' + m.mese.slice(2,4)) + '</text>';
   });
   $('#graficoImpegni').setAttribute('viewBox', '0 0 ' + W + ' ' + H);
   $('#graficoImpegni').innerHTML = h;
@@ -3487,15 +3556,29 @@ document.addEventListener('DOMContentLoaded', function(){
      dispositivo e non sono dati da conservare */
   try {
     S.conto = localStorage.getItem('tesoreria_conto') || 'tutti';
-    S.mesi = Number(localStorage.getItem('tesoreria_mesi') || 3);
+    /* periodo unico: `tesoreria_periodo` e' la preferenza viva. Il vecchio
+       `tesoreria_mesi` e' SUPERATO (non si scrive piu') ma si legge ancora
+       per migrare la scelta fatta prima: il 24 mesi, fuori dall'elenco
+       chiuso della decisione, rientra sul periodo ammesso piu' vicino. */
+    var per = localStorage.getItem('tesoreria_periodo');
+    if (!per){
+      var mesiVecchi = Number(localStorage.getItem('tesoreria_mesi') || 3);
+      per = mesiVecchi >= 12 ? '12' : String(mesiVecchi);
+    }
+    S.periodo = ['s1','1','3','6','12'].indexOf(per) >= 0 ? per : '3';
+    S.mesi = S.periodo === 's1' ? 1 : Number(S.periodo);
+    /* l'ancora della navigazione: solo una data vera, il resto e' «oggi» */
+    S.da = localStorage.getItem('tesoreria_da') || null;
+    if (S.da && !/^\d{4}-\d{2}-\d{2}$/.test(S.da)) S.da = null;
     S.gruppo = localStorage.getItem('tesoreria_gruppo') || 'mese';
     S.scenario = localStorage.getItem('tesoreria_scenario') || '';
     S.tab = localStorage.getItem('tesoreria_tab') || 'conti';
     S.vista = localStorage.getItem('tesoreria_vista') || 'prospetto';
     S.vistaFissi = localStorage.getItem('tesoreria_vista_fissi') || 'colonne';
   } catch(e){ /* private browsing: si parte dai valori normali */ }
-  $('#selPeriodo').value = String(S.mesi);
+  $('#selPeriodo').value = S.periodo;
   $('#selGruppo').value = S.gruppo;
+  aggiornaNavPeriodo();
 
   $$('#rail .voce').forEach(function(b){ b.onclick = function(){ vaiA(b.getAttribute('data-tab')); }; });
   $$('#strisce button').forEach(function(b){ b.onclick = function(){ vista(b.getAttribute('data-vista')); }; });
@@ -3503,9 +3586,15 @@ document.addEventListener('DOMContentLoaded', function(){
     try{ localStorage.setItem('tesoreria_conto', S.conto); }catch(e){}
     caricaPrevisione(); if (S.tab==='inbox') caricaInbox();
     if (S.tab==='fissi') caricaImpegni(); };
-  $('#selPeriodo').onchange = function(){ S.mesi = Number(this.value);
-    try{ localStorage.setItem('tesoreria_mesi', String(S.mesi)); }catch(e){}
-    caricaPrevisione(); if (S.tab==='fissi') caricaImpegni(); };
+  $('#selPeriodo').onchange = function(){
+    S.periodo = this.value;
+    S.mesi = S.periodo === 's1' ? 1 : Number(S.periodo);
+    /* cambiare la durata NON butta via la posizione navigata: si guarda lo
+       stesso punto del tempo con una lente diversa */
+    salvaPeriodo(); ricaricaFinestra(); };
+  $('#perPrec').onclick = function(){ passoPeriodo(-1); };
+  $('#perSucc').onclick = function(){ passoPeriodo(1); };
+  $('#perOggi').onclick = function(){ S.da = null; salvaPeriodo(); ricaricaFinestra(); };
   $('#selGruppo').onchange = function(){ S.gruppo = this.value;
     try{ localStorage.setItem('tesoreria_gruppo', S.gruppo); }catch(e){} renderProspetto(); };
   $('#selScenario').onchange = function(){ cambiaScenario(this.value); };
