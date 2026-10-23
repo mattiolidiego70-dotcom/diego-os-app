@@ -303,6 +303,7 @@ table.mem input{width:100%;min-width:90px;background:rgba(var(--luce-rgb),.05);b
     <button class="voce" data-tab="scenari" title="Scenari e ipotesi" aria-label="Scenari e ipotesi">⑂</button>
     <button class="voce" data-tab="fissi" title="Costi fissi e finanziamenti" aria-label="Costi fissi e finanziamenti">≡</button>
     <button class="voce" data-tab="attivo" title="Attivo" aria-label="Attivo">↗</button>
+    <button class="voce" data-tab="carte" title="Carte" aria-label="Carte">▤</button>
     <button class="voce" data-tab="tasse" title="Partita IVA e tasse" aria-label="Partita IVA e tasse">%</button>
     <button class="voce" data-tab="promemoria" title="Promemoria" aria-label="Promemoria">◉</button>
     <button class="voce" data-tab="alfred" title="Alfred" aria-label="Alfred">✦</button>
@@ -355,6 +356,15 @@ table.mem input{width:100%;min-width:90px;background:rgba(var(--luce-rgb),.05);b
         <span class="tec">sintesi</span>
         <div class="griglia" id="kpi"></div>
         <div id="assunzioni"></div>
+      </div>
+
+      <!-- CARTE nel conto (decisione 2 del 19/09): SOLO la sintesi — spesa
+           carta del mese e liquidazione prevista successiva. Gli acquisti e
+           il dettaglio dei cicli vivono nella pagina Carte, non qui. -->
+      <div class="card" id="card-carta" hidden>
+        <span class="tec">carta</span>
+        <div class="griglia" id="kpiCarta"></div>
+        <p class="nota" id="notaCarta"></p>
       </div>
 
       <div class="card" id="box-spostamento" hidden>
@@ -686,6 +696,39 @@ table.mem input{width:100%;min-width:90px;background:rgba(var(--luce-rgb),.05);b
         <p class="nota">Fuori partita IVA <b>non vuol dire esente</b>: la rilevanza fiscale resta
           quella che dichiari tu. Senza data attesa l&#39;entrata non entra in previsione.</p>
         <p class="nota" id="msgNuovaEntrata" role="status" aria-live="polite"></p>
+      </div>
+    </section>
+    <!-- ════════ CARTE: la casa degli acquisti su carta (decisione 2, 19/09) ════════ -->
+    <section class="pane" id="pane-carte" role="tabpanel">
+      <div class="card">
+        <span class="tec">carte</span>
+        <h2>Le tue carte</h2>
+        <div id="elencoCarte"></div>
+        <p class="nota">Un acquisto con carta <b>non tocca il conto</b> alla sua data: entra nel
+          ciclo della carta e scende dal conto il giorno di addebito, nel mese dopo la chiusura.
+          Nel conto resta solo l&#39;addebito del ciclo: la stessa spesa non conta mai due volte.</p>
+        <p class="nota" id="msgCarte" role="status" aria-live="polite"></p>
+      </div>
+
+      <div class="card">
+        <span class="tec">nuova</span>
+        <h2>Una carta di credito</h2>
+        <div class="riga" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <input class="sel" id="ncNome" placeholder="nome della carta" aria-label="Nome della carta">
+          <label class="etichetta" for="ncConto">addebita su</label>
+          <select class="sel" id="ncConto" aria-label="Conto di addebito"></select>
+          <label class="etichetta" for="ncAddebito">giorno di addebito</label>
+          <input class="sel" type="number" id="ncAddebito" min="1" max="31" style="width:70px">
+          <label class="etichetta" for="ncChiusura">chiusura ciclo</label>
+          <input class="sel" type="number" id="ncChiusura" min="1" max="31" style="width:70px" placeholder="—">
+          <input class="sel num" id="ncPlafond" placeholder="plafond (es. 5.000,00)" aria-label="Plafond">
+          <input class="sel" id="ncCodice" placeholder="codice estratto (facoltativo)" aria-label="Codice">
+          <button class="btn p" id="btnNuovaCarta">Aggiungi</button>
+        </div>
+        <p class="nota">Plafond, conto e giorni sono <b>configurazione tua</b>: la pagina li mostra
+          quando esistono, non li inventa. Senza giorno di chiusura il ciclo &#232; il mese solare,
+          e l&#39;assunzione viene dichiarata.</p>
+        <p class="nota" id="msgNuovaCarta" role="status" aria-live="polite"></p>
       </div>
     </section>
     <!-- ════════ PARTITA IVA E TASSE ════════ -->
@@ -1086,7 +1129,7 @@ function cambiaScenario(id){
        else localStorage.removeItem('tesoreria_scenario'); }catch(e){}
   $('#selScenario').value = S.scenario;
   aggiornaBandiera(); renderScenari();
-  return Promise.all([caricaPrevisione(), caricaDifferenze(),
+  return Promise.all([caricaPrevisione(), caricaDifferenze(), caricaCarte(),
                       S.tab === 'fissi' ? caricaImpegni() : null,
                       S.tab === 'attivo' ? caricaRiserva() : null,
                       S.tab === 'attivo' ? caricaEntrate() : null]);
@@ -1996,7 +2039,8 @@ function conferma(){
       (e.non_capite_totali||0) + ' non comprese · stato <b>' + esc(e.stato) + '</b></p>' +
       ((e.non_capite||[]).length ? '<p class="avviso">Le righe non comprese restano leggibili: ' +
         'sono ' + (e.non_capite_totali||0) + ' e si rivedono anche dopo un ricaricamento.</p>' : '');
-    return Promise.all([caricaInbox(), caricaPrevisione(), caricaAperti()]);
+    /* un import su carta cambia anche i cicli: si rilegge pure la scheda */
+    return Promise.all([caricaInbox(), caricaPrevisione(), caricaCarte(), caricaAperti()]);
   }).catch(function(e){
     box.innerHTML = '<p class="errore">' + esc(e.message) + '</p>' +
       (e.corpo && e.corpo.ripresa ? '<p class="avviso">' + esc(e.corpo.ripresa) + '</p>' : '');
@@ -2850,6 +2894,149 @@ function muoviSalvadanaio(){
     .catch(function(e){ msgScen('#msgSalvadanaio', 'Non spostato: ' + e.message, true); })
     .finally(function(){ $('#btnSalvadanaio').disabled = false; });
 }
+/* ── CARTE (decisione 2 del 19/09): la casa degli acquisti su carta ──────
+   Il contratto: gli acquisti e i cicli stanno QUI; nel conto resta solo il
+   box con la spesa carta del mese e la liquidazione prevista successiva.
+   I numeri arrivano da /carte, che consuma il motore (cicli, addebiti
+   derivati): la pagina non rifa' nessun calcolo, mostra e dichiara. */
+function meseIt(s){ if(!s) return '—'; var p=s.split('-'); return MESI[+p[1]-1] + ' ' + p[0]; }
+function caricaCarte(){
+  var gen = S.gen;
+  /* `al` e' l'oggi DELLA PAGINA: «il mese» e' quello che Diego sta vivendo,
+     non quello dell'orologio del server (e nelle prove e' congelato) */
+  var q = '/carte?al=' + new Date().toISOString().slice(0,10);
+  if (S.conto !== 'tutti') q += '&conti=' + encodeURIComponent(S.conto);
+  if (S.scenario) q += '&scenario_id=' + encodeURIComponent(S.scenario);
+  return api(q).then(function(k){
+    if (gen !== S.gen) return;      /* contesto cambiato: risposta vecchia */
+    S.carte = k; dichiaraFonte('carte', null);
+    renderBoxCarta(); renderElencoCarte();
+  }).catch(function(e){
+    dichiaraFonte('carte', e);
+    /* una fonte in errore non diventa «nessuna carta»: si dichiara */
+    if ($('#card-carta')) $('#card-carta').hidden = true;
+    $('#elencoCarte').innerHTML = '<p class="errore">Le carte non sono state lette: ' +
+      esc(e.message) + '. Non e&#768; «nessuna carta».</p>';
+  });
+}
+/* il box nel conto: SOLO la sintesi, il dettaglio sta nella pagina Carte */
+function renderBoxCarta(){
+  var k = S.carte, box = $('#card-carta');
+  if (!box) return;
+  if (!k || !(k.carte||[]).length){ box.hidden = true; return; }
+  box.hidden = false;
+  var t = k.totali || {};
+  var liq = t.prossimaLiquidazione;
+  var perCarta = (k.carte||[]).map(function(c){
+    return esc(c.nome) + ' ' + euro(c.speseMeseCents); }).join(' · ');
+  $('#kpiCarta').innerHTML =
+    kpi('Spesa carta del mese', euro(t.speseMeseCents || 0),
+        'acquisti di ' + esc(meseIt(k.al)) + ' · ' + perCarta,
+        (t.speseMeseCents || 0) < 0) +
+    kpi('Liquidazione prevista successiva', liq ? euro(liq.cents) : '—',
+        liq ? (dataIt(liq.data) + ' · scende da ' + esc(liq.conto || 'conto della carta'))
+            : 'nessun ciclo aperto da addebitare',
+        !!(liq && liq.cents < 0));
+  $('#notaCarta').textContent = 'Gli acquisti non toccano il conto alla loro data: il dettaglio dei cicli sta nella pagina Carte, nel conto resta solo l’addebito.';
+}
+/* la scheda: una carta per blocco, con configurazione, ciclo e acquisti */
+function renderElencoCarte(){
+  var k = S.carte;
+  if (!$('#elencoCarte') || !k) return;
+  var carte = k.carte || [];
+  $('#elencoCarte').innerHTML = carte.length ? carte.map(function(c){
+    var liq = c.prossimaLiquidazione, ciclo = c.cicloCorrente;
+    return '<div class="riga-inbox" data-carta="' + esc(String(c.dbId)) + '">' +
+      '<h2>' + esc(c.nome) + (c.codice ? ' <span class="chip">' + esc(c.codice) + '</span>' : '') + '</h2>' +
+      '<div class="griglia">' +
+        kpi('Spesa del mese', euro(c.speseMeseCents),
+            (c.acquistiMese || 0) + (c.acquistiMese === 1 ? ' acquisto' : ' acquisti') +
+            ' in ' + esc(meseIt(k.al)), c.speseMeseCents < 0) +
+        kpi('Prossima liquidazione', liq ? euro(liq.cents) : '—',
+            liq ? (dataIt(liq.data) + ' · su ' + esc(liq.conto || '—')) : 'nessun ciclo da addebitare',
+            !!(liq && liq.cents < 0)) +
+        kpi('Plafond', c.plafondCents == null ? '—' : euro(c.plafondCents),
+            c.plafondCents == null ? 'non dichiarato: non si inventa'
+              : 'configurato da te; non e&#768; denaro disponibile') +
+        kpi('Conto e giorni', esc(c.conto || '—'),
+            'addebito il giorno ' + Number(c.giornoAddebito) + ' · ' +
+            (c.giornoChiusura ? 'chiusura ciclo il giorno ' + Number(c.giornoChiusura)
+              : 'ciclo sul mese solare: giorno di chiusura non configurato (assunzione dichiarata)')) +
+      '</div>' +
+      (ciclo && (ciclo.acquisti||[]).length
+        ? '<div class="tab-wrap"><table class="pro"><thead><tr><th>Giorno</th><th>Acquisto</th>' +
+          '<th>categoria</th><th>stato</th><th class="n">importo</th></tr></thead><tbody>' +
+          ciclo.acquisti.map(function(m){
+            return '<tr><td class="g">' + esc(dataIt(m.data)) + '</td>' +
+              '<td>' + esc(m.descrizione || '') + '</td>' +
+              '<td>' + esc(m.categoria || '—') + '</td>' +
+              '<td><span class="chip' + (m.stato === 'rendicontato' ? ' ok' : '') + '">' + esc(m.stato) + '</span></td>' +
+              '<td class="n' + (m.cents < 0 ? ' neg' : '') + '">' + euro(m.cents) + '</td></tr>';
+          }).join('') +
+          '<tr class="chiusura"><td colspan="4">totale del ciclo · addebito il ' +
+            esc(dataIt(ciclo.addebitoIl)) + '</td>' +
+          '<td class="n' + (ciclo.totaleCents < 0 ? ' neg' : '') + '">' + euro(ciclo.totaleCents) + '</td></tr>' +
+          '</tbody></table></div>'
+        : '<p class="nota">Nessun acquisto nel ciclo da addebitare.</p>') +
+      '</div>';
+  }).join('') : '<p class="nota">' + esc(k.avviso || 'Nessuna carta configurata. Aggiungine una qui sotto.') + '</p>';
+}
+function renderCartePagina(){
+  var conti = (S.anag && S.anag.conti) || [];
+  if ($('#ncConto')) $('#ncConto').innerHTML = conti.map(function(c){
+    return '<option value="' + c.id + '">' + esc(c.nome) + '</option>'; }).join('');
+}
+/* plafond, conto e giorni sono CONFIGURAZIONE di Diego: si scrivono da qui,
+   con operation_id, e si verificano RILEGGENDO l'elenco — un 200 muto non
+   e' una carta creata */
+function nuovaCarta(){
+  if (!$('#ncNome').value.trim()){ msgScen('#msgNuovaCarta', 'Serve un nome: senza, le carte sarebbero tutte uguali.', true); return; }
+  var g = Number($('#ncAddebito').value);
+  if (!(g >= 1 && g <= 31)){
+    msgScen('#msgNuovaCarta', 'Serve il giorno di addebito (da 1 a 31): è il giorno in cui il ciclo scende dal conto.', true); return;
+  }
+  var chi = $('#ncChiusura').value === '' ? null : Number($('#ncChiusura').value);
+  if (chi != null && !(chi >= 1 && chi <= 31)){
+    msgScen('#msgNuovaCarta', 'Il giorno di chiusura, se c’è, va da 1 a 31. Vuoto = mese solare, dichiarato.', true); return;
+  }
+  var pla = importoDi('#ncPlafond', 'il plafond', false);
+  if (pla.errore){ msgScen('#msgNuovaCarta', pla.errore, true); return; }
+  if (!pla.vuoto && pla.cents < 0){
+    msgScen('#msgNuovaCarta', 'Il plafond è quanto puoi spendere: si scrive senza segno.', true); return;
+  }
+  var nome = $('#ncNome').value.trim();
+  $('#btnNuovaCarta').disabled = true;
+  msgScen('#msgNuovaCarta', 'aggiungo…');
+  api('/anagrafica/carta', { nome: nome, conto_id: Number($('#ncConto').value),
+    giorno_addebito: g, giorno_chiusura: chi,
+    plafond_cents: pla.vuoto ? null : pla.cents,
+    codice: $('#ncCodice').value.trim() || null, operation_id: uuid() })
+    .then(function(e){
+      /* RILETTURA: anagrafica (menu import compreso) e scheda carte */
+      return Promise.all([caricaAnagrafica(), caricaCarte()]).then(function(){ return e; });
+    })
+    .then(function(e){
+      var trovata = ((S.carte && S.carte.carte) || []).filter(function(x){
+        return String(x.dbId) === String(e.id); })[0];
+      if (!trovata){
+        msgScen('#msgNuovaCarta', 'NON VERIFICATO: rileggendo l’elenco la carta non c’è ' +
+          '(se guardi un conto solo, potrebbe essere su un altro conto).', true);
+        return;
+      }
+      msgScen('#msgNuovaCarta', 'Aggiunta «' + trovata.nome + '»: addebito il giorno ' +
+        trovata.giornoAddebito +
+        (trovata.giornoChiusura ? ', chiusura il ' + trovata.giornoChiusura
+                                : ', ciclo sul mese solare (assunzione dichiarata)') + '.');
+      $('#ncNome').value = ''; $('#ncPlafond').value = ''; $('#ncCodice').value = '';
+      $('#ncAddebito').value = ''; $('#ncChiusura').value = '';
+    })
+    .catch(function(e){
+      msgScen('#msgNuovaCarta', e.scaduto ? ('ESITO INCERTO: ' + e.message + '. Verifica prima di ripetere.')
+                                          : ('Non aggiunta: ' + e.message), true);
+    })
+    .finally(function(){ $('#btnNuovaCarta').disabled = false; });
+}
+
 /* Le chiavi tecniche non si mostrano a Diego: ogni parametro ha il suo nome
    in italiano. Una chiave senza nome resta leggibile, non criptica. */
 var NOMI_PARAMETRO = {
@@ -3518,7 +3705,7 @@ function vaiA(tab){
   $$('.pane').forEach(function(p){ p.classList.toggle('on', p.id === 'pane-' + tab); });
   var titoli = { conti:'Conti e previsione', inbox:'Import e Inbox', scenari:'Scenari e ipotesi',
                  fissi:'Costi fissi e finanziamenti',
-                 attivo:'Attivo', tasse:'Partita IVA e tasse', promemoria:'Promemoria',
+                 attivo:'Attivo', carte:'Carte', tasse:'Partita IVA e tasse', promemoria:'Promemoria',
                  alfred:'Alfred', storico:'Annulla e storico' };
   $('#titolo').textContent = titoli[tab] || tab;
   $('#strisce').hidden = (tab !== 'conti');
@@ -3529,6 +3716,7 @@ function vaiA(tab){
   if (tab === 'scenari'){ caricaScenari(); caricaDifferenze(); }
   if (tab === 'fissi'){ renderFissi(); caricaImpegni(); }
   if (tab === 'attivo'){ renderAttivo(); caricaRiserva(); caricaEntrate(); }
+  if (tab === 'carte'){ renderCartePagina(); caricaCarte(); }
   if (tab === 'tasse'){ renderTasse(); caricaFisco(); }
   if (tab === 'promemoria'){ caricaPromemoria(); }
   if (tab === 'alfred'){ caricaAlfred(); }
@@ -3546,6 +3734,7 @@ function avvia(){
   return caricaAnagrafica()
     .then(caricaScenari)
     .then(caricaPrevisione)
+    .then(caricaCarte)
     .then(function(){ if (S.tab === 'inbox'){ caricaInbox(); caricaAperti(); } })
     .then(function(){ if (S.scenario) return caricaDifferenze(); })
     .then(caricaJournal);
@@ -3584,7 +3773,7 @@ document.addEventListener('DOMContentLoaded', function(){
   $$('#strisce button').forEach(function(b){ b.onclick = function(){ vista(b.getAttribute('data-vista')); }; });
   $('#selConto').onchange = function(){ S.conto = this.value;
     try{ localStorage.setItem('tesoreria_conto', S.conto); }catch(e){}
-    caricaPrevisione(); if (S.tab==='inbox') caricaInbox();
+    caricaPrevisione(); caricaCarte(); if (S.tab==='inbox') caricaInbox();
     if (S.tab==='fissi') caricaImpegni(); };
   $('#selPeriodo').onchange = function(){
     S.periodo = this.value;
@@ -3610,6 +3799,7 @@ document.addEventListener('DOMContentLoaded', function(){
   $('#btnSalvaEntrata').onclick = function(){ salvaEntrata(false); };
   $('#btnTogliAttesa').onclick = function(){ salvaEntrata(true); };
   $('#btnChiudiEntrata').onclick = function(){ $('#box-entrata').hidden = true; ENTRATA_APERTA = null; };
+  $('#btnNuovaCarta').onclick = nuovaCarta;
   $('#btnCostoFisso').onclick = creaCostoFisso;
   $('#cfCategoria').onchange = function(){ sottoDi('#cfCategoria', '#cfSotto'); };
   $('#fzCategoria').onchange = function(){ sottoDi('#fzCategoria', '#fzSotto'); };
