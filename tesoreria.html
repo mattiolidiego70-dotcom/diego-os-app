@@ -733,6 +733,17 @@ table.mem input{width:100%;min-width:90px;background:rgba(var(--luce-rgb),.05);b
     </section>
     <!-- ════════ PARTITA IVA E TASSE ════════ -->
     <section class="pane" id="pane-tasse" role="tabpanel">
+      <!-- Decisioni 8 e 9 del 19/09: l'accantonamento OPERATIVO e' questo,
+           convenzionale e dichiarato. Il calcolo legale qui sotto resta
+           consultabile ma e' SUPERATO per questa consegna. -->
+      <div class="card">
+        <span class="tec">convenzionale</span>
+        <h2>Accantonamento convenzionale <span class="chip avv">ipotesi, modificabile</span></h2>
+        <div class="griglia" id="kpiTasseConv"></div>
+        <div id="scadenzeConv"></div>
+        <p class="nota" id="notaConv" role="status" aria-live="polite"></p>
+      </div>
+
       <div class="card">
         <span class="tec">copertura</span>
         <h2>Conto tasse</h2>
@@ -747,7 +758,11 @@ table.mem input{width:100%;min-width:90px;background:rgba(var(--luce-rgb),.05);b
           <h2 style="margin:0">Anno d&#39;imposta</h2>
           <input class="sel" type="number" id="fiAnno" style="width:110px" min="2000" max="2100">
           <button class="btn" id="btnFisco">Calcola</button>
+          <span class="chip avv">superato per questa consegna</span>
         </div>
+        <p class="nota">Questo e&#768; il calcolo fiscale <b>legale</b> a fonti lette: per questa
+          consegna e&#768; <b>superato</b> dall&#39;accantonamento convenzionale qui sopra
+          (decisione 8 del 19/09). Resta consultabile e non si cancella.</p>
         <div id="calcoloFisco"></div>
         <div id="scadenzeFisco"></div>
       </div>
@@ -1010,7 +1025,7 @@ function api(p, corpo, metodo){
 var S = { tab:'conti', vista:'prospetto', conto:'tutti', periodo:'3', mesi:3, gruppo:'mese',
           scenario:'', da:null, sel:[], prev:null, anag:null, voci:{},
           scenari:[], diff:null, gen:0, impegni:null, vistaFissi:'colonne',
-          attivo:null, riserva:null, fisco:null, promemoria:null,
+          attivo:null, riserva:null, fisco:null, tasseConv:null, promemoria:null,
           alfred:null, alfConv:0, alfCartella:'' };
 var FONTI_MUTE = {};
 
@@ -1467,6 +1482,9 @@ function kpi(et, v, s, neg){
   return '<div class="kpi"><span class="et">' + esc(et) + '</span><span class="v' + (neg?' neg':'') +
     '">' + esc(v) + '</span><span class="s">' + s + '</span></div>';
 }
+/* la data con l'anno: `dataIt` lo tace, ma una scadenza a giugno 2027 senza
+   anno si confonderebbe con quella dell'anno in corso */
+function dataAnno(s){ if(!s) return '—'; var p=s.split('-'); return (+p[2])+' '+MESI[+p[1]-1].slice(0,3)+' '+p[0]; }
 function riquadroTasse(){
   var par = (S.anag && S.anag.parametri) || [];
   function p(k){ var x = par.filter(function(y){ return y.chiave===k; })[0]; return x || {valore:null,stato:'da_concordare'}; }
@@ -1474,17 +1492,36 @@ function riquadroTasse(){
   var disp = contoTasse ? contoTasse.saldo_taglio_cents : null;
   var dovuto = null;
   var diff = (disp != null && dovuto != null) ? disp - dovuto : null;
+  /* decisioni 8-9: l'accantonamento del mese e la prossima scadenza sono
+     CONVENZIONALI e si etichettano cosi'. Una fonte non letta non diventa
+     uno zero: si dichiara. */
+  var tc = S.tasseConv;
+  var m = tc && tc.mese;
+  var prossima = tc && (tc.prossime_scadenze || [])[0];
+  var cellaAcc = m && m.accantonamento_cents != null
+    ? '<div><span class="et">Da accantonare questo mese <span class="chip avv">ipotesi, modificabile</span></span>' +
+      '<span class="v">' + euro(m.accantonamento_cents) + '</span>' +
+      '<span class="s">' + percento(m.aliquota_bp) + ' convenzionale degli incassi di ' +
+      esc(MESI[m.mese-1]) + ' (' + euro(m.incassi_fattura_cents) + ')</span></div>'
+    : '<div><span class="et">Da accantonare questo mese <span class="chip avv">ipotesi, modificabile</span></span>' +
+      '<span class="v">—</span><span class="s">accantonamento convenzionale non letto: non e&#768; zero</span></div>';
+  var cellaScad = prossima
+    ? '<div><span class="et">Prossima scadenza <span class="chip avv">ipotesi, modificabile</span></span>' +
+      '<span class="v">' + esc(dataAnno(prossima.data)) + '</span>' +
+      '<span class="s">' + esc(prossima.tipo.replace(/_/g,' ')) + ' convenzionale, anno ' +
+      prossima.anno_riferimento + '</span></div>'
+    : '<div><span class="et">Prossima scadenza <span class="chip avv">ipotesi, modificabile</span></span>' +
+      '<span class="v">—</span><span class="s">calendario convenzionale non letto</span></div>';
   return '<div class="kpi tasse"><span class="et">Conto tasse <span class="chip avv">conto distinto</span></span>' +
     '<div class="tre">' +
       '<div><span class="et">Disponibilita&#768;</span><span class="v">' + (disp==null?'—':euro(disp)) +
         '</span><span class="s">' + (contoTasse ? esc(contoTasse.nome) : 'conto tasse non ancora configurato') + '</span></div>' +
+      cellaAcc + cellaScad +
       '<div><span class="et">Tasse previste da pagare</span><span class="v">—</span>' +
         '<span class="s">' + (p('conto_tasse.periodo_dovuto').stato === 'da_concordare'
           ? 'a quale periodo si riferisce: da decidere con te' : 'periodo definito') + '</span></div>' +
-      '<div><span class="et">Differenza</span><span class="v">—</span>' +
-        '<span class="s">disponibilita&#768; meno dovuto</span></div>' +
     '</div>' +
-    '<span class="s">Nessun calcolo fiscale attestato. Ancora da decidere insieme: ' +
+    '<span class="s">Accantonamento e calendario convenzionali (decisioni 8-9): ipotesi dichiarate, non un calcolo fiscale attestato. Ancora da decidere insieme: ' +
       esc(par.filter(function(x){ return x.stato==='da_concordare'; })
              .map(function(x){ return nomeParametro(x.chiave); }).join(' · ') || 'niente') +
     '</span></div>';
@@ -3053,6 +3090,8 @@ var NOMI_PARAMETRO = {
   'fisco.previdenza':'Previdenza',
   'fisco.ateco':'Codice ATECO e coefficiente',
   'fisco.rateazione_pluriennale':'Rateazione su piu\u0300 anni',
+  'fisco.motore_legale':'Calcolo fiscale legale (superato per questa consegna)',
+  'tasse_conv.giorno_scadenza':'Scadenze convenzionali: giorno del mese',
   'avvio.saldo_alla_data':'Saldo dei conti alla data di avvio'
 };
 function nomeParametro(k){
@@ -3065,6 +3104,57 @@ function nomeParametro(k){
 function annoFiscaleIniziale(){
   var a = new Date().getFullYear();
   return new Date().getMonth() >= 6 ? a - 1 : a - 2;   /* l'anno che si sta dichiarando */
+}
+/* ── TASSE CONVENZIONALI (decisioni 8-9 del 19/09) ───────────────────────
+   Il 25% dichiarato sugli incassi da fatturazione e il calendario
+   giugno/novembre: IPOTESI dichiarate e modificabili, non un calcolo fiscale.
+   Alimenta sia il riquadro della vista Conti sia la scheda qui dentro. */
+function caricaTasseConv(){
+  return api('/tasse/convenzionale').then(function(t){
+    S.tasseConv = t; dichiaraFonte('tasse convenzionali', null);
+    if (S.prev) renderKpi();          /* il riquadro dei Conti si aggiorna */
+    renderTasseConv();
+  }).catch(function(e){
+    S.tasseConv = null;
+    dichiaraFonte('tasse convenzionali', e);
+    if (S.prev) renderKpi();
+    if ($('#kpiTasseConv')) $('#kpiTasseConv').innerHTML =
+      '<p class="errore">L&#39;accantonamento convenzionale non e&#768; stato letto: ' +
+      esc(e.message) + '. Non e&#768; zero.</p>';
+  });
+}
+function renderTasseConv(){
+  var t = S.tasseConv; if (!t || !$('#kpiTasseConv')) return;
+  var m = t.mese || {};
+  $('#kpiTasseConv').innerHTML =
+    kpi('Aliquota convenzionale', percento(t.aliquota_bp),
+        'in vigore dal ' + dataAnno(t.aliquota_valido_da) +
+        ' · si cambia solo sul futuro, con una data di efficacia') +
+    kpi('Incassi da fatturazione del mese', euro(m.incassi_fattura_cents || 0),
+        MESI[(m.mese||1)-1] + ' ' + (m.anno || '') + ' · solo quello che e&#768; arrivato davvero') +
+    kpi('Da accantonare questo mese',
+        m.accantonamento_cents == null ? '—' : euro(m.accantonamento_cents),
+        m.accantonamento_cents == null ? esc(m.perche || 'nessuna aliquota in vigore')
+          : percento(m.aliquota_bp) + ' degli incassi · nessun codice ATECO richiesto');
+  var sc = t.prossime_scadenze || [];
+  $('#scadenzeConv').innerHTML = '<h2>Prossime scadenze convenzionali</h2>' +
+    (sc.length
+      ? '<div class="tab-wrap"><table class="pro"><thead><tr><th>Tipo</th><th>data</th>' +
+        '<th>anno</th><th>natura</th></tr></thead><tbody>' +
+        sc.map(function(x){
+          return '<tr><td>' + esc(x.tipo.replace(/_/g,' ')) + '</td>' +
+            '<td class="g">' + esc(dataAnno(x.data)) + '</td>' +
+            '<td>' + x.anno_riferimento + '</td>' +
+            '<td><span class="chip">convenzionale</span> <span class="chip avv">' +
+            esc(x.etichetta || 'ipotesi, modificabile') + '</span></td></tr>';
+        }).join('') + '</tbody></table></div>'
+      : '<p class="nota">Nessuna scadenza convenzionale in vista.</p>') +
+    '<p class="nota">Acconti a <b>giugno e novembre</b> (non settembre); a giugno dell&#39;anno dopo ' +
+    'escono insieme saldo e nuovo acconto. Il giorno esatto non e&#768; stato fornito e non si inventa: ' +
+    'fine mese come convenzione dichiarata, modificabile. Gli importi non compaiono: la decisione ' +
+    'fissa le date, non le cifre.</p>';
+  $('#notaConv').innerHTML = esc(t.motore_legale || '') +
+    (t.nota ? ' — ' + esc(t.nota) : '');
 }
 function caricaFisco(){
   var gen = S.gen;
@@ -3717,7 +3807,7 @@ function vaiA(tab){
   if (tab === 'fissi'){ renderFissi(); caricaImpegni(); }
   if (tab === 'attivo'){ renderAttivo(); caricaRiserva(); caricaEntrate(); }
   if (tab === 'carte'){ renderCartePagina(); caricaCarte(); }
-  if (tab === 'tasse'){ renderTasse(); caricaFisco(); }
+  if (tab === 'tasse'){ renderTasse(); caricaTasseConv(); caricaFisco(); }
   if (tab === 'promemoria'){ caricaPromemoria(); }
   if (tab === 'alfred'){ caricaAlfred(); }
   if (tab === 'storico') caricaJournal();
@@ -3732,6 +3822,7 @@ function vista(v){
 
 function avvia(){
   return caricaAnagrafica()
+    .then(caricaTasseConv)          /* il riquadro dei Conti mostra l'accantonamento convenzionale */
     .then(caricaScenari)
     .then(caricaPrevisione)
     .then(caricaCarte)
