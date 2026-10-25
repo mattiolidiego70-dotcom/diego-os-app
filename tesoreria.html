@@ -986,6 +986,15 @@ function dopo(s){ var p=s.split('-').map(Number);
   if (p[1] === 12) return (p[0]+1)+'-01-01';
   return p[0]+'-'+pad(p[1]+1)+'-01'; }
 function pad(n){ return (n<10?'0':'')+n; }
+/* L'«oggi» della pagina e' il giorno che Diego sta vivendo, nel SUO fuso:
+   toISOString e' UTC, e alle 00:30 italiane diceva ancora ieri — la finestra
+   partiva dal giorno prima (round 2, 24/10). */
+function oggiLocale(){ var d = new Date(); return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
+/* Una data si crede solo se ESISTE nel calendario: 2026-99-99 passa la forma
+   ma non e' un giorno, e trascinava tutta la finestra nell'errore. */
+function dataEsiste(s){ if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return false;
+  var p = s.split('-').map(Number);
+  return p[1] >= 1 && p[1] <= 12 && p[2] >= 1 && p[2] <= giorniNelMese(p[0], p[1]); }
 function fineMese(s){ var p=s.split('-').map(Number); return p[0]+'-'+pad(p[1])+'-'+pad(giorniNelMese(p[0],p[1])); }
 function piuMesi(s,n){ var p=s.split('-').map(Number), i=p[0]*12+(p[1]-1)+n;
   var a=Math.floor(i/12), m=i%12+1; return a+'-'+pad(m)+'-'+pad(Math.min(p[2],giorniNelMese(a,m))); }
@@ -1385,7 +1394,9 @@ function aggiornaBandiera(){
    sola scelta fra 1 settimana / 1 mese / 3 / 6 / 1 anno. La settimana sono
    sette giorni esatti; i mesi chiudono a fine mese come prima. */
 function finestraPeriodo(){
-  var oggi = new Date().toISOString().slice(0,10);
+  /* oggi LOCALE, non UTC: alle 00:30 italiane la finestra deve partire da
+     oggi, non da ieri (round 2, 24/10) */
+  var oggi = oggiLocale();
   var da = S.da || oggi;
   if (S.periodo === 's1') return { da: da, a: piuGiorni(da, 6) };
   return { da: da, a: fineMese(piuMesi(da, S.mesi - 1)) };
@@ -1550,7 +1561,10 @@ function renderProspetto(){
         esc(MESI[+pm[1]-1] + ' ' + pm[0]) + '</th></tr>';
       apertura = g;
     }
-    var attivo = (g.voci && g.voci.length) || (g.acquistiCarta && g.acquistiCarta.length);
+    /* decisione 2, «nel conto SOLO il box»: gli acquisti su carta NON si
+       disegnano nel prospetto del conto (round 2, 24/10) — il loro dettaglio
+       vive nella scheda Carte; qui conta solo cio' che tocca il conto */
+    var attivo = (g.voci && g.voci.length);
     var confine = (i === 0) || (i === gg.length-1) || (g.data === fineMese(g.data)) || (dow(g.data) === 7);
     /* in raggruppamento MESE si mostrano i giorni con movimenti piu' i confini;
        in SETTIMANA si mostrano tutti i giorni: scelta di leggibilita' dichiarata */
@@ -1565,15 +1579,16 @@ function renderProspetto(){
   $('#didascalia').innerHTML = 'Saldo verificato al ' + dataIt(p.taglioMax || p.taglio) +
     '. Prima di quel giorno il saldo non e&#768; ricostruito e si legge —, non zero.' +
     (S.conto !== 'tutti' ? ' Il totale e&#768; del <b>conto selezionato</b>, non il patrimonio.' : '') +
-    ' Gli acquisti su carta si vedono alla loro data e non toccano il conto: l&#39;addebito del ciclo compare al suo giorno.';
+    ' Gli acquisti su carta non stanno nel conto: il loro dettaglio vive nella scheda Carte, qui compare solo l&#39;addebito del ciclo, al suo giorno.';
   agganciaVoci();
 }
 function rigaGiorno(g, conti, attivo){
   var h = '<tr data-giorno="' + esc(g.data) + '"><td class="g">' + esc(dataIt(g.data)) +
     ' <span class="chip">' + ['','lun','mar','mer','gio','ven','sab','dom'][dow(g.data)] + '</span></td>';
   conti.forEach(function(c){
-    var voci = (g.voci||[]).filter(function(v){ return v.contoId === c.id; })
-      .concat((g.acquistiCarta||[]).filter(function(v){ return v.contoId === c.id; }));
+    /* solo cio' che tocca il conto: niente chip di acquisti carta qui
+       (decisione 2, «nel conto SOLO il box» — round 2, 24/10) */
+    var voci = (g.voci||[]).filter(function(v){ return v.contoId === c.id; });
     h += '<td class="cella-drop" data-conto="' + esc(c.id) + '" data-giorno="' + esc(g.data) + '">' +
       voci.map(vociHtml).join('') + '</td>';
     var noto = g.notoPerConto ? g.notoPerConto[c.id] : g.noto;
@@ -2941,7 +2956,7 @@ function caricaCarte(){
   var gen = S.gen;
   /* `al` e' l'oggi DELLA PAGINA: «il mese» e' quello che Diego sta vivendo,
      non quello dell'orologio del server (e nelle prove e' congelato) */
-  var q = '/carte?al=' + new Date().toISOString().slice(0,10);
+  var q = '/carte?al=' + oggiLocale();
   if (S.conto !== 'tutti') q += '&conti=' + encodeURIComponent(S.conto);
   if (S.scenario) q += '&scenario_id=' + encodeURIComponent(S.scenario);
   return api(q).then(function(k){
@@ -2971,7 +2986,14 @@ function renderBoxCarta(){
         'acquisti di ' + esc(meseIt(k.al)) + ' · ' + perCarta,
         (t.speseMeseCents || 0) < 0) +
     kpi('Liquidazione prevista successiva', liq ? euro(liq.cents) : '—',
-        liq ? (dataIt(liq.data) + ' · scende da ' + esc(liq.conto || 'conto della carta'))
+        liq ? (dataIt(liq.data) +
+               /* due carte che scendono lo STESSO giorno: la somma si dichiara
+                  una per una, non si mostra solo la prima (round 2, 24/10) */
+               ((liq.carte || []).length > 1
+                 ? ' · somma di ' + liq.carte.length + ' liquidazioni: ' +
+                   liq.carte.map(function(x){ return esc(x.carta) + ' ' + euro(x.cents); }).join(' + ')
+                 : '') +
+               ' · scende da ' + esc(liq.conto || 'conto della carta'))
             : 'nessun ciclo aperto da addebitare',
         !!(liq && liq.cents < 0));
   $('#notaCarta').textContent = 'Gli acquisti non toccano il conto alla loro data: il dettaglio dei cicli sta nella pagina Carte, nel conto resta solo l’addebito.';
@@ -3847,9 +3869,11 @@ document.addEventListener('DOMContentLoaded', function(){
     }
     S.periodo = ['s1','1','3','6','12'].indexOf(per) >= 0 ? per : '3';
     S.mesi = S.periodo === 's1' ? 1 : Number(S.periodo);
-    /* l'ancora della navigazione: solo una data vera, il resto e' «oggi» */
+    /* l'ancora della navigazione: solo una data vera, il resto e' «oggi».
+       La forma non basta: 2026-99-99 passava e rompeva tutta la finestra
+       (round 2, 24/10) — si crede solo a un giorno che ESISTE */
     S.da = localStorage.getItem('tesoreria_da') || null;
-    if (S.da && !/^\d{4}-\d{2}-\d{2}$/.test(S.da)) S.da = null;
+    if (S.da && !dataEsiste(S.da)) S.da = null;
     S.gruppo = localStorage.getItem('tesoreria_gruppo') || 'mese';
     S.scenario = localStorage.getItem('tesoreria_scenario') || '';
     S.tab = localStorage.getItem('tesoreria_tab') || 'conti';
