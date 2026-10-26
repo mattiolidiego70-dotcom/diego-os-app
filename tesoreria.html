@@ -799,7 +799,14 @@ table.mem input{width:100%;min-width:90px;background:rgba(var(--luce-rgb),.05);b
         <span class="tec">convenzionale</span>
         <h2>Accantonamento convenzionale <span class="chip avv">ipotesi, modificabile</span></h2>
         <div class="griglia" id="kpiTasseConv"></div>
+        <!-- Round 2 (26/10): il mese finito si FOTOGRAFA (chiusura immutabile),
+             le differenze successive diventano rettifiche dichiarate, e
+             l'accantonamento del mese chiuso arriva NEL conto tasse con un
+             giroconto chiesto da qui. Il bottone spento dice sempre il motivo. -->
+        <div id="convChiusura"></div>
+        <div id="convRettifiche"></div>
         <div id="scadenzeConv"></div>
+        <p class="nota" id="msgConv" role="status" aria-live="polite"></p>
         <p class="nota" id="notaConv" role="status" aria-live="polite"></p>
       </div>
 
@@ -3326,6 +3333,7 @@ var NOMI_PARAMETRO = {
   'fisco.rateazione_pluriennale':'Rateazione su piu\u0300 anni',
   'fisco.motore_legale':'Calcolo fiscale legale (superato per questa consegna)',
   'tasse_conv.giorno_scadenza':'Scadenze convenzionali: giorno del mese',
+  'tasse_conv.conto_origine':'Accantonamento: conto d’origine del giroconto',
   'avvio.saldo_alla_data':'Saldo dei conti alla data di avvio'
 };
 function nomeParametro(k){
@@ -3370,6 +3378,8 @@ function renderTasseConv(){
         m.accantonamento_cents == null ? '—' : euro(m.accantonamento_cents),
         m.accantonamento_cents == null ? esc(m.perche || 'nessuna aliquota in vigore')
           : percento(m.aliquota_bp) + ' degli incassi · nessun codice ATECO richiesto');
+  renderConvChiusura(t);
+  renderConvRettifiche(m);
   var sc = t.prossime_scadenze || [];
   $('#scadenzeConv').innerHTML = '<h2>Prossime scadenze convenzionali</h2>' +
     (sc.length
@@ -3383,12 +3393,84 @@ function renderTasseConv(){
             esc(x.etichetta || 'ipotesi, modificabile') + '</span></td></tr>';
         }).join('') + '</tbody></table></div>'
       : '<p class="nota">Nessuna scadenza convenzionale in vista.</p>') +
+    /* review 26/10 (rilievo 4): il giorno lo dice l'API dal parametro VERO,
+       niente «fine mese» scritto fisso quando il giorno concordato e' un altro */
     '<p class="nota">Acconti a <b>giugno e novembre</b> (non settembre); a giugno dell&#39;anno dopo ' +
-    'escono insieme saldo e nuovo acconto. Il giorno esatto non e&#768; stato fornito e non si inventa: ' +
-    'fine mese come convenzione dichiarata, modificabile. Gli importi non compaiono: la decisione ' +
-    'fissa le date, non le cifre.</p>';
+    'escono insieme saldo e nuovo acconto. Giorno della convenzione: ' +
+    esc(t.giorno_convenzione || 'non dichiarato dall’API') +
+    '. Gli importi non compaiono: la decisione fissa le date, non le cifre.</p>';
   $('#notaConv').innerHTML = esc(t.motore_legale || '') +
     (t.nota ? ' — ' + esc(t.nota) : '');
+}
+/* Il mese PRECEDENTE: la fotografia (chiusura) e il giroconto verso il conto
+   tasse. Il bottone spento porta sempre il suo motivo: un bottone muto che
+   non spiega perche' non funziona e' una domanda senza risposta. */
+function renderConvChiusura(t){
+  var ch = t.chiusura; if (!$('#convChiusura')) return;
+  if (!ch){ $('#convChiusura').innerHTML = ''; return; }
+  var nome = MESI[(ch.mese||1)-1] + ' ' + ch.anno;
+  var h = '<h2>Chiusura del mese precedente — ' + esc(nome) + '</h2>';
+  if (!ch.chiusa){
+    h += '<p class="nota">Non ancora chiuso: si fotografa alla prima lettura dopo la sua fine, ' +
+      'oppure adesso con il bottone. Da chiuso diventa immutabile.</p>' +
+      '<button class="btn" id="btnChiudiMese">Chiudi ' + esc(nome) + '</button>';
+  } else {
+    h += '<p class="nota">Chiuso il ' + esc(dataIt(String(ch.chiusa_il).slice(0, 10))) + ': accantonamento fotografato ' +
+      '<b>' + euro(ch.accantonamento_cents || 0) + '</b>. La fotografia non si riscrive: le ' +
+      'differenze successive diventano rettifiche dichiarate nel mese corrente.</p>';
+    if (ch.accreditato){
+      h += '<p class="nota"><span class="chip ok">nel conto tasse</span> Accreditato ' +
+        euro(ch.accredito_cents || 0) + ' con il giroconto n. ' + ch.accredito_movimento +
+        ': per rifarlo si annulla prima quello (scheda Storico).</p>';
+    } else {
+      h += '<button class="btn p" id="btnAccredita"' + (ch.accreditabile ? '' : ' disabled') +
+        '>Accredita ' + euro(ch.accantonamento_cents || 0) + ' sul conto tasse</button>' +
+        (ch.accreditabile
+          ? '<p class="nota">Genera il giroconto dal conto d&#39;origine concordato al conto tasse: ' +
+            'neutro sul patrimonio, annullabile.</p>'
+          : '<p class="nota" id="motivoAccredito">Bottone spento: ' + esc(ch.motivo_blocco || '') + '</p>');
+    }
+  }
+  $('#convChiusura').innerHTML = h;
+  var bc = $('#btnChiudiMese'); if (bc) bc.onclick = function(){ scriviConv('/tasse/convenzionale/chiudi', ch, bc); };
+  var ba = $('#btnAccredita'); if (ba && ch.accreditabile) ba.onclick = function(){ scriviConv('/tasse/convenzionale/accredita', ch, ba); };
+}
+function scriviConv(rotta, ch, bottone){
+  bottone.disabled = true;
+  msgScen('#msgConv', 'scrivo…');
+  api(rotta, { anno: ch.anno, mese: ch.mese, operation_id: uuid() })
+    .then(function(e){
+      msgScen('#msgConv', rotta.indexOf('accredita') >= 0
+        ? 'Fatto: ' + euro(e.cents || 0) + ' verso il conto tasse (movimento n. ' + e.movimento + ').'
+        : 'Mese chiuso: accantonamento fotografato ' + euro(e.accantonamento_cents || 0) + '.');
+      return Promise.all([caricaTasseConv(), caricaJournal()]);
+    })
+    .catch(function(e){ msgScen('#msgConv', 'Non fatto: ' + e.message, true); bottone.disabled = false; });
+}
+/* Le RETTIFICHE del mese corrente: l'elenco delle differenze dichiarate sui
+   mesi chiusi (rilievo 1). Quando non ce ne sono, niente: non si mostra uno
+   zero che sembra un conteggio. */
+function renderConvRettifiche(m){
+  if (!$('#convRettifiche')) return;
+  var rr = (m && m.rettifiche) || [];
+  if (!rr.length){ $('#convRettifiche').innerHTML = ''; return; }
+  $('#convRettifiche').innerHTML = '<h2>Rettifiche dichiarate questo mese</h2>' +
+    '<p class="nota">Un mese chiuso non si riscrive: se i suoi movimenti cambiano dopo ' +
+    '(uno storno, un annullo), la differenza si dichiara qui, nel mese corrente.</p>' +
+    '<div class="tab-wrap"><table class="pro"><thead><tr><th>Mese chiuso</th>' +
+    '<th class="n">incassi fotografati</th><th class="n">incassi oggi</th>' +
+    '<th class="n">rettifica</th><th>dichiarata il</th></tr></thead><tbody>' +
+    rr.map(function(x){
+      /* euro() porta gia' il segno meno: qui si aggiunge solo il «+» esplicito,
+         perche' una rettifica in aumento e una in diminuzione sono due storie diverse */
+      return '<tr><td>' + pad(x.mese_chiuso) + '/' + x.anno_chiuso + '</td>' +
+        '<td class="n">' + euro(x.incassi_foto_cents) + '</td>' +
+        '<td class="n">' + euro(x.incassi_vivi_cents) + '</td>' +
+        '<td class="n">' + (x.differenza_cents > 0 ? '+' : '') + euro(x.differenza_cents) + '</td>' +
+        '<td class="g">' + esc(dataIt(String(x.dichiarata_il).slice(0, 10))) + '</td></tr>';
+    }).join('') + '</tbody></table></div>' +
+    '<p class="nota">Totale rettifiche del mese: <b>' + (m.rettifiche_cents > 0 ? '+' : '') +
+    euro(m.rettifiche_cents) + '</b>. Il mese chiuso resta com&#39;era: questa voce dichiara la differenza.</p>';
 }
 function caricaFisco(){
   var gen = S.gen;
