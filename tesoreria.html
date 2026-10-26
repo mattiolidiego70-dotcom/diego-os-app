@@ -303,6 +303,7 @@ table.mem input{width:100%;min-width:90px;background:rgba(var(--luce-rgb),.05);b
     <button class="voce" data-tab="scenari" title="Scenari e ipotesi" aria-label="Scenari e ipotesi">⑂</button>
     <button class="voce" data-tab="fissi" title="Costi fissi e finanziamenti" aria-label="Costi fissi e finanziamenti">≡</button>
     <button class="voce" data-tab="attivo" title="Attivo" aria-label="Attivo">↗</button>
+    <button class="voce" data-tab="obiettivi" title="Obiettivi e budget" aria-label="Obiettivi e budget">◎</button>
     <button class="voce" data-tab="carte" title="Carte" aria-label="Carte">▤</button>
     <button class="voce" data-tab="tasse" title="Partita IVA e tasse" aria-label="Partita IVA e tasse">%</button>
     <button class="voce" data-tab="promemoria" title="Promemoria" aria-label="Promemoria">◉</button>
@@ -698,6 +699,64 @@ table.mem input{width:100%;min-width:90px;background:rgba(var(--luce-rgb),.05);b
         <p class="nota" id="msgNuovaEntrata" role="status" aria-live="polite"></p>
       </div>
     </section>
+    <!-- ════════ OBIETTIVI E BUDGET: la ripartizione del salvadanaio (decisione 7, 19/09) ════════ -->
+    <section class="pane" id="pane-obiettivi" role="tabpanel">
+      <div class="card">
+        <span class="tec">obiettivi</span>
+        <h2>Obiettivi del salvadanaio</h2>
+        <div class="griglia" id="kpiObiettivi"></div>
+        <div id="elencoObiettivi"></div>
+        <p class="nota">Gli obiettivi sono una <b>ripartizione</b> del salvadanaio: assegnato e
+          non assegnato fanno sempre il saldo. Non sono soldi in pi&#249;: la riserva totale
+          non cambia di un centesimo.</p>
+        <p class="nota" id="msgObiettivi" role="status" aria-live="polite"></p>
+      </div>
+
+      <div class="card">
+        <span class="tec">nuovo</span>
+        <h2>Un obiettivo nuovo</h2>
+        <div class="riga" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <label class="etichetta" for="obConto">nel salvadanaio</label>
+          <select class="sel" id="obConto" aria-label="Salvadanaio"></select>
+          <input class="sel" id="obNome" placeholder="per cosa (es. Viaggio)" aria-label="Nome">
+          <input class="sel num" id="obTraguardo" placeholder="traguardo (es. 2.000,00)" aria-label="Traguardo">
+          <input class="sel" id="obNote" placeholder="note" aria-label="Note">
+          <button class="btn p" id="btnObiettivo">Crea</button>
+        </div>
+        <p class="nota">Creare un obiettivo non muove un centesimo: &#232; un nome e un traguardo.
+          Il denaro gli si assegna dopo, dal non assegnato.</p>
+        <p class="nota" id="msgNuovoObiettivo" role="status" aria-live="polite"></p>
+      </div>
+
+      <div class="card">
+        <span class="tec">budget</span>
+        <h2>Budget per categoria</h2>
+        <div class="riga" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
+          <label class="etichetta" for="bdMese">mese</label>
+          <input class="sel" type="month" id="bdMese" aria-label="Mese">
+          <button class="btn" id="btnBudgetMese">Aggiorna</button>
+        </div>
+        <div id="elencoBudget"></div>
+        <p class="nota">Un budget &#232; un <b>metro</b>, non una spesa: impostarlo non scrive nessun
+          movimento. Lo &#171;speso&#187; &#232; la somma dei movimenti della categoria nel mese.</p>
+        <p class="nota" id="msgBudget" role="status" aria-live="polite"></p>
+      </div>
+
+      <div class="card">
+        <span class="tec">nuova</span>
+        <h2>Una capienza nuova</h2>
+        <div class="riga" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <select class="sel" id="bdCategoria" aria-label="Categoria"></select>
+          <input class="sel num" id="bdCapienza" placeholder="capienza mensile (es. 400,00)" aria-label="Capienza mensile">
+          <label class="etichetta" for="bdValidoDa">vale dal mese</label>
+          <input class="sel" type="month" id="bdValidoDa" aria-label="Vale dal mese">
+          <button class="btn p" id="btnBudget">Imposta</button>
+        </div>
+        <p class="nota">Cambiare capienza &#232; una riga nuova con la sua decorrenza: i mesi
+          passati restano misurati con il metro che valeva allora.</p>
+        <p class="nota" id="msgNuovoBudget" role="status" aria-live="polite"></p>
+      </div>
+    </section>
     <!-- ════════ CARTE: la casa degli acquisti su carta (decisione 2, 19/09) ════════ -->
     <section class="pane" id="pane-carte" role="tabpanel">
       <div class="card">
@@ -1034,7 +1093,8 @@ function api(p, corpo, metodo){
 var S = { tab:'conti', vista:'prospetto', conto:'tutti', periodo:'3', mesi:3, gruppo:'mese',
           scenario:'', da:null, sel:[], prev:null, anag:null, voci:{},
           scenari:[], diff:null, gen:0, impegni:null, vistaFissi:'colonne',
-          attivo:null, riserva:null, fisco:null, tasseConv:null, promemoria:null,
+          attivo:null, riserva:null, obiettivi:null, budget:null,
+          fisco:null, tasseConv:null, promemoria:null,
           alfred:null, alfConv:0, alfCartella:'' };
 var FONTI_MUTE = {};
 
@@ -2946,6 +3006,158 @@ function muoviSalvadanaio(){
     .catch(function(e){ msgScen('#msgSalvadanaio', 'Non spostato: ' + e.message, true); })
     .finally(function(){ $('#btnSalvadanaio').disabled = false; });
 }
+/* ── OBIETTIVI E BUDGET (decisione 7 del 19/09) ──────────────────────────
+   Gli obiettivi RIPARTISCONO il salvadanaio: assegnato + non assegnato =
+   saldo, sempre, e la riserva totale non cambia. I budget sono CAPIENZE per
+   categoria: lo speso si LEGGE dai movimenti, la pagina non lo scrive mai. */
+function meseLocale(){ return oggiLocale().slice(0,7); }
+function renderObiettivi(){
+  if (!$('#obConto')) return;
+  var conti = (S.anag && S.anag.conti) || [], cat = (S.anag && S.anag.categorie) || [];
+  var salv = conti.filter(function(c){ return c.tipo === 'salvadanaio'; });
+  $('#obConto').innerHTML = salv.length
+    ? salv.map(function(c){ return '<option value="' + c.id + '">' + esc(c.nome) + '</option>'; }).join('')
+    : '<option value="">— nessun salvadanaio configurato —</option>';
+  $('#bdCategoria').innerHTML = '<option value="">— categoria —</option>' +
+    cat.filter(function(c){ return c.attiva !== false; }).map(function(c){
+      return '<option value="' + c.id + '">' + esc(c.nome) + '</option>'; }).join('');
+  if (!$('#bdMese').value) $('#bdMese').value = meseLocale();
+  if (!$('#bdValidoDa').value) $('#bdValidoDa').value = meseLocale();
+}
+function caricaObiettivi(){
+  var gen = S.gen;
+  return api('/obiettivi').then(function(r){
+    if (gen !== S.gen) return;
+    S.obiettivi = r; dichiaraFonte('obiettivi', null);
+    var sal = r.salvadanai || [];
+    /* i tre numeri del contratto, UNO per salvadanaio: saldo, assegnato e non
+       assegnato. Il non assegnato e' il resto, mai una seconda somma. */
+    $('#kpiObiettivi').innerHTML = sal.length
+      ? sal.map(function(s){
+          return kpi('Salvadanaio ' + s.nome, euro(s.saldo_cents), 'saldo: taglio + movimenti della base') +
+            kpi('Assegnato', euro(s.assegnato_cents), 'le quote degli obiettivi di ' + esc(s.nome)) +
+            kpi('Non assegnato', euro(s.non_assegnato_cents),
+                'assegnato + non assegnato = saldo, sempre', s.non_assegnato_cents < 0);
+        }).join('')
+      : kpi('Salvadanaio', '—', 'nessun conto salvadanaio configurato');
+    $('#elencoObiettivi').innerHTML = sal.map(function(s){
+      var oo = s.obiettivi || [];
+      if (!oo.length) return '<p class="nota">Nessun obiettivo in ' + esc(s.nome) + '.</p>';
+      return '<div class="tab-wrap"><table class="pro"><thead><tr><th>Obiettivo</th>' +
+        '<th class="n">traguardo</th><th class="n">assegnato</th><th>progresso</th><th></th>' +
+        '</tr></thead><tbody>' +
+        oo.map(function(o){
+          /* il progresso e' al centesimo: bp/100, con il traguardo dichiarato */
+          var prog = o.traguardo_cents == null
+            ? '<span class="chip avv">senza traguardo</span>'
+            : (o.progresso_bp/100).toFixed(2).replace('.', ',') + '%' +
+              (o.raggiunto ? ' <span class="chip ok">raggiunto</span>' : '');
+          return '<tr data-obiettivo="' + o.id + '"><td>' + esc(o.nome) +
+            (o.note ? ' <span class="chip">' + esc(o.note) + '</span>' : '') + '</td>' +
+            '<td class="n">' + (o.traguardo_cents == null ? '—' : euro(o.traguardo_cents)) + '</td>' +
+            '<td class="n">' + euro(o.assegnato_cents) + '</td>' +
+            '<td>' + prog + '</td>' +
+            '<td><span class="riga" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">' +
+            '<input class="sel num" style="width:110px" data-quota="' + o.id + '" placeholder="100,00" aria-label="Quota">' +
+            '<button class="btn" data-assegna="' + o.id + '">Assegna</button>' +
+            '<button class="btn" data-togli="' + o.id + '">Togli</button></span></td></tr>';
+        }).join('') + '</tbody></table></div>';
+    }).join('');
+    $$('#elencoObiettivi [data-assegna]').forEach(function(b){
+      b.onclick = function(){ muoviQuota(Number(b.getAttribute('data-assegna')), 'assegna'); }; });
+    $$('#elencoObiettivi [data-togli]').forEach(function(b){
+      b.onclick = function(){ muoviQuota(Number(b.getAttribute('data-togli')), 'togli'); }; });
+  }).catch(function(e){
+    dichiaraFonte('obiettivi', e);
+    $('#elencoObiettivi').innerHTML = '<p class="errore">Gli obiettivi non sono stati letti: ' +
+      esc(e.message) + '. Non e&#768; «nessun obiettivo».</p>';
+  });
+}
+function muoviQuota(id, verso){
+  var campo = $('#elencoObiettivi [data-quota="' + id + '"]');
+  var cents = centesimiDa(campo ? campo.value : '');
+  if (cents == null || cents <= 0){
+    msgScen('#msgObiettivi', 'Quanto? serve un importo positivo (es. 100,00).', true); return;
+  }
+  msgScen('#msgObiettivi', verso === 'assegna' ? 'assegno…' : 'tolgo…');
+  api('/obiettivi/' + id + '/' + verso, { importo_cents: cents, operation_id: uuid() })
+    .then(function(e){
+      return caricaObiettivi().then(function(){ return e; });
+    })
+    .then(function(e){
+      msgScen('#msgObiettivi', (verso === 'assegna' ? 'Assegnati ' : 'Tolti ') + euro(e.cents) +
+        ' a «' + e.nome + '»: quota ' + euro(e.assegnato_cents) +
+        ', non assegnato ' + euro(e.non_assegnato_cents) + '. ' + e.nota + '.');
+    })
+    .catch(function(e){ msgScen('#msgObiettivi', 'Non fatto: ' + e.message, true); });
+}
+function creaObiettivo(){
+  if (!$('#obConto').value){ msgScen('#msgNuovoObiettivo', 'Serve un conto salvadanaio: gli obiettivi lo ripartiscono.', true); return; }
+  if (!$('#obNome').value.trim()){ msgScen('#msgNuovoObiettivo', 'L’obiettivo ha bisogno di un nome.', true); return; }
+  var tra = null;
+  if ($('#obTraguardo').value.trim()){
+    tra = centesimiDa($('#obTraguardo').value);
+    if (tra == null || tra <= 0){ msgScen('#msgNuovoObiettivo', 'Il traguardo, se c’è, è un importo positivo (es. 2.000,00).', true); return; }
+  }
+  $('#btnObiettivo').disabled = true;
+  msgScen('#msgNuovoObiettivo', 'creo…');
+  api('/obiettivi', { conto_id: Number($('#obConto').value), nome: $('#obNome').value.trim(),
+    traguardo_cents: tra, note: $('#obNote').value.trim(), operation_id: uuid() })
+    .then(function(e){ return caricaObiettivi().then(function(){ return e; }); })
+    .then(function(e){
+      msgScen('#msgNuovoObiettivo', 'Creato «' + e.nome + '»' +
+        (e.traguardo_cents ? ' con traguardo ' + euro(e.traguardo_cents) : ', senza traguardo dichiarato') +
+        '. ' + e.nota + '.');
+      $('#obNome').value = ''; $('#obTraguardo').value = ''; $('#obNote').value = '';
+    })
+    .catch(function(e){ msgScen('#msgNuovoObiettivo', 'Non creato: ' + e.message, true); })
+    .finally(function(){ $('#btnObiettivo').disabled = false; });
+}
+function caricaBudget(){
+  var gen = S.gen;
+  var m = ($('#bdMese').value || meseLocale()).split('-');
+  return api('/budget?anno=' + m[0] + '&mese=' + Number(m[1])).then(function(r){
+    if (gen !== S.gen) return;
+    S.budget = r; dichiaraFonte('budget', null);
+    var righe = r.budget || [];
+    $('#elencoBudget').innerHTML = righe.length
+      ? '<div class="tab-wrap"><table class="pro"><thead><tr><th>Categoria</th>' +
+        '<th class="n">capienza</th><th class="n">speso</th><th class="n">previsto</th>' +
+        '<th class="n">residuo</th><th></th></tr></thead><tbody>' +
+        righe.map(function(b){
+          return '<tr><td>' + esc(b.categoria) + '</td>' +
+            '<td class="n">' + euro(b.capienza_cents) + '</td>' +
+            '<td class="n">' + euro(b.speso_cents) + '</td>' +
+            '<td class="n">' + euro(b.previsto_cents) + '</td>' +
+            '<td class="n' + (b.residuo_cents < 0 ? ' neg' : '') + '">' + euro(b.residuo_cents) + '</td>' +
+            '<td>' + (b.oltre ? '<span class="chip avv">oltre la capienza</span>' : '') + '</td></tr>';
+        }).join('') + '</tbody></table></div>' +
+        '<p class="nota">' + esc(r.nota || '') + '</p>'
+      : '<p class="nota">Nessun budget per ' + esc(MESI[Number(m[1])-1]) + ' ' + esc(m[0]) + '.</p>';
+  }).catch(function(e){
+    dichiaraFonte('budget', e);
+    $('#elencoBudget').innerHTML = '<p class="errore">I budget non sono stati letti: ' +
+      esc(e.message) + '. Non e&#768; «nessun budget».</p>';
+  });
+}
+function impostaBudget(){
+  if (!$('#bdCategoria').value){ msgScen('#msgNuovoBudget', 'Serve la categoria: il budget è il metro di QUELLE spese.', true); return; }
+  var cap = centesimiDa($('#bdCapienza').value);
+  if (cap == null || cap <= 0){ msgScen('#msgNuovoBudget', 'La capienza mensile è un importo positivo (es. 400,00).', true); return; }
+  if (!$('#bdValidoDa').value){ msgScen('#msgNuovoBudget', 'Serve il mese da cui vale: non si assume questo mese.', true); return; }
+  $('#btnBudget').disabled = true;
+  msgScen('#msgNuovoBudget', 'imposto…');
+  api('/budget', { categoria_id: Number($('#bdCategoria').value), capienza_cents: cap,
+    valido_da: $('#bdValidoDa').value + '-01', operation_id: uuid() })
+    .then(function(e){ return caricaBudget().then(function(){ return e; }); })
+    .then(function(e){
+      msgScen('#msgNuovoBudget', 'Impostata: ' + euro(e.capienza_cents) + ' al mese dal ' +
+        dataAnno(e.valido_da) + '. ' + e.nota + '.');
+      $('#bdCapienza').value = '';
+    })
+    .catch(function(e){ msgScen('#msgNuovoBudget', 'Non impostata: ' + e.message, true); })
+    .finally(function(){ $('#btnBudget').disabled = false; });
+}
 /* ── CARTE (decisione 2 del 19/09): la casa degli acquisti su carta ──────
    Il contratto: gli acquisti e i cicli stanno QUI; nel conto resta solo il
    box con la spesa carta del mese e la liquidazione prevista successiva.
@@ -3817,7 +4029,8 @@ function vaiA(tab){
   $$('.pane').forEach(function(p){ p.classList.toggle('on', p.id === 'pane-' + tab); });
   var titoli = { conti:'Conti e previsione', inbox:'Import e Inbox', scenari:'Scenari e ipotesi',
                  fissi:'Costi fissi e finanziamenti',
-                 attivo:'Attivo', carte:'Carte', tasse:'Partita IVA e tasse', promemoria:'Promemoria',
+                 attivo:'Attivo', obiettivi:'Obiettivi e budget',
+                 carte:'Carte', tasse:'Partita IVA e tasse', promemoria:'Promemoria',
                  alfred:'Alfred', storico:'Annulla e storico' };
   $('#titolo').textContent = titoli[tab] || tab;
   $('#strisce').hidden = (tab !== 'conti');
@@ -3828,6 +4041,7 @@ function vaiA(tab){
   if (tab === 'scenari'){ caricaScenari(); caricaDifferenze(); }
   if (tab === 'fissi'){ renderFissi(); caricaImpegni(); }
   if (tab === 'attivo'){ renderAttivo(); caricaRiserva(); caricaEntrate(); }
+  if (tab === 'obiettivi'){ renderObiettivi(); caricaObiettivi(); caricaBudget(); }
   if (tab === 'carte'){ renderCartePagina(); caricaCarte(); }
   if (tab === 'tasse'){ renderTasse(); caricaTasseConv(); caricaFisco(); }
   if (tab === 'promemoria'){ caricaPromemoria(); }
@@ -3911,6 +4125,9 @@ document.addEventListener('DOMContentLoaded', function(){
   $('#btnSalvadanaio').onclick = muoviSalvadanaio;
   $('#btnRiserva').onclick = caricaRiserva;
   $('#btnAnni').onclick = function(){ caricaEntrate(false); };
+  $('#btnObiettivo').onclick = creaObiettivo;
+  $('#btnBudget').onclick = impostaBudget;
+  $('#btnBudgetMese').onclick = caricaBudget;
   $('#btnSalvaEntrata').onclick = function(){ salvaEntrata(false); };
   $('#btnTogliAttesa').onclick = function(){ salvaEntrata(true); };
   $('#btnChiudiEntrata').onclick = function(){ $('#box-entrata').hidden = true; ENTRATA_APERTA = null; };
