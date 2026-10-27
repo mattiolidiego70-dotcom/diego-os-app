@@ -745,7 +745,9 @@ table.mem input{width:100%;min-width:90px;background:rgba(var(--luce-rgb),.05);b
         <div id="elencoObiettivi"></div>
         <p class="nota">Gli obiettivi sono una <b>ripartizione</b> del salvadanaio: assegnato e
           non assegnato fanno sempre il saldo. Non sono soldi in pi&#249;: la riserva totale
-          non cambia di un centesimo.</p>
+          non cambia di un centesimo. Il saldo di riferimento &#232; quello <b>a fine
+          previsione</b>: un prelievo gi&#224; programmato, anche lontano, riduce da subito
+          il non assegnato.</p>
         <p class="nota" id="msgObiettivi" role="status" aria-live="polite"></p>
       </div>
 
@@ -789,8 +791,10 @@ table.mem input{width:100%;min-width:90px;background:rgba(var(--luce-rgb),.05);b
           <input class="sel" type="month" id="bdValidoDa" aria-label="Vale dal mese">
           <button class="btn p" id="btnBudget">Imposta</button>
         </div>
-        <p class="nota">Cambiare capienza &#232; una riga nuova con la sua decorrenza: i mesi
-          passati restano misurati con il metro che valeva allora.</p>
+        <p class="nota">Cambiare capienza &#232; una riga nuova con la sua decorrenza, <b>dal mese
+          prossimo in poi</b>: il metro di un mese gi&#224; iniziato non si riscrive, e i mesi
+          passati restano misurati con il metro che valeva allora. Solo la <i>prima</i>
+          capienza di una categoria pu&#242; nascere dal mese corrente.</p>
         <p class="nota" id="msgNuovoBudget" role="status" aria-live="polite"></p>
       </div>
     </section>
@@ -3098,9 +3102,15 @@ function caricaObiettivi(){
     var sal = r.salvadanai || [];
     /* i tre numeri del contratto, UNO per salvadanaio: saldo, assegnato e non
        assegnato. Il non assegnato e' il resto, mai una seconda somma. */
+    /* round 3 (27/10, rilievo 7): il metro del vincolo si dichiara DOVE si
+       leggono i numeri — e' il saldo «a fine previsione»: anche un prelievo
+       previsto lontano riduce gia' l'assegnabile. Lo dice l'API, la pagina
+       lo riporta, cosi' Diego lo vede e lo ratifica (o lo cambia). */
+    var rifSaldo = 'saldo a ' + (r.saldo_riferimento || 'fine previsione') +
+      ': taglio + movimenti registrati e previsti della base';
     $('#kpiObiettivi').innerHTML = sal.length
       ? sal.map(function(s){
-          return kpi('Salvadanaio ' + s.nome, euro(s.saldo_cents), 'saldo: taglio + movimenti della base') +
+          return kpi('Salvadanaio ' + s.nome, euro(s.saldo_cents), rifSaldo) +
             kpi('Assegnato', euro(s.assegnato_cents), 'le quote degli obiettivi di ' + esc(s.nome)) +
             kpi('Non assegnato', euro(s.non_assegnato_cents),
                 'assegnato + non assegnato = saldo, sempre', s.non_assegnato_cents < 0);
@@ -3478,9 +3488,16 @@ function renderConvChiusura(t){
       '<b>' + euro(ch.accantonamento_cents || 0) + '</b>. La fotografia non si riscrive: le ' +
       'differenze successive diventano rettifiche dichiarate nel mese corrente.</p>';
     if (ch.accreditato){
-      h += '<p class="nota"><span class="chip ok">nel conto tasse</span> Accreditato ' +
-        euro(ch.accredito_cents || 0) + ' con il giroconto n. ' + ch.accredito_movimento +
-        ': per rifarlo si annulla prima quello (scheda Storico).</p>';
+      /* round 3 (27/10, rilievo 4): lo stato VERO del giroconto. «Accreditato»
+         si dice solo di un movimento rendicontato; uno previsto e' programmato,
+         e dirlo fatto sarebbe una bugia contabile. */
+      h += (ch.accredito_stato === 'planned'
+          ? '<p class="nota"><span class="chip avv">programmato</span> Giroconto <b>previsto</b> di ' +
+            euro(ch.accredito_cents || 0) + ' verso il conto tasse (movimento n. ' + ch.accredito_movimento +
+            '): non &#232; ancora stato eseguito in banca.'
+          : '<p class="nota"><span class="chip ok">nel conto tasse</span> Accreditato ' +
+            euro(ch.accredito_cents || 0) + ' con il giroconto n. ' + ch.accredito_movimento + '.') +
+        ' Per rifarlo si annulla prima quello (scheda Storico).</p>';
     } else {
       h += '<button class="btn p" id="btnAccredita"' + (ch.accreditabile ? '' : ' disabled') +
         '>Accredita ' + euro(ch.accantonamento_cents || 0) + ' sul conto tasse</button>' +
@@ -3497,10 +3514,19 @@ function renderConvChiusura(t){
 function scriviConv(rotta, ch, bottone){
   bottone.disabled = true;
   msgScen('#msgConv', 'scrivo…');
-  api(rotta, { anno: ch.anno, mese: ch.mese, operation_id: uuid() })
+  /* round 3 (27/10, rilievo 4): il bottone esegue il giroconto ADESSO, fra
+     conti propri — quindi lo dichiara gia' avvenuto (gia_avvenuto). Prima
+     nasceva «previsto» ma la pagina diceva «Accreditato»: una bugia. */
+  var corpo = rotta.indexOf('accredita') >= 0
+    ? { anno: ch.anno, mese: ch.mese, gia_avvenuto: true, operation_id: uuid() }
+    : { anno: ch.anno, mese: ch.mese, operation_id: uuid() };
+  api(rotta, corpo)
     .then(function(e){
+      /* il messaggio dice lo stato VERO riletto dalla risposta, non quello sperato */
       msgScen('#msgConv', rotta.indexOf('accredita') >= 0
-        ? 'Fatto: ' + euro(e.cents || 0) + ' verso il conto tasse (movimento n. ' + e.movimento + ').'
+        ? (e.stato === 'actual' ? 'Accreditato: ' : 'Programmato (previsto): ') +
+          euro(e.cents || 0) + ' verso il conto tasse (movimento n. ' + e.movimento +
+          (e.stato === 'actual' ? ', rendicontato).' : ', non ancora eseguito).')
         : 'Mese chiuso: accantonamento fotografato ' + euro(e.accantonamento_cents || 0) + '.');
       return Promise.all([caricaTasseConv(), caricaJournal()]);
     })
