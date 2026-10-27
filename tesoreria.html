@@ -368,6 +368,43 @@ table.mem input{width:100%;min-width:90px;background:rgba(var(--luce-rgb),.05);b
         <p class="nota" id="notaCarta"></p>
       </div>
 
+      <!-- RISCHIO CONTO (decisione 12 del 19/09): la previsione del periodo
+           confrontata con la soglia DI OGNI CONTO (default 0 = sotto zero).
+           Il promemoria non nasce da un orologio: lo crea il bottone, e
+           ripeterlo non duplica (idempotente per conto e giorno a rischio). -->
+      <div class="card" id="card-rischio" hidden>
+        <span class="tec">rischio</span>
+        <h2>Conti a rischio</h2>
+        <div id="elencoRischio"></div>
+        <div class="riga" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px">
+          <button class="btn p" id="btnRischioGenera">Crea i promemoria di rischio</button>
+          <span class="nota">un promemoria per conto e giorno a rischio: ripetere non duplica</span>
+        </div>
+        <p class="nota" id="msgRischio" role="status" aria-live="polite"></p>
+      </div>
+
+      <!-- ALIMENTAZIONE FRA CONTI (decisione 12: Fineco da Intesa). Senza
+           configurazione niente parte e la pagina lo dice; configurata, la
+           proposta e' una riga con un bottone: proporre non e' eseguire. -->
+      <div class="card" id="card-alimentazione" hidden>
+        <span class="tec">alimentazione</span>
+        <h2>Alimentazione fra conti</h2>
+        <div id="statoAlimentazione"></div>
+        <div id="propostaAlimentazione"></div>
+        <div class="riga" id="formAlimentazione" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px">
+          <label class="etichetta" for="alSorgente">da</label>
+          <select class="sel" id="alSorgente" aria-label="Conto sorgente"></select>
+          <label class="etichetta" for="alAlimentato">alimenta</label>
+          <select class="sel" id="alAlimentato" aria-label="Conto alimentato"></select>
+          <label class="etichetta" for="alSoglia">sotto</label>
+          <input class="sel num" id="alSoglia" placeholder="soglia 1.000,00" aria-label="Soglia" style="width:120px">
+          <label class="etichetta" for="alLivello">riporta a</label>
+          <input class="sel num" id="alLivello" placeholder="obiettivo 3.000,00" aria-label="Livello obiettivo" style="width:120px">
+          <button class="btn" id="btnAlimentazione">Salva la regola</button>
+        </div>
+        <p class="nota" id="msgAlimentazione" role="status" aria-live="polite"></p>
+      </div>
+
       <div class="card" id="box-spostamento" hidden>
         <span class="tec">selezione</span>
         <div class="riga" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
@@ -895,7 +932,10 @@ table.mem input{width:100%;min-width:90px;background:rgba(var(--luce-rgb),.05);b
           <label class="etichetta" for="prQuando">il</label>
           <input class="sel" type="datetime-local" id="prQuando">
           <label class="etichetta" for="prAnticipo">avvisami</label>
-          <input class="sel" type="number" id="prAnticipo" style="width:70px" value="0" min="0" max="365">
+          <!-- decisione 12: il default dell'anticipo e' 5 giorni, e viene dal
+               parametro promemoria.anticipo_default (caricaAnagrafica lo
+               riallinea); il 5 scritto qui e' solo la rete di sicurezza -->
+          <input class="sel" type="number" id="prAnticipo" style="width:70px" value="5" min="0" max="365">
           <span class="etichetta">giorni prima</span>
           <select class="sel" id="prRicorrenza" aria-label="Ricorrenza">
             <option value="una_tantum">una volta sola</option>
@@ -1102,6 +1142,7 @@ var S = { tab:'conti', vista:'prospetto', conto:'tutti', periodo:'3', mesi:3, gr
           scenari:[], diff:null, gen:0, impegni:null, vistaFissi:'colonne',
           attivo:null, riserva:null, obiettivi:null, budget:null,
           fisco:null, tasseConv:null, promemoria:null,
+          rischio:null, alimentazione:null,
           alfred:null, alfConv:0, alfCartella:'' };
 var FONTI_MUTE = {};
 
@@ -1127,6 +1168,19 @@ function caricaAnagrafica(){
       return '<option value="' + c.id + '">' + esc(c.nome) + '</option>'; }).join('');
     $('#impCarta').innerHTML = '<option value="">—</option>' + (a.carte||[]).map(function(k){
       return '<option value="' + k.id + '">' + esc(k.nome) + '</option>'; }).join('');
+    /* decisione 12: il default dell'anticipo nel form viene dal PARAMETRO,
+       non da un numero cablato — e si imposta una volta sola, per non
+       sovrascrivere quello che Diego sta digitando */
+    if (!caricaAnagrafica.anticipoMesso){
+      $('#prAnticipo').value = anticipoDefault();
+      caricaAnagrafica.anticipoMesso = true;
+    }
+    /* i conti per la regola di alimentazione: le OPZIONI qui, i valori
+       scelti li rilegge renderAlimentazione dalla configurazione scritta */
+    var opzAl = (a.conti||[]).map(function(c){
+      return '<option value="' + c.id + '">' + esc(c.nome) + '</option>'; }).join('');
+    $('#alSorgente').innerHTML = opzAl;
+    $('#alAlimentato').innerHTML = opzAl;
     renderTasse(); renderFissi(); renderAttivo(); renderPromemoria();
   }).catch(function(e){ dichiaraFonte('anagrafica', e); });
 }
@@ -1487,6 +1541,8 @@ function salvaPeriodo(){
 function ricaricaFinestra(){
   aggiornaNavPeriodo();
   caricaPrevisione();
+  /* rischio e alimentazione leggono la STESSA finestra del prospetto */
+  caricaRischio(); caricaAlimentazione();
   if (S.tab === 'fissi') caricaImpegni();
 }
 function aggiornaNavPeriodo(){
@@ -1868,13 +1924,16 @@ function apriDettaglio(v){
   if ($('#dSalva')) $('#dSalva').onclick = function(){ salvaDettaglio(v, inIpotesi); };
   if ($('#dTogli')) $('#dTogli').onclick = function(){ togliDaIpotesi(v); };
   if ($('#dPromemoria')) $('#dPromemoria').onclick = function(){
-    /* dal prospetto: il promemoria nasce sulla VOCE, con la sua data e tre
-       giorni di anticipo. Prima questo bottone dichiarava di non fare niente. */
+    /* dal prospetto: il promemoria nasce sulla VOCE, con la sua data e
+       l'anticipo DEFAULT del parametro (decisione 12: 5 giorni, prima era
+       un 3 cablato qui). Prima ancora questo bottone dichiarava di non fare
+       niente. */
     var giorno = dataGiornoDi(v);
     $('#dMsg').className = 'nota';
     creaPromemoria({ titolo: 'Pagare ' + (v.descrizione || 'questa voce'),
       entita: 'transaction', entita_id: Number(v.dbId),
-      quando: new Date(giorno + 'T09:00:00').toISOString(), anticipo_giorni: 3 }, '#dMsg')
+      quando: new Date(giorno + 'T09:00:00').toISOString(),
+      anticipo_giorni: anticipoDefault() }, '#dMsg')
       .catch(function(){ $('#dMsg').className = 'errore'; });
   };
 }
@@ -3790,6 +3849,182 @@ function spegniPromemoria(id){
     .catch(function(e){ msgScen('#msgPro', 'Non spento: ' + e.message, true); });
 }
 
+/* ── RISCHIO CONTO e ALIMENTAZIONE (decisione 12 del 19/09) ──────────────
+   Il riquadro «Conti a rischio» legge /rischio sulla STESSA finestra del
+   prospetto; il promemoria non nasce da un orologio ma dal bottone, e
+   ripeterlo non duplica (idempotenza per conto e giorno, nel database).
+   L'alimentazione: senza configurazione niente parte e si dice il motivo;
+   configurata, la proposta e' una riga con un bottone — proporre non e'
+   eseguire. */
+function anticipoDefault(){
+  /* decisione 12: 5 giorni, dal parametro promemoria.anticipo_default.
+     Se il parametro non e' leggibile vale 5: e' la decisione, non un'invenzione. */
+  var par = (S.anag && S.anag.parametri) || [];
+  var x = par.filter(function(p){ return p.chiave === 'promemoria.anticipo_default' &&
+    (p.stato === 'concordato' || p.stato === 'verificato'); })[0];
+  return (x && /^\d{1,3}$/.test(String(x.valore))) ? Number(x.valore) : 5;
+}
+function caricaRischio(){
+  var gen = S.gen;
+  var f = finestraPeriodo();
+  var q = '/rischio?da=' + f.da + '&a=' + f.a;
+  if (S.conto !== 'tutti') q += '&conti=' + encodeURIComponent(S.conto);
+  return api(q).then(function(r){
+    if (gen !== S.gen) return;
+    S.rischio = r; dichiaraFonte('rischio', null); renderRischio();
+  }).catch(function(e){
+    dichiaraFonte('rischio', e);
+    S.rischio = null;
+    $('#card-rischio').hidden = false;
+    $('#elencoRischio').innerHTML = '<p class="errore">Il rischio non e&#768; stato letto: ' +
+      esc(e.message) + '. Non e&#768; «nessun conto a rischio».</p>';
+  });
+}
+function renderRischio(){
+  var r = S.rischio; if (!r) return;
+  $('#card-rischio').hidden = false;
+  var conti = r.conti || [];
+  var aR = conti.filter(function(c){ return c.aRischio; });
+  var periodo = dataIt(r.da) + ' – ' + dataIt(r.a);
+  if (!conti.length){
+    $('#elencoRischio').innerHTML = '<p class="nota">Nessun conto configurato.</p>';
+  } else if (!aR.length){
+    $('#elencoRischio').innerHTML = '<p class="nota">Nel periodo ' + periodo +
+      ' nessun conto scende sotto la sua soglia. Le soglie: ' +
+      conti.map(function(c){ return esc(c.nome) + ' ' + euro(c.sogliaCents); }).join(' · ') + '.</p>';
+  } else {
+    $('#elencoRischio').innerHTML = '<div class="griglia">' + aR.map(function(c){
+      /* il promemoria gia' nato per QUESTO giorno si dichiara: il bottone
+         non fara' doppioni, e si vede il perche' */
+      var avv = (c.avvisi || []).filter(function(x){ return x.giorno === c.primoGiornoRischio; })[0];
+      return '<div class="kpi"><span class="et">' + esc(c.nome) +
+        ' <span class="chip avv">a rischio</span></span>' +
+        '<span class="v' + (c.minimo && c.minimo.cents < 0 ? ' neg' : '') + '">' +
+        euro(c.minimo ? c.minimo.cents : null) + '</span>' +
+        '<span class="s">sotto la soglia di ' + euro(c.sogliaCents) +
+        ' dal ' + dataAnno(c.primoGiornoRischio) +
+        ' · minimo il ' + dataAnno(c.minimo ? c.minimo.data : null) + ' · ' + periodo +
+        (avv ? ' · promemoria creato (' + esc(avv.promemoria_stato || 'programmato') + ')'
+             : ' · promemoria da creare col bottone') + '</span></div>';
+    }).join('') + '</div>';
+  }
+}
+function generaRischio(){
+  var f = finestraPeriodo();
+  var corpo = { da: f.da, a: f.a };
+  if (S.conto !== 'tutti') corpo.conti = S.conto;
+  $('#btnRischioGenera').disabled = true;
+  msgScen('#msgRischio', 'controllo la previsione…');
+  api('/rischio/genera', corpo)
+    .then(function(e){
+      return caricaRischio().then(function(){ return e; });
+    })
+    .then(function(e){
+      var g = (e.generati || []).length, gia = (e.gia || []).length;
+      msgScen('#msgRischio', g
+        ? 'Creati ' + g + ' promemoria di rischio' +
+          (gia ? ' (' + gia + ' già esistenti, non duplicati)' : '') + ': li trovi in Promemoria.'
+        : (gia ? 'Niente di nuovo: ' + gia + ' promemoria esistevano già e non si duplicano.'
+               : 'Nessun conto sotto soglia nel periodo: nessun promemoria da creare.'));
+      if (S.tab === 'promemoria') caricaPromemoria();
+    })
+    .catch(function(e){ msgScen('#msgRischio', 'Non creati: ' + e.message, true); })
+    .finally(function(){ $('#btnRischioGenera').disabled = false; });
+}
+function caricaAlimentazione(){
+  var gen = S.gen;
+  var f = finestraPeriodo();
+  return api('/alimentazione?da=' + f.da + '&a=' + f.a).then(function(r){
+    if (gen !== S.gen) return;
+    S.alimentazione = r; dichiaraFonte('alimentazione', null); renderAlimentazione();
+  }).catch(function(e){
+    dichiaraFonte('alimentazione', e);
+    S.alimentazione = null;
+    $('#card-alimentazione').hidden = false;
+    $('#statoAlimentazione').innerHTML = '<p class="errore">L&#39;alimentazione non e&#768; stata letta: ' +
+      esc(e.message) + '. Non e&#768; «niente da proporre».</p>';
+  });
+}
+function renderAlimentazione(){
+  var r = S.alimentazione; if (!r) return;
+  $('#card-alimentazione').hidden = false;
+  if (!r.configurata){
+    /* senza configurazione NIENTE PARTE, e la pagina lo dice con il motivo */
+    $('#statoAlimentazione').innerHTML = '<p class="avviso">' + esc(r.motivo || 'Regola da concordare') +
+      '.</p>';
+    $('#propostaAlimentazione').innerHTML = '';
+    return;
+  }
+  $('#statoAlimentazione').innerHTML = '<p class="nota">Regola attiva: se <b>' +
+    esc(r.conto_alimentato) + '</b> scende sotto ' + euro(r.soglia_cents) +
+    ', si propone un giroconto da <b>' + esc(r.conto_sorgente) +
+    '</b> per riportarlo a ' + euro(r.livello_obiettivo_cents) +
+    '. Proporre non e&#768; eseguire: il movimento lo crea solo il bottone.</p>';
+  /* la regola salvata si RILEGGE nel form: quello che vedi e' quello scritto */
+  $('#alSorgente').value = String(r.conto_sorgente_id);
+  $('#alAlimentato').value = String(r.conto_alimentato_id);
+  if (!$('#alSoglia').value) $('#alSoglia').value = euro(r.soglia_cents);
+  if (!$('#alLivello').value) $('#alLivello').value = euro(r.livello_obiettivo_cents);
+  var pr = r.proposta;
+  $('#propostaAlimentazione').innerHTML = pr
+    ? '<div class="griglia"><div class="kpi"><span class="et">Proposta ' +
+      '<span class="chip avv">non eseguita</span></span>' +
+      '<span class="v">' + euro(pr.importoCents) + '</span>' +
+      '<span class="s">' + esc(r.conto_alimentato) + ' previsto a ' + euro(pr.saldoPrevistoCents) +
+      ' il ' + dataAnno(pr.giorno) + ' (sotto ' + euro(r.soglia_cents) +
+      '): il giroconto da ' + esc(r.conto_sorgente) + ' lo riporta a ' +
+      euro(r.livello_obiettivo_cents) + '</span></div></div>' +
+      '<div class="bottoni"><button class="btn p" id="btnGiroAlimenta">Crea il giroconto di ' +
+      euro(pr.importoCents) + '</button></div>'
+    : '<p class="nota">Nel periodo ' + dataIt(r.da) + ' – ' + dataIt(r.a) + ' <b>' +
+      esc(r.conto_alimentato) + '</b> resta sopra la sua soglia: niente da proporre.</p>';
+  if ($('#btnGiroAlimenta')) $('#btnGiroAlimenta').onclick = giroAlimentazione;
+}
+function giroAlimentazione(){
+  var r = S.alimentazione;
+  if (!r || !r.proposta) return;
+  var pr = r.proposta;
+  $('#btnGiroAlimenta').disabled = true;
+  msgScen('#msgAlimentazione', 'creo il giroconto…');
+  api('/alimentazione/giroconto', { importo_cents: pr.importoCents, data: pr.giorno,
+    giorno_rischio: pr.giorno, operation_id: uuid() })
+    .then(function(e){
+      return Promise.all([caricaPrevisione(), caricaRischio(), caricaAlimentazione(), caricaJournal()])
+        .then(function(){ return e; });
+    })
+    .then(function(e){
+      msgScen('#msgAlimentazione', 'Giroconto creato (movimento ' + e.movimento + ', ' +
+        euro(e.cents) + ' il ' + dataAnno(e.data) +
+        '): previsto, neutro nel consolidato, annullabile dallo storico.');
+    })
+    .catch(function(e){
+      msgScen('#msgAlimentazione', (e.scaduto ? 'ESITO INCERTO: ' : 'Non creato: ') + e.message, true);
+      if ($('#btnGiroAlimenta')) $('#btnGiroAlimenta').disabled = false;
+    });
+}
+function salvaAlimentazione(){
+  var soglia = centesimiDa($('#alSoglia').value);
+  var livello = centesimiDa($('#alLivello').value);
+  if (soglia == null || livello == null){
+    msgScen('#msgAlimentazione', 'Soglia e livello obiettivo si scrivono come importi (es. 1.000,00): non vengono indovinati.', true);
+    return;
+  }
+  $('#btnAlimentazione').disabled = true;
+  msgScen('#msgAlimentazione', 'salvo la regola…');
+  api('/alimentazione/config', {
+    conto_sorgente_id: Number($('#alSorgente').value),
+    conto_alimentato_id: Number($('#alAlimentato').value),
+    soglia_cents: soglia, livello_obiettivo_cents: livello,
+    operation_id: uuid() })
+    .then(function(){
+      $('#alSoglia').value = ''; $('#alLivello').value = '';
+      return caricaAlimentazione();
+    })
+    .then(function(){ msgScen('#msgAlimentazione', 'Regola salvata: la rilettura qui sopra è quella scritta.'); })
+    .catch(function(e){ msgScen('#msgAlimentazione', 'Non salvata: ' + e.message, true); })
+    .finally(function(){ $('#btnAlimentazione').disabled = false; });
+}
+
 /* ── Alfred ─────────────────────────────────────────────────────────────── */
 var ALFRED_OCCUPATO = false, timerBarra = null;
 function barraApri(){
@@ -4144,6 +4379,8 @@ function avvia(){
     .then(caricaScenari)
     .then(caricaPrevisione)
     .then(caricaCarte)
+    .then(caricaRischio)            /* decisione 12: il riquadro «Conti a rischio» */
+    .then(caricaAlimentazione)      /* e la regola di alimentazione fra conti */
     .then(function(){ if (S.tab === 'inbox'){ caricaInbox(); caricaAperti(); } })
     .then(function(){ if (S.scenario) return caricaDifferenze(); })
     .then(caricaJournal);
@@ -4184,7 +4421,7 @@ document.addEventListener('DOMContentLoaded', function(){
   $$('#strisce button').forEach(function(b){ b.onclick = function(){ vista(b.getAttribute('data-vista')); }; });
   $('#selConto').onchange = function(){ S.conto = this.value;
     try{ localStorage.setItem('tesoreria_conto', S.conto); }catch(e){}
-    caricaPrevisione(); caricaCarte(); if (S.tab==='inbox') caricaInbox();
+    caricaPrevisione(); caricaCarte(); caricaRischio(); if (S.tab==='inbox') caricaInbox();
     if (S.tab==='fissi') caricaImpegni(); };
   $('#selPeriodo').onchange = function(){
     S.periodo = this.value;
@@ -4201,6 +4438,8 @@ document.addEventListener('DOMContentLoaded', function(){
   $$('#strisceFissi [data-vistaf]').forEach(function(b){
     b.onclick = function(){ vistaImpegni(b.getAttribute('data-vistaf')); }; });
   $('#btnPromemoria').onclick = nuovoPromemoria;
+  $('#btnRischioGenera').onclick = generaRischio;
+  $('#btnAlimentazione').onclick = salvaAlimentazione;
   $('#btnFisco').onclick = caricaFisco;
   $('#btnDovuto').onclick = registraDovuto;
   $('#btnEntrata').onclick = creaEntrata;
