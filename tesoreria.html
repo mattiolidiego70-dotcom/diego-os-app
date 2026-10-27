@@ -4012,8 +4012,12 @@ function giroAlimentazione(){
   var pr = r.proposta;
   $('#btnGiroAlimenta').disabled = true;
   msgScen('#msgAlimentazione', 'creo il giroconto…');
+  /* round correttivo (27/10): il click rimanda l'IMPRONTA della configurazione
+     vista con la proposta — se fra vista e click la regola e' cambiata (conti
+     o cifre diversi), il servizio rifiuta spiegando invece di applicare in
+     silenzio una regola che nessuno ha visto. */
   api('/alimentazione/giroconto', { importo_cents: pr.importoCents, data: pr.giorno,
-    giorno_rischio: pr.giorno, operation_id: uuid() })
+    giorno_rischio: pr.giorno, config_impronta: r.impronta, operation_id: uuid() })
     .then(function(e){
       return Promise.all([caricaPrevisione(), caricaRischio(), caricaAlimentazione(), caricaJournal()])
         .then(function(){ return e; });
