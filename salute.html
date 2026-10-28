@@ -7,6 +7,14 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icona-180.png">
 <meta name="theme-color" content="#050505">
+<!-- STANDALONE su iPhone (28/10). iOS legge il manifest, ma per la schermata
+     piena senza barre di Safari pretende ancora questi due meta. Con
+     `black-translucent` il contenuto sale SOTTO l'isola dinamica: qui il
+     guscio ha gia' i suoi env(safe-area-inset-*), percio' non si sposta
+     niente altro. -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Salute">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600&family=Spline+Sans+Mono:wght@400;500&display=swap">
 <!-- i TOKEN e le tre pelli vivono in pelle.css (vocabolario unico, 23/10):
@@ -22,7 +30,12 @@
   font:500 11px var(--font-ui);padding:5px 9px;border-radius:999px;cursor:pointer;transition:var(--transizione)}
 #pelli button[aria-pressed="true"]{background:var(--accento-fondo);border-color:var(--accento-bordo);color:var(--testo1)}
 #pelli .eti{color:var(--testo4);padding-left:2px;letter-spacing:.04em;text-transform:uppercase;font-size:9.5px}
-@media (max-width:760px){#pelli{bottom:calc(72px + env(safe-area-inset-bottom))}}
+/* 186px e non 72 (28/10): a 72px il selettore (z-index 900) finiva SOPRA la
+   barra di Ada — che su telefono sta a 84px ed e' alta 54 — e col dito si
+   cambiava pelle invece di scrivere al coach. Misurato: #alfredTesto e il
+   bottone «Foto» risultavano coperti. 186 lo porta sopra anche la striscia
+   dei suggerimenti (150 + 24 di altezza). */
+@media (max-width:760px){#pelli{bottom:calc(186px + env(safe-area-inset-bottom))}}
 *{box-sizing:border-box;scrollbar-width:none;-ms-overflow-style:none}
 *::-webkit-scrollbar{width:0;height:0;display:none}
 html,body{margin:0;height:100%}
@@ -44,7 +57,22 @@ a{color:var(--accento);text-decoration:none}
 .testa .tit{color:var(--testo1);font:600 14.5px var(--font-ui);letter-spacing:-.01em}
 .etk{color:var(--testo4);font:400 10px var(--font-mono);letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
 .lettura{border:1px solid var(--bordo-forte);border-radius:8px;padding:3px 9px;color:var(--testo2);font:500 11px var(--font-mono);white-space:nowrap}
-.espandi{display:flex;color:var(--accento);cursor:pointer}
+/* l'icona resta 15px, l'AREA DI TOCCO diventa 44x44 (28/10): il padding la
+   allarga e il margine negativo la riassorbe, cosi' il layout della testata
+   non si muove di un pixel. Prima era un bersaglio 13x15: col pollice si
+   mancava, ed e' il comando che apre il grafico di ogni scheda. */
+/* l'icona resta 15px, l'AREA DI TOCCO passa da 13x15 a 33x33 (28/10): il
+   padding la allarga, il margine negativo VERTICALE tiene la riga della
+   testata all'altezza di prima, e in orizzontale i 18px se li prende dallo
+   spazio libero fra titolo e icona. E' il comando che apre il grafico di
+   OGNI scheda, prima era quasi inafferrabile col pollice.
+   PERCHE' NON 44: la scheda e' `overflow:hidden` con 15px di padding, e
+   un'area piu' larga verrebbe TAGLIATA dal bordo — provato il 28/10 con un
+   ::after da 44x44: la pagina sbordava e il dito non arrivava comunque.
+   Portarla a 44 vuol dire rifare la testata della scheda: sta fra le
+   proposte dell'audit, non fra le correzioni. */
+.espandi{display:flex;align-items:center;justify-content:center;color:var(--accento);cursor:pointer;
+  min-width:33px;min-height:33px;padding:9px;margin:-9px 0}
 .chip{padding:5px 9px;border-radius:8px;border:1px solid var(--bordo);color:var(--testo3);font:400 10.5px var(--font-ui);cursor:pointer;white-space:nowrap;background:none}
 .chip.on{background:var(--accento-fondo-16);border-color:var(--accento-bordo);color:var(--accento);font-weight:500}
 .riga{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid var(--riga);padding-bottom:3px;gap:8px}
@@ -156,7 +184,11 @@ a{color:var(--accento);text-decoration:none}
 #appfusto.ascolta #onde b{animation-play-state:running}
 #alfredTesto{flex:1;background:none;border:none;color:var(--testo1);font:400 13px var(--font-ui);outline:none;min-width:0}
 #alfredTesto::placeholder{color:var(--testo3)}
-.icona-barra{display:flex;color:rgba(var(--luce-rgb),.55);cursor:pointer;background:none;border:none;padding:0}
+/* 44x44, la soglia Apple (28/10): le icone della barra di Ada (Foto,
+   Allegato, microfono) erano bersagli 17x17 e 18x18 — il disegno resta
+   quello, cresce solo l'area che intercetta il dito. */
+.icona-barra{display:flex;align-items:center;justify-content:center;color:rgba(var(--luce-rgb),.55);
+  cursor:pointer;background:none;border:none;padding:0;min-width:44px;min-height:44px}
 .icona-barra.lime{color:var(--accento)}
 #mobiletop,#dockMobile,#mobileTesta{display:none}
 /* risposta di Ada: scheda in vetro sopra il contenuto */
@@ -187,7 +219,9 @@ a{color:var(--accento);text-decoration:none}
   #mobileTesta .titolo{color:var(--testo1);font:500 21px var(--font-ui);letter-spacing:-.02em}
   #mobileTesta .data{color:var(--testo3);font:400 11.5px var(--font-mono)}
   #tabsMob{display:flex;gap:6px;margin-top:12px;overflow-x:auto;padding-bottom:2px}
-  #tabsMob .tab{padding:6px 13px;border-radius:10px;border:1px solid var(--bordo);color:var(--testo3);font:400 12px var(--font-ui);white-space:nowrap;background:none;cursor:pointer}
+  /* min-height 44 (28/10): le 7 tab stavano a 29px di altezza, due terzi
+     della soglia Apple, ed erano il comando piu' premuto della pagina */
+  #tabsMob .tab{padding:6px 13px;min-height:44px;border-radius:10px;border:1px solid var(--bordo);color:var(--testo3);font:400 12px var(--font-ui);white-space:nowrap;background:none;cursor:pointer}
   #tabsMob .tab.on{background:var(--accento-fondo);border-color:var(--accento-bordo);color:var(--accento);font-weight:500}
   .pane{padding:12px 16px 4px}
   /* il fondo respira: l'ultima card non finisce sotto la barra di Ada */
@@ -227,8 +261,11 @@ a{color:var(--accento);text-decoration:none}
     backdrop-filter:blur(30px) saturate(170%);-webkit-backdrop-filter:blur(30px) saturate(170%);
     box-shadow:0 12px 34px rgba(var(--ombra-rgb),.45)}
   #barraAlfred.chiusa{width:54px;left:50%;transform:translateX(-50%);border-radius:50%}
-  /* il contenuto scorre anche SOTTO la barra flottante senza restarne coperto */
-  .pane{padding-bottom:150px}
+  /* il contenuto scorre anche SOTTO la barra flottante senza restarne coperto.
+     170 e non 150 (28/10): le icone della barra di Ada sono passate a 44px di
+     area, quindi la barra e' piu' alta; l'inset di sicurezza copre anche la
+     barra dei gesti dell'iPhone. */
+  .pane{padding-bottom:calc(170px + env(safe-area-inset-bottom))}
   /* la risposta sta SOPRA tutto, ancorata alla barra, non persa nel flusso */
   #alfredRisposta{position:fixed;left:16px;right:16px;width:auto;transform:none;bottom:calc(150px + env(safe-area-inset-bottom));max-height:56%}
   #dockMobile{display:flex;align-items:center;justify-content:space-around;margin:9px 16px 10px;background:var(--vetro);backdrop-filter:blur(46px) saturate(180%);-webkit-backdrop-filter:blur(46px) saturate(180%);border:1px solid var(--bordo);border-radius:22px;padding:8px 8px 16px;box-shadow:inset 0 1px 0 rgba(var(--luce-rgb),.08)}
@@ -274,6 +311,16 @@ a{color:var(--accento);text-decoration:none}
 #login{position:fixed;inset:0;z-index:90;background:var(--fondo);display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px}
 #login.si{display:flex}
 #login .scheda{background:var(--vetro);border:1px solid var(--bordo);border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:10px;width:min(320px,86vw);backdrop-filter:var(--vetro-filtro);-webkit-backdrop-filter:var(--vetro-filtro)}
+
+/* ═══ 16px SUI CAMPI DI SCRITTURA — antizoom di Safari (28/10) ═══
+   Sotto i 16px Safari su iPhone ZOOMA la pagina appena il campo prende il
+   fuoco, e per tornare indietro serve una pizzicata: tutti e 9 i campi di
+   questa pagina stavano fra 10,5 e 13px, quindi zoomavano tutti.
+   `!important` e dichiarato, come per [data-chart-overlay] qui sopra: due di
+   questi campi (#sedeMisura, #sedeValore) nascono da uno `style` inline
+   dentro un template JS, e nessuna regola di foglio li batterebbe. Il
+   disegno non cambia altrove: l'unico effetto e' il campo un po' piu' alto. */
+input,select,textarea,.campo,#alfredTesto,#sedeMisura,#sedeValore{font-size:16px !important}
 </style>
 <script src="vendor/chart-interattivi.js" defer></script>
 </head>

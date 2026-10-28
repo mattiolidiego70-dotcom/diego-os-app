@@ -1,0 +1,719 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Vestiario · Diego OS</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#050505">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&family=Spline+Sans+Mono:wght@400;500&display=swap" rel="stylesheet">
+<!-- i TOKEN e le tre pelli vivono in pelle.css (vocabolario unico, 23/10):
+     questa pagina non dichiara colori suoi, solo var(--...) -->
+<link rel="stylesheet" href="pelle.css">
+<script>
+/* PELLE: il Vestiario REAGISCE alla pelle scelta su salute.html (la scelta vive
+   in localStorage). Il selettore resta solo su salute: qui si applica e basta,
+   prima del primo paint per non far lampeggiare la pagina. Dentro try: uno
+   script che muore al boot porta giu' la pagina (lezione v1). */
+(function(){
+  try{
+    var TINTA={attuale:'#050505',inchiostro:'#080B11',bronzo:'#100F0E',carta:'#F5F4F1'};
+    var p='attuale';
+    try{ p=localStorage.getItem('pelle')||'attuale'; }catch(e){}
+    if(!TINTA[p]) p='attuale';
+    var radice=document.documentElement;
+    if(p!=='attuale' && radice && radice.setAttribute) radice.setAttribute('data-pelle',p);
+    var meta=document.querySelector && document.querySelector('meta[name="theme-color"]');
+    if(meta && meta.setAttribute) meta.setAttribute('content',TINTA[p]);
+  }catch(e){ /* pelle non applicata: la pagina resta quella di default */ }
+})();
+</script>
+<style>
+/* ══════════════════════════════════════════════════════════════════════════
+   VESTIARIO — app propria, non piu' una tab dentro Salute.
+   Ordine di Diego del 28/10/2026: «Vestiario deve avere una sua parte, non
+   vivere dentro qualcosa». Lo scheletro e' quello della Tesoreria (rail +
+   colonna + strisce + pane): stessa meccanica, stessa pelle, zero colori
+   scritti a mano. Le cinque eccezioni esadecimali di questa pagina sono il
+   meta theme-color e i quattro valori della mappa TINTA, come sulle altre
+   pagine vive — sono la barra di sistema, non CSS.
+   ══════════════════════════════════════════════════════════════════════════ */
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;height:100%}
+body{background:var(--fondo);background-image:var(--fondo-desktop);color:var(--testo1);
+  font:400 14px/1.5 var(--font-ui);-webkit-font-smoothing:antialiased}
+*::-webkit-scrollbar{width:0;height:0}
+*{scrollbar-width:none}
+.num{font-family:var(--font-num);font-variant-numeric:tabular-nums}
+:focus-visible{outline:2px solid var(--accento);outline-offset:2px}
+button,select,input{font-family:inherit;font-size:inherit;color:inherit}
+
+/* ── SHELL: la catena delle altezze. Ogni anello ha flex e min-height:0,
+      altrimenti la colonna cresce oltre lo schermo dentro un overflow:hidden
+      e la pagina «non scorre». E' il bug piu' pagato del sistema. ────────── */
+#app{position:fixed;inset:26px;border-radius:var(--r-card);overflow:hidden;
+  box-shadow:var(--ombra-finestra);display:grid;grid-template-columns:66px 1fr;
+  grid-template-rows:minmax(0,1fr);background:var(--vetro)}
+#rail{position:relative;z-index:20;background:rgba(var(--luce-rgb),.05);
+  backdrop-filter:blur(46px) saturate(150%);-webkit-backdrop-filter:blur(46px) saturate(150%);
+  border-right:1px solid rgba(var(--luce-rgb),.09);display:flex;flex-direction:column;
+  align-items:center;padding:16px 0 14px;gap:6px}
+#rail .logo{width:26px;height:26px;border-radius:8px;background:var(--accento);
+  color:var(--inchiostro-su-lime);display:flex;align-items:center;justify-content:center;
+  font:600 12px var(--font-ui);margin-bottom:12px}
+#rail .voce{width:42px;height:38px;border-radius:11px;display:flex;align-items:center;
+  justify-content:center;color:rgba(var(--luce-rgb),.5);cursor:pointer;background:none;border:0}
+#rail .voce.on{background:var(--accento-fondo-16);border:1px solid var(--accento-45);color:var(--accento)}
+#colonna{position:relative;display:flex;flex-direction:column;min-width:0;
+  background:linear-gradient(180deg,rgba(var(--luce-rgb),.02),rgba(var(--ombra-rgb),.14))}
+
+#testata{flex:none;padding:14px 24px 8px;display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap}
+#testata h1{margin:0;font:500 19px var(--font-ui);letter-spacing:-.01em}
+#testata .sotto{color:var(--testo3);font-size:12px;margin-top:2px}
+#ctx{margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+#ctx .gruppo{display:inline-flex;align-items:center;gap:6px}
+.etichetta{color:var(--testo4);font:500 10px var(--font-num);text-transform:uppercase;letter-spacing:.04em}
+.sel{background:rgba(var(--luce-rgb),.05);border:1px solid var(--bordo);border-radius:var(--r-chip);
+  padding:5px 9px;color:var(--testo1);cursor:pointer}
+#fonti-mute{flex-basis:100%;color:var(--attenzione);font-size:12px}
+#fonti-mute:empty{display:none}
+
+#strisce{flex:none;display:flex;gap:6px;padding:4px 24px 8px;overflow-x:auto}
+#strisce button{background:none;border:1px solid transparent;border-radius:var(--r-chip);
+  padding:6px 12px;color:var(--testo3);cursor:pointer;white-space:nowrap}
+#strisce button.on{background:var(--accento-fondo-16);border-color:var(--accento-45);color:var(--accento)}
+
+.pane{display:none;flex:1;min-height:0;overflow-y:auto;padding:8px 24px 40px}
+.pane.on{display:block}
+.card{background:var(--vetro);backdrop-filter:var(--vetro-filtro);-webkit-backdrop-filter:var(--vetro-filtro);
+  border:1px solid var(--bordo);border-radius:var(--r-card);box-shadow:var(--luce-interna);
+  padding:14px 16px;margin-bottom:12px;overflow:hidden;position:relative}
+.card > .tec{position:absolute;top:10px;right:14px;z-index:3;color:var(--testo4);
+  font:500 10px var(--font-num);text-transform:uppercase;letter-spacing:.04em;
+  background:rgba(var(--velo-rgb),.9);padding:0 4px;border-radius:4px}
+.card h2{margin:0 0 10px;font:500 14px var(--font-ui);color:var(--testo2);padding-right:120px}
+.griglia{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:12px;align-items:start}
+.kpi{background:rgba(var(--luce-rgb),.04);border:1px solid var(--bordo);border-radius:var(--r-chip);padding:10px 12px}
+.kpi .et{color:var(--testo3);font-size:12px;display:block}
+.kpi .v{font:500 19px var(--font-num);font-variant-numeric:tabular-nums;display:block;margin-top:2px}
+/* un riquadro il cui valore e' una FRASE, non un numero: stesso posto, corpo
+   da testo, altrimenti a 393px la riga esce dalla scheda */
+.kpi .v.frase{font:500 13px var(--font-ui);overflow-wrap:anywhere}
+.kpi .s{color:var(--testo4);font-size:11px;display:block;margin-top:2px}
+.chip{display:inline-block;border:1px solid var(--bordo);border-radius:999px;padding:1px 7px;
+  font:500 10px var(--font-num);color:var(--testo3);vertical-align:middle}
+.chip.ok{color:var(--accento);border-color:var(--accento-bordo)}
+.chip.avv{color:var(--attenzione);border-color:rgba(var(--attenzione-rgb),.45)}
+.btn{background:rgba(var(--luce-rgb),.05);border:1px solid var(--bordo);border-radius:var(--r-chip);
+  padding:7px 13px;cursor:pointer}
+.btn:hover{background:rgba(var(--luce-rgb),.09)}
+.btn.p{background:var(--accento);border-color:var(--accento);color:var(--inchiostro-su-lime);font-weight:500}
+.btn:disabled{opacity:.45;cursor:default}
+.nota{color:var(--testo3);font-size:12px;margin:6px 0 0}
+.avviso{border-left:3px solid var(--attenzione);padding-left:10px;color:var(--testo2);font-size:12px;margin:8px 0 0}
+.errore{border-left:3px solid var(--negativo);padding-left:10px;color:var(--testo2);font-size:12px;margin:8px 0 0}
+
+/* ── la riga di un capo: foto, titolo, dati. L'immagine si assegna con
+      img.src, MAI con innerHTML: quegli URL vengono da un database
+      alimentato da terzi. ─────────────────────────────────────────────────── */
+.capo{display:flex;gap:10px;align-items:center;padding:7px 0;border-top:1px solid var(--riga);
+  text-decoration:none}
+.capo:first-of-type{border-top:0}
+.capo img{width:44px;height:58px;object-fit:cover;border-radius:var(--r-chip-s);
+  background:var(--vetro);flex:none}
+.capo .testo{min-width:0;flex:1}
+.capo .t1{color:var(--testo1);font:500 12.5px var(--font-ui);overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap}
+.capo .t2{color:var(--testo3);font:400 11px var(--font-ui)}
+.voto{display:flex;gap:8px;align-items:center;padding-top:9px;margin-top:6px;
+  border-top:1px solid var(--riga);flex-wrap:wrap}
+.voto .esito{color:var(--testo4);font:400 11px var(--font-ui);margin-left:auto}
+
+/* ── accesso ────────────────────────────────────────────────────────────── */
+#login{position:fixed;inset:0;z-index:99;background:rgba(var(--velo-rgb),.94);display:none;
+  align-items:center;justify-content:center;padding:24px}
+#login.si{display:flex}
+#login .box{width:min(92vw,340px)}
+#login input{width:100%;background:rgba(var(--luce-rgb),.05);border:1px solid var(--bordo);
+  border-radius:var(--r-chip);padding:10px 12px;margin:10px 0}
+
+/* ── MOBILE: ogni regola qui e' un bug gia' pagato sulle altre pagine ───── */
+@media (max-width:760px){
+  body{background-image:var(--fondo-mobile)}
+  /* 100dvh, non 100vh: Safari iPhone mangia il fondo con 100vh */
+  #app{inset:0;height:100dvh;border-radius:0;display:flex;flex-direction:column;
+    box-shadow:none;background:none}
+  #rail{flex-direction:row;width:100%;border-right:0;
+    border-bottom:1px solid rgba(var(--luce-rgb),.09);
+    padding:8px 10px;justify-content:flex-start;overflow-x:auto;flex:none}
+  #rail .logo{margin:0 8px 0 0}
+  /* l'anello della catena: senza questo la colonna cresce e non scorre */
+  #colonna{flex:1 1 0;min-height:0}
+  .pane{padding:8px 14px 60px}
+  #testata{padding:12px 14px 6px}
+  #strisce{padding:4px 14px 8px}
+  .griglia{grid-template-columns:minmax(0,1fr)}
+  /* nessun carattere microscopico sul telefono: il minimo del sistema e' 11px */
+  .chip,.capo .t2,.card > .tec,.kpi .s,.etichetta,.nota{font-size:11px}
+}
+</style>
+</head>
+<body>
+<div id="appfusto">
+<div id="app">
+  <nav id="rail" aria-label="Moduli">
+    <div class="logo" aria-hidden="true">D</div>
+    <button class="voce" id="vaiSalute" title="Salute" aria-label="Salute">&#9651;</button>
+    <button class="voce" id="vaiTesoreria" title="Tesoreria" aria-label="Tesoreria">&#8364;</button>
+    <button class="voce on" title="Vestiario" aria-label="Vestiario" aria-current="page">&#9671;</button>
+  </nav>
+
+  <div id="colonna">
+    <header id="testata">
+      <div>
+        <h1 id="titolo">Cosa mi metto</h1>
+        <div class="sotto" id="sottotitolo">&mdash;</div>
+      </div>
+      <div id="ctx">
+        <!-- etichetta e menu restano attaccati anche quando la riga va a capo:
+             a 393px si spezzavano, e «TETTO» finiva lontano dal suo menu -->
+        <span class="gruppo"><span class="etichetta">Occasione</span>
+        <select class="sel" id="selOcc" aria-label="Occasione"><option value="">tutte</option></select></span>
+        <span class="gruppo"><span class="etichetta">Tetto</span>
+        <select class="sel" id="selTetto" aria-label="Tetto di prezzo per capo">
+          <option value="100">100 EUR</option>
+          <option value="200">200 EUR</option>
+          <option value="300" selected>300 EUR</option>
+          <option value="">nessun tetto</option>
+        </select></span>
+      </div>
+      <div id="fonti-mute" role="status" aria-live="polite"></div>
+    </header>
+
+    <div id="strisce" role="tablist" aria-label="Schede del Vestiario">
+      <button class="on" data-tab="oggi" role="tab">Oggi</button>
+      <button data-tab="guardaroba" role="tab">Guardaroba</button>
+      <button data-tab="acquisti" role="tab">Acquisti</button>
+      <button data-tab="giudizi" role="tab">Giudizi</button>
+    </div>
+
+    <section class="pane on" id="pane-oggi" role="tabpanel" aria-label="Oggi"></section>
+    <section class="pane" id="pane-guardaroba" role="tabpanel" aria-label="Guardaroba"></section>
+    <section class="pane" id="pane-acquisti" role="tabpanel" aria-label="Acquisti"></section>
+    <section class="pane" id="pane-giudizi" role="tabpanel" aria-label="Giudizi"></section>
+  </div>
+</div>
+
+<div id="login"><div class="box card">
+  <h2>Vestiario</h2>
+  <p class="nota">Serve il codice dell'app.</p>
+  <input id="tok" type="password" placeholder="codice" autocomplete="current-password">
+  <button class="btn p" id="btnEntra" style="width:100%">Entra</button>
+  <p class="errore" id="loginErr"></p>
+</div></div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════════════════════════════
+   MECCANISMI RIUSATI IDENTICI dalle pagine vive:
+   · api() con AbortController che copre ANCHE il corpo, nessun retry
+     automatico, errori con i FATTI strutturati (err.stato, err.corpo);
+   · il token in localStorage, con le due chiavi storiche (app_token e
+     dos_token): chi e' entrato su salute o tesoreria e' dentro anche qui;
+   · una fonte in ERRORE non diventa una fonte vuota: si dichiara in testata;
+   · le immagini si assegnano con img.src, mai interpolate in HTML, e solo
+     https: gli URL vengono dai negozi, non da noi.
+
+   LE ROTTE sono quelle che esistono gia' in health-app (06-07/10/2026):
+     GET  /api/abbinamenti[?occasione=]  gli abbinamenti giudicati dal motore
+     GET  /api/outfit?quanti&tetto       i capi veri da comprare
+     GET  /api/outfit_copertura          quanti capi ci sono davvero in catalogo
+     POST /api/giudizio {outfit,mi_piace}  il pollice su/giu'
+   Qui NON si inventa una rotta nuova: cio' che una rotta non porta, la
+   pagina lo DICHIARA come «non ancora collegato».
+   ══════════════════════════════════════════════════════════════════════════ */
+var SERVIZIO = 'https://icsafmrkndgdksybagky.supabase.co/functions/v1/health-app';
+/* in locale si puo' puntare a un servizio di collaudo; in produzione mai */
+var API_BASE = (location.hostname === '127.0.0.1' || location.hostname === 'localhost')
+  ? (localStorage.getItem('vestiario_api') || SERVIZIO)
+  : SERVIZIO;
+var TOK = localStorage.getItem('app_token') || localStorage.getItem('dos_token') || '';
+
+function $(s){ return document.querySelector(s); }
+function $$(s){ return Array.prototype.slice.call(document.querySelectorAll(s)); }
+
+function api(p, corpo, metodo){
+  var c = new AbortController(); var scaduto = false;
+  var t = setTimeout(function(){ scaduto = true; c.abort(); }, 120000);
+  var o = { headers:{'x-app-token':TOK,'content-type':'application/json'}, signal:c.signal };
+  if (corpo !== undefined && corpo !== null){ o.method = metodo || 'POST'; o.body = JSON.stringify(corpo); }
+  else if (metodo){ o.method = metodo; }
+  return fetch(API_BASE + p, o).then(function(r){
+    if (r.status === 401){ $('#login').classList.add('si');
+      var e401 = new Error('accesso scaduto'); e401.stato = 401; throw e401; }
+    if (!r.ok) return r.json().catch(function(){ return null; }).then(function(e){
+      var err = new Error((e && e.errore) || ('Servizio non disponibile (HTTP ' + r.status + ')'));
+      err.stato = r.status; err.corpo = e; throw err;
+    });
+    return r.json();
+  }).catch(function(e){
+    if (scaduto){ var err = new Error('richiesta scaduta dopo 2 minuti: ESITO INCERTO, verifica prima di ripetere');
+      err.scaduto = true; throw err; }
+    throw e;
+  }).finally(function(){ clearTimeout(t); });
+}
+
+/* ── stato della pagina ─────────────────────────────────────────────────── */
+var S = { tab:'oggi', occasione:'', tetto:'300' };
+/* UNA RISPOSTA VECCHIA NON SCRIVE SU UN PANNELLO NUOVO. Il difetto trovato il
+   06/10 su salute: il pannello si disegna due volte e la risposta della prima
+   chiamata si attaccava al pannello gia' ridisegnato (65 card invece di 33). */
+var GEN = 0;
+/* le fonti che tacciono si elencano in testata: errore != vuoto */
+var MUTE = {};
+function dichiaraMute(nome, messaggio){
+  if (messaggio) MUTE[nome] = messaggio; else delete MUTE[nome];
+  var righe = Object.keys(MUTE).map(function(k){ return k + ': ' + MUTE[k]; });
+  $('#fonti-mute').textContent = righe.length
+    ? ('fonti che non rispondono — ' + righe.join(' · ')) : '';
+}
+
+/* ── pezzi di interfaccia riusati ───────────────────────────────────────── */
+function card(titolo, etichetta){
+  var c = document.createElement('div'); c.className = 'card';
+  if (etichetta){ var e = document.createElement('span'); e.className = 'tec';
+    e.textContent = etichetta; c.appendChild(e); }
+  if (titolo){ var h = document.createElement('h2'); h.textContent = titolo; c.appendChild(h); }
+  return c;
+}
+function nota(testo){ var n = document.createElement('p'); n.className = 'nota'; n.textContent = testo; return n; }
+function avviso(testo){ var n = document.createElement('p'); n.className = 'avviso'; n.textContent = testo; return n; }
+function kpi(etichetta, valore, sotto, frase){
+  var d = document.createElement('div'); d.className = 'kpi';
+  var e = document.createElement('span'); e.className = 'et'; e.textContent = etichetta;
+  var v = document.createElement('span'); v.className = frase ? 'v frase' : 'v'; v.textContent = valore;
+  d.appendChild(e); d.appendChild(v);
+  if (sotto){ var s = document.createElement('span'); s.className = 's'; s.textContent = sotto; d.appendChild(s); }
+  return d;
+}
+function eur(x){ return (x == null || x === '') ? 'prezzo non dichiarato' : (x + ' EUR'); }
+function taglie(t){
+  var v = (t || []).filter(function(x){ return x; });
+  return v.length ? ('taglie ' + v.slice(0,8).join(' ')) : 'taglie non dichiarate';
+}
+/* la riga di un capo. `riga2` e' una funzione: ogni scheda dice cose diverse
+   sullo stesso capo, e cosi' il pezzo resta uno. */
+function rigaCapo(capo, riga2){
+  var a = document.createElement('a');
+  a.className = 'capo';
+  a.href = capo.link || '#'; a.target = '_blank'; a.rel = 'noopener noreferrer';
+  var img = document.createElement('img');
+  img.width = 44; img.height = 58; img.loading = 'lazy'; img.referrerPolicy = 'no-referrer'; img.alt = '';
+  if (capo.immagine && /^https:\/\//.test(capo.immagine)) img.src = capo.immagine;
+  a.appendChild(img);
+  var box = document.createElement('div'); box.className = 'testo';
+  var t1 = document.createElement('div'); t1.className = 't1';
+  t1.textContent = capo.titolo || '(senza titolo)';
+  var t2 = document.createElement('div'); t2.className = 't2';
+  t2.textContent = riga2(capo);
+  box.appendChild(t1); box.appendChild(t2); a.appendChild(box);
+  return a;
+}
+
+/* ══════════════════ 1 · OGGI — cosa mi metto ══════════════════════════════
+   Gli abbinamenti VALIDATI dal motore (engine/motore.mjs punteggia() +
+   verificaCanone()): una terna c'e' solo se ha passato le regole per quella
+   occasione. Un'occasione con meno di tre proposte lo DICE: il motore ha
+   scartato il resto, e la pagina non riempie. */
+function montaOggi(){
+  var p = $('#pane-oggi'); p.textContent = '';
+  var testa = card('Abbinamenti giudicati dal motore', 'MOTORE kb/01 + kb/11');
+  var n = nota('Caricamento…'); testa.appendChild(n);
+  p.appendChild(testa);
+  var griglia = document.createElement('div'); griglia.className = 'griglia';
+  p.appendChild(griglia);
+
+  var mia = ++GEN;
+  api('/api/abbinamenti' + (S.occasione ? ('?occasione=' + encodeURIComponent(S.occasione)) : ''))
+  .then(function(d){
+    if (mia !== GEN) return;
+    dichiaraMute('abbinamenti', null);
+    riempiOccasioni((d && d.occasioni) || []);
+    var ab = (d && d.abbinamenti) || [];
+    if (!ab.length){
+      n.textContent = 'nessun abbinamento per questa occasione: il motore non ha trovato niente '
+        + 'che passi le regole, e non invento.';
+      return;
+    }
+    var perOcc = {};
+    ab.forEach(function(x){ perOcc[x.occasione] = (perOcc[x.occasione] || 0) + 1; });
+    var scarse = Object.keys(perOcc).filter(function(k){ return perOcc[k] < 3; });
+    n.textContent = ab.length + ' abbinamenti, ognuno col voto del motore e il perché.'
+      + (scarse.length ? (' Sotto le tre proposte: ' + scarse.map(function(k){
+          return k.replace(/_/g,' ') + ' (' + perOcc[k] + ')'; }).join(', ')
+          + ' — il motore ha scartato il resto, e non riempio.') : '');
+    $('#sottotitolo').textContent = ab.length + ' abbinamenti giudicati'
+      + (S.occasione ? (' per ' + S.occasione.replace(/_/g,' ')) : ' su tutte le occasioni');
+
+    /* IL LIMITE DICHIARATO, non nascosto in fondo: il motore oggi giudica
+       senza il corpo di Diego, senza il meteo e senza i vincoli pratici del
+       contesto. Diego deve saperlo guardando le proposte, non leggendo un
+       documento. */
+    testa.appendChild(avviso('Quello che il motore NON sa ancora, e si vede da qui: '
+      + 'il tuo corpo (peso, misure) non arriva al punteggio, il meteo non è applicato, '
+      + 'e i vincoli pratici dell’occasione (libertà di movimento, strati rimovibili) '
+      + 'sono scritti nella conoscenza ma non eseguiti. Le proposte restano vere, '
+      + 'ma non sono tagliate su di te e sul tempo di oggi.'));
+
+    ab.forEach(function(a){
+      var c = card(String(a.occasione || '').replace(/_/g,' ') + ' · ' + a.punteggio + '/100',
+                   (a.totale_eur != null ? (a.totale_eur + ' EUR') : ''));
+      c.appendChild(nota((a.perche || '') + ' · formalità ' + a.formalita + ' · ' + a.registro
+        + ((a.canone && a.canone !== 'conforme') ? (' · canone ' + a.canone) : '')));
+      (a.capi || []).forEach(function(capo){
+        c.appendChild(rigaCapo(capo, function(x){
+          return x.ruolo + ' · ' + (x.sottocategoria || '?')
+            + (x.registro ? (' · ' + x.registro) : '')
+            + ' · ' + eur(x.prezzo) + ' · ' + taglie(x.taglie);
+        }));
+      });
+      c.appendChild(bottoniGiudizio(a));
+      griglia.appendChild(c);
+    });
+  }).catch(function(e){
+    if (mia !== GEN) return;
+    var m = (e && e.message) ? e.message : 'errore';
+    n.textContent = 'gli abbinamenti non rispondono: ' + m;
+    dichiaraMute('abbinamenti', m);
+  });
+}
+
+/* Il pollice su/giu'. Non cambia il voto del motore: un «non mi piace» e' un
+   dato, non una regola. L'esito viene SOLO dal corpo del server. */
+function bottoniGiudizio(a){
+  var voto = document.createElement('div'); voto.className = 'voto';
+  var esito = document.createElement('span'); esito.className = 'esito';
+  esito.textContent = (a.mi_piace || a.non_mi_piace)
+    ? ('giudizi: ' + (a.mi_piace || 0) + ' su, ' + (a.non_mi_piace || 0) + ' giù')
+    : 'non ancora giudicato';
+  [['mi piace', true], ['non mi piace', false]].forEach(function(par){
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'btn';
+    b.textContent = par[0];
+    b.onclick = function(){
+      b.disabled = true; esito.textContent = '…';
+      api('/api/giudizio', { outfit:a.id, mi_piace:par[1] }).then(function(r){
+        esito.textContent = (r && r.ok)
+          ? ('segnato · giudizi su questo: ' + (r.giudizi_su_questo || 1))
+          : ('non segnato: ' + ((r && r.errore) || 'errore'));
+      }).catch(function(e){
+        esito.textContent = 'non segnato: ' + ((e && e.message) ? e.message : 'errore');
+      }).finally(function(){ b.disabled = false; });
+    };
+    voto.appendChild(b);
+  });
+  voto.appendChild(esito);
+  return voto;
+}
+
+function riempiOccasioni(occ){
+  var sel = $('#selOcc');
+  if (sel.options.length > 1) return;   /* una volta sola: l'elenco non cambia */
+  occ.filter(function(x){ return x; }).sort().forEach(function(o){
+    var op = document.createElement('option');
+    op.value = o; op.textContent = o.replace(/_/g,' ');
+    sel.appendChild(op);
+  });
+  sel.value = S.occasione;
+}
+
+/* ══════════════════ 2 · GUARDAROBA ════════════════════════════════════════
+   DECISIONE DI DIEGO DEL 05/09/2026, che qui si rispetta: «Io la parte del mio
+   guardaroba non la voglio. Non lo fotografo». Quindi questa scheda NON chiede
+   niente a Diego: mostra il CATALOGO che c'e' gia' (i capi dei negozi tradotti
+   in stile.capo), non il suo armadio.
+   IL LIMITE, dichiarato in pagina: non esiste una rotta che sfogli il catalogo.
+   /api/outfit_copertura dice QUANTI capi ci sono, /api/outfit ne mostra una
+   finestra (con la marca), /api/abbinamenti porta quelli usati negli
+   abbinamenti (senza la marca: la rotta non la restituisce). */
+function montaGuardaroba(){
+  var p = $('#pane-guardaroba'); p.textContent = '';
+  var testa = card('Il catalogo, non il tuo armadio', 'CATALOGO NEGOZI');
+  testa.appendChild(nota('Decisione tua del 05/09/2026: il tuo guardaroba non si fotografa e '
+    + 'non si compila. Qui ci sono i capi dei negozi che il sistema ha già tradotto.'));
+  var numeri = document.createElement('div'); numeri.className = 'griglia';
+  numeri.style.marginTop = '10px';
+  testa.appendChild(numeri);
+  var nCop = nota('Caricamento dei conteggi…'); testa.appendChild(nCop);
+  testa.appendChild(avviso('NON ANCORA COLLEGATO: sfogliare tutto il catalogo. Non esiste una '
+    + 'rotta che restituisca l’elenco dei capi con filtri; sotto c’è una finestra, '
+    + 'non il catalogo intero.'));
+  p.appendChild(testa);
+
+  var finestra = card('Una finestra sul catalogo', 'MARCA E LINK');
+  var nFin = nota('Caricamento…'); finestra.appendChild(nFin);
+  var elenco = document.createElement('div'); finestra.appendChild(elenco);
+  p.appendChild(finestra);
+
+  var usati = card('I capi che il motore sta usando', 'DAGLI ABBINAMENTI');
+  var nUsa = nota('Caricamento…'); usati.appendChild(nUsa);
+  var elencoUsati = document.createElement('div'); usati.appendChild(elencoUsati);
+  p.appendChild(usati);
+
+  var mia = ++GEN;
+  api('/api/outfit_copertura').then(function(d){
+    if (mia !== GEN) return;
+    dichiaraMute('copertura', null);
+    if (!d){ nCop.textContent = 'la copertura non ha risposto niente'; return; }
+    nCop.textContent = '';
+    numeri.appendChild(kpi('capi disponibili', String(d.disponibili != null ? d.disponibili : '—'),
+      'righe in vestiario.prodotto'));
+    numeri.appendChild(kpi('utilizzabili dal motore', String(d.utilizzabili != null ? d.utilizzabili : '—'),
+      'con ruolo, prezzo e link'));
+    var pr = d.per_ruolo || {};
+    numeri.appendChild(kpi('per ruolo',
+      ['sopra','sotto','scarpe'].map(function(r){ return r + ' ' + (pr[r] != null ? pr[r] : '—'); }).join(' · '),
+      'quello che serve per comporre una terna', true));
+    numeri.appendChild(kpi('tipi non mappati', String(d.non_mappati_tipi != null ? d.non_mappati_tipi : '—'),
+      (d.non_mappati_capi != null ? (d.non_mappati_capi + ' capi restano fuori') : 'capi fuori: non dichiarato')));
+  }).catch(function(e){
+    if (mia !== GEN) return;
+    var m = (e && e.message) ? e.message : 'errore';
+    nCop.textContent = 'i conteggi del catalogo non rispondono: ' + m;
+    dichiaraMute('copertura', m);
+  });
+
+  api('/api/outfit?quanti=6' + (S.tetto ? ('&tetto=' + encodeURIComponent(S.tetto)) : ''))
+  .then(function(d){
+    if (mia !== GEN) return;
+    dichiaraMute('catalogo', null);
+    var capi = [];
+    ((d && d.proposte) || []).forEach(function(pr){ (pr.capi || []).forEach(function(c){ capi.push(c); }); });
+    if (!capi.length){ nFin.textContent = 'con questo tetto la finestra è vuota'; return; }
+    nFin.textContent = capi.length + ' capi, scelti dal catalogo con un ordine che cambia ogni giorno'
+      + (S.tetto ? (' e resta sotto i ' + S.tetto + ' EUR a capo') : ' e senza tetto di prezzo')
+      + '. Non è una classifica: è un assaggio.';
+    capi.forEach(function(c){
+      elenco.appendChild(rigaCapo(c, function(x){
+        return x.ruolo + ' · ' + (x.negozio || 'marca non dichiarata')
+          + ' · ' + eur(x.prezzo) + ' · ' + taglie(x.taglie);
+      }));
+    });
+  }).catch(function(e){
+    if (mia !== GEN) return;
+    var m = (e && e.message) ? e.message : 'errore';
+    nFin.textContent = 'il catalogo non risponde: ' + m;
+    dichiaraMute('catalogo', m);
+  });
+
+  api('/api/abbinamenti').then(function(d){
+    if (mia !== GEN) return;
+    var visti = {}, lista = [];
+    ((d && d.abbinamenti) || []).forEach(function(a){
+      (a.capi || []).forEach(function(c){
+        var k = c.link || c.titolo;
+        if (!k || visti[k]) return;
+        visti[k] = true; lista.push(c);
+      });
+    });
+    if (!lista.length){ nUsa.textContent = 'nessun capo: senza abbinamenti non c’è niente da elencare'; return; }
+    nUsa.textContent = lista.length + ' capi distinti entrano negli abbinamenti giudicati. '
+      + 'La marca qui non c’è: la rotta /api/abbinamenti non la restituisce.';
+    lista.forEach(function(c){
+      elencoUsati.appendChild(rigaCapo(c, function(x){
+        return x.ruolo + ' · ' + (x.sottocategoria || 'categoria non dichiarata')
+          + (x.registro ? (' · ' + x.registro) : '')
+          + (x.colore ? (' · ' + x.colore) : '')
+          + ' · ' + eur(x.prezzo);
+      }));
+    });
+  }).catch(function(e){
+    if (mia !== GEN) return;
+    nUsa.textContent = 'gli abbinamenti non rispondono: ' + ((e && e.message) ? e.message : 'errore');
+  });
+}
+
+/* ══════════════════ 3 · ACQUISTI ══════════════════════════════════════════
+   I capi da comprare. NON sono abbinamenti giudicati: sono terne di capi
+   disponibili sotto il tetto. La differenza si scrive, perche' Diego l'ha gia'
+   contestata una volta (06/10: «quella e' la tab dei consigli di acquisto, non
+   sono assolutamente abbinamenti»). */
+function montaAcquisti(){
+  var p = $('#pane-acquisti'); p.textContent = '';
+  var testa = card('Capi dai negozi', 'CONSIGLI DI ACQUISTO');
+  var n = nota('Caricamento…'); testa.appendChild(n);
+  testa.appendChild(avviso('Questi NON sono abbinamenti giudicati dal motore: sono capi veri, '
+    + 'disponibili e sotto il tetto. Per le terne che hanno passato le regole vai su Oggi.'));
+  p.appendChild(testa);
+  var griglia = document.createElement('div'); griglia.className = 'griglia';
+  p.appendChild(griglia);
+
+  var mia = ++GEN;
+  api('/api/outfit?quanti=3' + (S.tetto ? ('&tetto=' + encodeURIComponent(S.tetto)) : ''))
+  .then(function(d){
+    if (mia !== GEN) return;
+    dichiaraMute('acquisti', null);
+    if (!d || !d.proposte || !d.proposte.length){
+      n.textContent = 'nessuna proposta: con questo tetto non ci sono abbastanza capi';
+      return;
+    }
+    n.textContent = d.complete
+      ? (d.quante + ' terne di capi disponibili'
+         + (S.tetto ? (', sotto i ' + S.tetto + ' EUR a capo') : ', senza tetto'))
+      : ('solo ' + d.quante + ' proposte su ' + d.chieste
+         + ': con questo tetto i capi non bastano, e non ne invento');
+    d.proposte.forEach(function(pr){
+      var c = card('Proposta ' + pr.n, (pr.totale_eur != null ? (pr.totale_eur + ' EUR') : ''));
+      (pr.capi || []).forEach(function(capo){
+        c.appendChild(rigaCapo(capo, function(x){
+          return x.ruolo + ' · ' + (x.negozio || 'marca non dichiarata')
+            + ' · ' + eur(x.prezzo) + ' · ' + taglie(x.taglie);
+        }));
+      });
+      griglia.appendChild(c);
+    });
+  }).catch(function(e){
+    if (mia !== GEN) return;
+    var m = (e && e.message) ? e.message : 'errore';
+    n.textContent = 'la fonte degli acquisti non risponde: ' + m;
+    dichiaraMute('acquisti', m);
+  });
+}
+
+/* ══════════════════ 4 · GIUDIZI ═══════════════════════════════════════════
+   Cosa si sa DAVVERO oggi: /api/abbinamenti porta, per ogni abbinamento, i
+   conteggi mi_piace / non_mi_piace. Questo si mostra.
+   Cosa NON esiste, e si dichiara: una rotta che legga lo storico di
+   stile.feedback (nota, data, testo), e qualunque collegamento fra il giudizio
+   e il motore. Oggi il pollice si scrive e NON torna indietro nel punteggio:
+   «cosa ha imparato» e' ancora niente, e mentire qui sarebbe la cosa peggiore. */
+function montaGiudizi(){
+  var p = $('#pane-giudizi'); p.textContent = '';
+  var testa = card('I pollici su e giù', 'stile.feedback');
+  var n = nota('Caricamento…'); testa.appendChild(n);
+  var numeri = document.createElement('div'); numeri.className = 'griglia';
+  numeri.style.marginTop = '10px'; testa.appendChild(numeri);
+  testa.appendChild(avviso('NON ANCORA COLLEGATO, due cose. 1) Lo storico completo (data, nota, '
+    + 'testo del giudizio) è scritto in stile.feedback ma nessuna rotta lo legge: qui ci sono '
+    + 'solo i conteggi. 2) Cosa ha imparato: niente. Il giudizio si scrive e non rientra nel '
+    + 'punteggio del motore — un pollice giù oggi non cambia la proposta di domani.'));
+  p.appendChild(testa);
+  var elenco = card('Abbinamenti già giudicati', '');
+  var nEl = nota('Caricamento…'); elenco.appendChild(nEl);
+  var lista = document.createElement('div'); elenco.appendChild(lista);
+  p.appendChild(elenco);
+
+  var mia = ++GEN;
+  api('/api/abbinamenti').then(function(d){
+    if (mia !== GEN) return;
+    dichiaraMute('giudizi', null);
+    var ab = (d && d.abbinamenti) || [];
+    var su = 0, giu = 0, giudicati = [];
+    ab.forEach(function(a){
+      var s = a.mi_piace || 0, g = a.non_mi_piace || 0;
+      su += s; giu += g;
+      if (s || g) giudicati.push(a);
+    });
+    n.textContent = ab.length + ' abbinamenti in tutto; ' + giudicati.length + ' hanno almeno un giudizio.';
+    numeri.appendChild(kpi('mi piace', String(su), 'pollici su registrati'));
+    numeri.appendChild(kpi('non mi piace', String(giu), 'pollici giù registrati'));
+    numeri.appendChild(kpi('ancora da giudicare', String(ab.length - giudicati.length),
+      'proposte su cui non ti sei espresso'));
+    if (!giudicati.length){
+      nEl.textContent = 'nessun giudizio ancora: la tabella stile.feedback è vuota, '
+        + 'e non la riempio con esempi.';
+      return;
+    }
+    nEl.textContent = 'ordinati come li porta la rotta (voto del motore, non data: la data non c’è).';
+    giudicati.forEach(function(a){
+      var r = document.createElement('div');
+      r.className = 'kpi'; r.style.marginBottom = '8px';
+      var e = document.createElement('span'); e.className = 'et';
+      e.textContent = String(a.occasione || '').replace(/_/g,' ') + ' · motore ' + a.punteggio + '/100';
+      var v = document.createElement('span'); v.className = 'v';
+      v.textContent = (a.mi_piace || 0) + ' su / ' + (a.non_mi_piace || 0) + ' giù';
+      var s = document.createElement('span'); s.className = 's';
+      s.textContent = (a.capi || []).map(function(c){ return c.titolo; }).join(' + ').slice(0, 160);
+      r.appendChild(e); r.appendChild(v); r.appendChild(s);
+      lista.appendChild(r);
+    });
+  }).catch(function(e){
+    if (mia !== GEN) return;
+    var m = (e && e.message) ? e.message : 'errore';
+    n.textContent = 'i giudizi non rispondono: ' + m;
+    nEl.textContent = '';
+    dichiaraMute('giudizi', m);
+  });
+}
+
+/* ── navigazione fra le schede ──────────────────────────────────────────── */
+var TITOLI = {
+  oggi:['Cosa mi metto','gli abbinamenti che hanno passato le regole del motore'],
+  guardaroba:['Guardaroba','il catalogo dei negozi, non il tuo armadio'],
+  acquisti:['Acquisti','capi veri da comprare, con prezzo e link'],
+  giudizi:['Giudizi','i pollici su e giù, e cosa non è ancora collegato']
+};
+var MONTA = { oggi:montaOggi, guardaroba:montaGuardaroba, acquisti:montaAcquisti, giudizi:montaGiudizi };
+function vaiA(tab){
+  if (!MONTA[tab]) tab = 'oggi';
+  S.tab = tab;
+  try { localStorage.setItem('vestiario_tab', tab); } catch(e){}
+  $$('#strisce button').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-tab') === tab); });
+  $$('.pane').forEach(function(s){ s.classList.toggle('on', s.id === 'pane-' + tab); });
+  $('#titolo').textContent = TITOLI[tab][0];
+  $('#sottotitolo').textContent = TITOLI[tab][1];
+  MONTA[tab]();
+}
+function avvia(){ vaiA(S.tab); }
+
+document.addEventListener('DOMContentLoaded', function(){
+  try {
+    S.tab = localStorage.getItem('vestiario_tab') || 'oggi';
+    S.occasione = localStorage.getItem('vestiario_occasione') || '';
+    var t = localStorage.getItem('vestiario_tetto');
+    if (t !== null) S.tetto = t;
+  } catch(e){ /* senza localStorage si parte dai valori di partenza */ }
+  if (!MONTA[S.tab]) S.tab = 'oggi';
+  $('#selOcc').value = S.occasione;
+  $('#selTetto').value = S.tetto;
+
+  $$('#strisce button').forEach(function(b){
+    b.onclick = function(){ vaiA(b.getAttribute('data-tab')); };
+  });
+  $('#selOcc').onchange = function(){
+    S.occasione = $('#selOcc').value;
+    try { localStorage.setItem('vestiario_occasione', S.occasione); } catch(e){}
+    if (S.tab === 'oggi') montaOggi();
+  };
+  $('#selTetto').onchange = function(){
+    S.tetto = $('#selTetto').value;
+    try { localStorage.setItem('vestiario_tetto', S.tetto); } catch(e){}
+    if (S.tab === 'acquisti' || S.tab === 'guardaroba') MONTA[S.tab]();
+  };
+  $('#vaiSalute').onclick = function(){ location.href = 'salute.html'; };
+  $('#vaiTesoreria').onclick = function(){ location.href = 'tesoreria.html'; };
+  $('#btnEntra').onclick = entra;
+  $('#tok').onkeydown = function(e){ if (e.key === 'Enter') entra(); };
+
+  if (!TOK) $('#login').classList.add('si');
+  else avvia();
+});
+
+function entra(){
+  var t = $('#tok').value.trim(); if (!t) return;
+  TOK = t;
+  /* la prova dell'accesso e' una rotta che esiste e che serve a questa pagina */
+  api('/api/outfit_copertura').then(function(){
+    try { localStorage.setItem('app_token', t); localStorage.setItem('dos_token', t); } catch(e){}
+    $('#login').classList.remove('si'); avvia();
+  }).catch(function(e){
+    $('#loginErr').textContent = (e && e.stato === 401)
+      ? 'Codice sbagliato.'
+      : 'Servizio non raggiungibile ora (' + e.message + '): il codice potrebbe essere giusto, riprova.';
+  });
+}
+</script>
+</body>
+</html>

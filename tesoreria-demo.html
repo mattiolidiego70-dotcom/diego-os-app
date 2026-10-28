@@ -6,6 +6,15 @@
 <title>Tesoreria DEMO · Diego OS</title>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#050505">
+<!-- STANDALONE su iPhone (28/10). iOS legge il manifest, ma per la schermata
+     piena senza barre di Safari pretende ancora questi due meta. Con
+     `black-translucent` il contenuto sale SOTTO l'isola dinamica: percio' il
+     guscio prende il padding di env(safe-area-inset-top) nel CSS mobile.
+     Senza quel padding il rail dei moduli finirebbe sotto l'orologio. -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Tesoreria">
+<link rel="apple-touch-icon" href="icona-180.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&family=Spline+Sans+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -49,6 +58,12 @@ body{background:var(--fondo);background-image:var(--fondo-desktop);color:var(--t
 .num,.tabular{font-family:var(--font-num);font-variant-numeric:tabular-nums}
 :focus-visible{outline:2px solid var(--accento);outline-offset:2px}
 button,select,input{font-family:inherit;font-size:inherit;color:inherit}
+/* 16px SUI CAMPI DI SCRITTURA, e non 14 come il resto (28/10). Sotto i 16px
+   Safari su iPhone ZOOMA la pagina appena il campo prende il fuoco, e per
+   tornare indietro serve una pizzicata: su 110 campi di questa pagina era il
+   fastidio piu' frequente del telefono. Vale solo per i campi, non per i
+   bottoni: il fuoco di scrittura lo prendono solo loro. */
+input,select,textarea{font-size:16px}
 
 /* ── SHELL: la catena delle altezze. Ogni anello ha flex:1 1 0 e min-height:0,
       altrimenti la colonna cresce oltre lo schermo dentro un overflow:hidden e
@@ -63,7 +78,11 @@ button,select,input{font-family:inherit;font-size:inherit;color:inherit}
 #rail .logo{width:26px;height:26px;border-radius:8px;background:var(--accento);
   color:var(--inchiostro-su-lime);display:flex;align-items:center;justify-content:center;
   font:600 12px var(--font-ui);margin-bottom:12px}
-#rail .voce{width:42px;height:38px;border-radius:11px;display:flex;align-items:center;
+/* flex:none — senza, sul telefono il rail diventa una RIGA e i flex item si
+   STRINGONO invece di far scorrere la barra: le 11 voci scendevano a 22-30px
+   di larghezza (misurato il 28/10), meta' della soglia Apple di 44px, e
+   l'overflow-x:auto non entrava mai in funzione. */
+#rail .voce{width:42px;height:38px;flex:none;border-radius:11px;display:flex;align-items:center;
   justify-content:center;color:rgba(var(--luce-rgb),.5);cursor:pointer;background:none;border:0}
 #rail .voce.on{background:var(--accento-fondo-16);border:1px solid var(--accento-45);color:var(--accento)}
 #colonna{position:relative;display:flex;flex-direction:column;min-width:0;
@@ -119,7 +138,15 @@ button,select,input{font-family:inherit;font-size:inherit;color:inherit}
 .chip.ok{color:var(--accento);border-color:var(--accento-bordo)}
 
 /* ── PROSPETTO: tabella snella, settimane in verticale, conti affiancati ─── */
-.tab-wrap{overflow-x:auto;margin:0 -4px}
+/* -webkit-overflow-scrolling:touch da' lo scorrimento con inerzia su iPhone:
+   senza, la tabella larga si trascina a scatti. La barra sottile torna
+   visibile SOLO qui (il resto del sistema le nasconde): il prospetto con 3
+   conti e' largo 1252px dentro 420px — il 34% — e senza nessun segno non si
+   capisce che a destra c'e' altro. Su iPhone il dito non la mostra comunque:
+   e' un miglioramento per iPad e desktop, non la soluzione del telefono. */
+.tab-wrap{overflow-x:auto;margin:0 -4px;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
+.tab-wrap::-webkit-scrollbar{height:4px;width:4px}
+.tab-wrap::-webkit-scrollbar-thumb{background:var(--bordo-forte);border-radius:999px}
 table.pro{width:100%;border-collapse:collapse;font-size:13px;min-width:520px}
 table.pro th,table.pro td{padding:5px 8px;text-align:left;border-bottom:1px solid var(--riga);vertical-align:top}
 table.pro th{color:var(--testo4);font:500 10px var(--font-num);text-transform:uppercase;
@@ -150,7 +177,10 @@ td.drop{outline:2px dashed var(--accento-45);outline-offset:-3px;background:var(
 /* ── dettaglio della voce ────────────────────────────────────────────────── */
 #dettaglio{position:fixed;inset:auto 0 0 0;z-index:60;max-height:82dvh;overflow-y:auto;
   background:rgba(var(--superficie-rgb),.96);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);
-  border-top:1px solid var(--bordo-forte);border-radius:18px 18px 0 0;padding:16px 18px 22px;
+  border-top:1px solid var(--bordo-forte);border-radius:18px 18px 0 0;
+  /* il foglio sale dal fondo: senza l'inset i suoi bottoni finiscono nella
+     barra dei gesti dell'iPhone */
+  padding:16px 18px calc(22px + env(safe-area-inset-bottom));
   box-shadow:0 -20px 60px rgba(var(--ombra-rgb),.6);display:none}
 #dettaglio.si{display:block}
 #dettaglio .riga{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:10px}
@@ -182,7 +212,11 @@ td.drop{outline:2px dashed var(--accento-45);outline-offset:-3px;background:var(
 
 /* ── barra di Alfred: galleggia, si chiude nella pallina, si anima solo
       quando parla ─────────────────────────────────────────────────────────── */
-#alfred{position:fixed;left:50%;transform:translateX(-50%);bottom:22px;z-index:70;
+/* bottom con env(safe-area-inset-bottom): a 22px fissi la barra finiva DENTRO
+   i 34px della barra dei gesti dell'iPhone — si andava a casa invece di
+   scrivere ad Ada (misurato il 28/10: 22px dal fondo). Fuori da iOS l'inset
+   vale 0 e la barra resta dov'era. */
+#alfred{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(22px + env(safe-area-inset-bottom));z-index:70;
   width:min(88vw,560px);display:flex;align-items:center;gap:10px;padding:9px 12px;
   border-radius:26px;background:rgba(var(--superficie-rgb),.42);backdrop-filter:blur(26px) saturate(160%);
   -webkit-backdrop-filter:blur(26px) saturate(160%);border:1px solid var(--bordo-forte);
@@ -217,9 +251,13 @@ td.drop{outline:2px dashed var(--accento-45);outline-offset:-3px;background:var(
    suo primo fotogramma, e con opacity .7 l'anello restava stampato attorno
    alla sfera anche da ferma (difetto visto al collaudo del 23/10) */
 @keyframes onda{0%{transform:scale(.8);opacity:0}25%{opacity:.7}100%{transform:scale(1.5);opacity:0}}
-#alfredIn{flex:1;min-width:0;background:none;border:0;outline:none;color:var(--testo1)}
-#alfredVai{background:none;border:0;color:var(--accento);cursor:pointer;font-weight:500}
-#rispostaAlfred{position:fixed;left:50%;transform:translateX(-50%);bottom:74px;z-index:69;
+#alfredIn{flex:1;min-width:0;min-height:44px;background:none;border:0;outline:none;color:var(--testo1)}
+/* «Invia» era 42x19: il bersaglio piu' stretto della barra di Ada. Il padding
+   lo porta a 44 di altezza senza spostare niente, perche' la barra e'
+   align-items:center e cresce con lui. */
+#alfredVai{background:none;border:0;color:var(--accento);cursor:pointer;font-weight:500;
+  min-width:44px;min-height:44px;padding:0 6px}
+#rispostaAlfred{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(74px + env(safe-area-inset-bottom));z-index:69;
   width:min(88vw,560px);max-height:50dvh;overflow-y:auto;padding:12px 14px;border-radius:16px;
   background:rgba(var(--superficie-rgb),.95);backdrop-filter:blur(26px);border:1px solid var(--bordo-forte);display:none}
 #rispostaAlfred.si{display:block}
@@ -277,17 +315,58 @@ table.mem input{width:100%;min-width:90px;background:rgba(var(--luce-rgb),.05);b
 /* ── MOBILE: ogni regola qui e' un bug gia' pagato ─────────────────────── */
 @media (max-width:760px){
   body{background-image:var(--fondo-mobile)}
-  /* 100dvh, non 100vh: Safari iPhone mangia il fondo con 100vh */
+  /* 100dvh, non 100vh: Safari iPhone mangia il fondo con 100vh.
+     padding-top con env(safe-area-inset-top) (28/10): in standalone
+     (`apple-mobile-web-app-capable` + `black-translucent`) la pagina parte da
+     y=0, cioe' SOTTO l'isola dinamica, e il rail dei moduli finiva dietro
+     l'orologio. Fuori da iOS l'inset vale 0 e non cambia niente. */
   #app{inset:0;height:100dvh;border-radius:0;display:flex;flex-direction:column;
-    box-shadow:none;background:none}
+    box-shadow:none;background:none;padding-top:env(safe-area-inset-top)}
+  /* IL RAIL SUL TELEFONO (28/10). 44x44 per voce, la soglia Apple: erano
+     42x38 DICHIARATE, ma flex le STRINGEVA a 22-30px (misurato su tre
+     schermi), meta' della soglia, e col pollice si sbagliava modulo. Il
+     `flex:none` della regola base ora le tiene alla loro misura, e la barra
+     SCORRE invece di schiacciarle.
+     Perche' scorrere e non andare a capo: 11 voci da 44px non stanno in 474
+     punti nemmeno senza spazi (484 > 454), quindi o si scorre o si fa una
+     seconda riga. La seconda riga costava 52px di altezza su uno schermo
+     chiuso dove il contenuto era gia' solo il 56%: si e' scelto lo
+     scorrimento. Sullo schermo APERTO (640 punti) le 11 voci stanno tutte in
+     una riga, quindi la' non si scorre niente.
+     PREZZO DICHIARATO: sullo schermo chiuso due o tre moduli stanno fuori a
+     destra e su iOS non c'e' barra di scorrimento che lo riveli. */
   #rail{flex-direction:row;width:100%;border-right:0;border-bottom:1px solid rgba(var(--luce-rgb),.09);
-    padding:8px 10px;justify-content:flex-start;overflow-x:auto;flex:none}
-  #rail .logo{margin:0 8px 0 0}
+    padding:7px 10px;justify-content:flex-start;flex-wrap:nowrap;overflow-x:auto;flex:none;
+    -webkit-overflow-scrolling:touch;scroll-snap-type:x proximity}
+  #rail .voce{width:44px;height:44px;border-radius:12px;scroll-snap-align:center}
+  /* flex:none anche sul logo: in una riga che scorre, l'unico elemento senza
+     flex:none assorbe tutto il restringimento — il € si era ridotto a una
+     scheggia verticale (visto nella foto del 28/10) */
+  #rail .logo{margin:0 8px 0 0;flex:none}
   /* l'anello della catena: senza questo la colonna cresce e non scorre */
   #colonna{flex:1 1 0;min-height:0}
-  .pane{padding:8px 14px 150px}
+  /* il fondo lascia passare la barra di Ada E la barra dei gesti dell'iPhone */
+  .pane{padding:8px 14px calc(150px + env(safe-area-inset-bottom))}
   #testata{padding:12px 14px 6px}
   #strisce{padding:4px 14px 8px}
+  /* 44 di altezza sui comandi che si premono a ogni giro: le due strisce
+     (Prospetto/Tendenza) stavano a 31px, i 26 bottoni dei form a 31px, i tre
+     comandi del periodo a 33px. Nessuno di questi vive nel chrome in alto,
+     quindi l'altezza se la prendono dal contenuto, che scorre. */
+  #strisce button,.btn{min-height:44px}
+  /* ‹ e › restano larghi 34 (alti 44). Portarli a 44 era stato provato il
+     28/10 e RIFIUTATO alla misura: i 20px in piu' mandavano la riga del
+     contesto a capo, e sullo schermo CHIUSO costavano 44px di intestazione —
+     cioe' il 6% del contenuto visibile — per guadagnare 10px su due glifi.
+     Resta scritto fra i residui dell'audit. */
+  /* la sfera e' l'ingresso al coach: 44x44 pieni, e la pallina chiusa cresce
+     con lei (44 + 8 di padding per lato) */
+  #sfera{width:44px;height:44px}
+  #alfred.chiusa{width:60px;padding:8px}
+  /* le spunte native stavano a 13x13: col pollice erano un bersaglio finto.
+     24px non e' la soglia piena — a 44 una casella di spunta sformerebbe la
+     riga del form — ma e' il quadruplo dell'area di prima. */
+  input[type="checkbox"]{width:24px;height:24px}
   table.pro{min-width:460px}
   /* nessun carattere microscopico sul telefono: il minimo del sistema e' 11px */
   .chip,.voce .i,.voce,tr.sett td,.card > .tec,.kpi .s,.etichetta,
@@ -420,9 +499,9 @@ table.mem input{width:100%;min-width:90px;background:rgba(var(--luce-rgb),.05);b
           <label class="etichetta" for="alAlimentato">alimenta</label>
           <select class="sel" id="alAlimentato" aria-label="Conto alimentato"></select>
           <label class="etichetta" for="alSoglia">sotto</label>
-          <input class="sel num" id="alSoglia" placeholder="soglia 1.000,00" aria-label="Soglia" style="width:120px">
+          <input class="sel num" inputmode="decimal" id="alSoglia" placeholder="soglia 1.000,00" aria-label="Soglia" style="width:120px">
           <label class="etichetta" for="alLivello">riporta a</label>
-          <input class="sel num" id="alLivello" placeholder="obiettivo 3.000,00" aria-label="Livello obiettivo" style="width:120px">
+          <input class="sel num" inputmode="decimal" id="alLivello" placeholder="obiettivo 3.000,00" aria-label="Livello obiettivo" style="width:120px">
           <button class="btn" id="btnAlimentazione">Salva la regola</button>
         </div>
         <p class="nota" id="msgAlimentazione" role="status" aria-live="polite"></p>
@@ -513,7 +592,7 @@ table.mem input{width:100%;min-width:90px;background:rgba(var(--luce-rgb),.05);b
         <div class="riga" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
           <select class="sel" id="viConto" aria-label="Conto"></select>
           <input class="sel" type="date" id="viData" aria-label="Giorno">
-          <input class="sel num" id="viImporto" placeholder="-1.234,56" aria-label="Importo">
+          <input class="sel num" inputmode="decimal" id="viImporto" placeholder="-1.234,56" aria-label="Importo">
           <input class="sel" id="viDescr" placeholder="descrizione" aria-label="Descrizione">
           <button class="btn p" id="btnVoceIpotesi">Aggiungi all&#39;ipotesi</button>
         </div>
@@ -545,9 +624,9 @@ table.mem input{width:100%;min-width:90px;background:rgba(var(--luce-rgb),.05);b
         <span class="tec">modifica</span>
         <h2 id="serieTitolo">Costo fisso</h2>
         <div class="riga" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-          <input class="sel num" id="msImporto" aria-label="Importo">
+          <input class="sel num" inputmode="decimal" id="msImporto" aria-label="Importo">
           <label class="etichetta" for="msGiorno">giorno</label>
-          <input class="sel" type="number" id="msGiorno" min="1" max="31" style="width:70px">
+          <input class="sel" type="number" inputmode="numeric" id="msGiorno" min="1" max="31" style="width:70px">
           <label class="etichetta" for="msFine">fino a</label>
           <input class="sel" type="date" id="msFine">
           <label class="etichetta" for="msDa">vale da</label>
@@ -583,9 +662,9 @@ table.mem input{width:100%;min-width:90px;background:rgba(var(--luce-rgb),.05);b
           <select class="sel" id="cfConto" aria-label="Conto"></select>
           <select class="sel" id="cfCategoria" aria-label="Categoria"></select>
           <select class="sel" id="cfSotto" aria-label="Sottocategoria"></select>
-          <input class="sel num" id="cfImporto" placeholder="-45,00" aria-label="Importo">
+          <input class="sel num" inputmode="decimal" id="cfImporto" placeholder="-45,00" aria-label="Importo">
           <label class="etichetta" for="cfGiorno">giorno</label>
-          <input class="sel" type="number" id="cfGiorno" min="1" max="31" value="15" style="width:70px">
+          <input class="sel" type="number" inputmode="numeric" id="cfGiorno" min="1" max="31" value="15" style="width:70px">
           <select class="sel" id="cfFrequenza" aria-label="Frequenza">
             <option value="mensile">ogni mese</option>
             <option value="bimestrale">ogni due mesi</option>
@@ -615,11 +694,11 @@ table.mem input{width:100%;min-width:90px;background:rgba(var(--luce-rgb),.05);b
           <select class="sel" id="fzConto" aria-label="Conto"></select>
           <select class="sel" id="fzCategoria" aria-label="Categoria"></select>
           <select class="sel" id="fzSotto" aria-label="Sottocategoria"></select>
-          <input class="sel num" id="fzCapitale" placeholder="capitale erogato" aria-label="Capitale erogato">
-          <input class="sel num" id="fzTotale" placeholder="totale da rimborsare (se lo sai)" aria-label="Totale da rimborsare">
-          <input class="sel num" id="fzTan" placeholder="TAN % (5,99)" aria-label="TAN">
-          <input class="sel num" id="fzTaeg" placeholder="TAEG % (facoltativo)" aria-label="TAEG">
-          <input class="sel" type="number" id="fzRate" placeholder="rate" min="1" style="width:90px">
+          <input class="sel num" inputmode="decimal" id="fzCapitale" placeholder="capitale erogato" aria-label="Capitale erogato">
+          <input class="sel num" inputmode="decimal" id="fzTotale" placeholder="totale da rimborsare (se lo sai)" aria-label="Totale da rimborsare">
+          <input class="sel num" inputmode="decimal" id="fzTan" placeholder="TAN % (5,99)" aria-label="TAN">
+          <input class="sel num" inputmode="decimal" id="fzTaeg" placeholder="TAEG % (facoltativo)" aria-label="TAEG">
+          <input class="sel" type="number" inputmode="numeric" id="fzRate" placeholder="rate" min="1" style="width:90px">
           <label class="etichetta" for="fzPrima">prima rata</label>
           <input class="sel" type="date" id="fzPrima">
           <select class="sel" id="fzMetodo" aria-label="Metodo">
@@ -637,14 +716,14 @@ table.mem input{width:100%;min-width:90px;background:rgba(var(--luce-rgb),.05);b
         </div>
         <div class="riga" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px">
           <span class="etichetta">senza i dati completi</span>
-          <input class="sel num" id="fzRata" placeholder="rata" aria-label="Rata">
+          <input class="sel num" inputmode="decimal" id="fzRata" placeholder="rata" aria-label="Rata">
           <label class="etichetta" for="fzFine">fino a</label>
           <input class="sel" type="date" id="fzFine">
         </div>
         <div class="riga" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px">
           <span class="etichetta">costi e capitale</span>
-          <input class="sel num" id="fzSpeseRata" placeholder="spese per rata" aria-label="Spese per rata">
-          <input class="sel num" id="fzSpeseIniz" placeholder="spese iniziali" aria-label="Spese iniziali">
+          <input class="sel num" inputmode="decimal" id="fzSpeseRata" placeholder="spese per rata" aria-label="Spese per rata">
+          <input class="sel num" inputmode="decimal" id="fzSpeseIniz" placeholder="spese iniziali" aria-label="Spese iniziali">
           <label class="etichetta" for="fzSpeseData">il</label>
           <input class="sel" type="date" id="fzSpeseData">
           <select class="sel" id="fzErogazione" aria-label="Erogazione">
@@ -686,7 +765,7 @@ table.mem input{width:100%;min-width:90px;background:rgba(var(--luce-rgb),.05);b
           <select class="sel" id="sdDa" aria-label="Conto di partenza"></select>
           <label class="etichetta" for="sdA">al</label>
           <select class="sel" id="sdA" aria-label="Conto di arrivo"></select>
-          <input class="sel num" id="sdImporto" placeholder="270,00" aria-label="Importo">
+          <input class="sel num" inputmode="decimal" id="sdImporto" placeholder="270,00" aria-label="Importo">
           <input class="sel" type="date" id="sdData" aria-label="Giorno">
           <label class="etichetta"><input type="checkbox" id="sdFatto"> l&#39;ho gi&#224; fatto</label>
           <button class="btn p" id="btnSalvadanaio">Sposta</button>
@@ -713,7 +792,7 @@ table.mem input{width:100%;min-width:90px;background:rgba(var(--luce-rgb),.05);b
         <span class="tec">modifica</span>
         <h2 id="entrataTitolo">Entrata</h2>
         <div class="riga" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-          <input class="sel num" id="meImporto" aria-label="Importo">
+          <input class="sel num" inputmode="decimal" id="meImporto" aria-label="Importo">
           <label class="etichetta" for="meAttesa">attesa il</label>
           <input class="sel" type="date" id="meAttesa">
           <label class="etichetta" for="meEmissione">emessa il</label>
@@ -740,7 +819,7 @@ table.mem input{width:100%;min-width:90px;background:rgba(var(--luce-rgb),.05);b
           </select>
           <input class="sel" id="enDa" placeholder="da chi" aria-label="Da chi">
           <input class="sel" id="enNumero" placeholder="numero" aria-label="Numero">
-          <input class="sel num" id="enImporto" placeholder="2.580,00" aria-label="Importo">
+          <input class="sel num" inputmode="decimal" id="enImporto" placeholder="2.580,00" aria-label="Importo">
           <select class="sel" id="enConto" aria-label="Conto"></select>
           <select class="sel" id="enCategoria" aria-label="Categoria"></select>
           <label class="etichetta" for="enEmissione">emessa il</label>
@@ -781,7 +860,7 @@ table.mem input{width:100%;min-width:90px;background:rgba(var(--luce-rgb),.05);b
           <label class="etichetta" for="obConto">nel salvadanaio</label>
           <select class="sel" id="obConto" aria-label="Salvadanaio"></select>
           <input class="sel" id="obNome" placeholder="per cosa (es. Viaggio)" aria-label="Nome">
-          <input class="sel num" id="obTraguardo" placeholder="traguardo (es. 2.000,00)" aria-label="Traguardo">
+          <input class="sel num" inputmode="decimal" id="obTraguardo" placeholder="traguardo (es. 2.000,00)" aria-label="Traguardo">
           <input class="sel" id="obNote" placeholder="note" aria-label="Note">
           <button class="btn p" id="btnObiettivo">Crea</button>
         </div>
@@ -809,7 +888,7 @@ table.mem input{width:100%;min-width:90px;background:rgba(var(--luce-rgb),.05);b
         <h2>Una capienza nuova</h2>
         <div class="riga" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
           <select class="sel" id="bdCategoria" aria-label="Categoria"></select>
-          <input class="sel num" id="bdCapienza" placeholder="capienza mensile (es. 400,00)" aria-label="Capienza mensile">
+          <input class="sel num" inputmode="decimal" id="bdCapienza" placeholder="capienza mensile (es. 400,00)" aria-label="Capienza mensile">
           <label class="etichetta" for="bdValidoDa">vale dal mese</label>
           <input class="sel" type="month" id="bdValidoDa" aria-label="Vale dal mese">
           <button class="btn p" id="btnBudget">Imposta</button>
@@ -841,10 +920,10 @@ table.mem input{width:100%;min-width:90px;background:rgba(var(--luce-rgb),.05);b
           <label class="etichetta" for="ncConto">addebita su</label>
           <select class="sel" id="ncConto" aria-label="Conto di addebito"></select>
           <label class="etichetta" for="ncAddebito">giorno di addebito</label>
-          <input class="sel" type="number" id="ncAddebito" min="1" max="31" style="width:70px">
+          <input class="sel" type="number" inputmode="numeric" id="ncAddebito" min="1" max="31" style="width:70px">
           <label class="etichetta" for="ncChiusura">chiusura ciclo</label>
-          <input class="sel" type="number" id="ncChiusura" min="1" max="31" style="width:70px" placeholder="—">
-          <input class="sel num" id="ncPlafond" placeholder="plafond (es. 5.000,00)" aria-label="Plafond">
+          <input class="sel" type="number" inputmode="numeric" id="ncChiusura" min="1" max="31" style="width:70px" placeholder="—">
+          <input class="sel num" inputmode="decimal" id="ncPlafond" placeholder="plafond (es. 5.000,00)" aria-label="Plafond">
           <input class="sel" id="ncCodice" placeholder="codice estratto (facoltativo)" aria-label="Codice">
           <button class="btn p" id="btnNuovaCarta">Aggiungi</button>
         </div>
@@ -886,7 +965,7 @@ table.mem input{width:100%;min-width:90px;background:rgba(var(--luce-rgb),.05);b
         <span class="tec">calcolo</span>
         <div class="riga" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
           <h2 style="margin:0">Anno d&#39;imposta</h2>
-          <input class="sel" type="number" id="fiAnno" style="width:110px" min="2000" max="2100">
+          <input class="sel" type="number" inputmode="numeric" id="fiAnno" style="width:110px" min="2000" max="2100">
           <button class="btn" id="btnFisco">Calcola</button>
           <span class="chip avv">superato per questa consegna</span>
         </div>
@@ -904,7 +983,7 @@ table.mem input{width:100%;min-width:90px;background:rgba(var(--luce-rgb),.05);b
           o da una comunicazione. Qui si registra con la sua <b>provenienza</b>, e diventa una
           scadenza sul conto tasse.</p>
         <div class="riga" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-          <input class="sel" type="number" id="doAnno" style="width:110px" placeholder="anno">
+          <input class="sel" type="number" inputmode="numeric" id="doAnno" style="width:110px" placeholder="anno">
           <select class="sel" id="doTipo" aria-label="Tipo">
             <option value="saldo">saldo</option>
             <option value="primo_acconto">primo acconto</option>
@@ -912,7 +991,7 @@ table.mem input{width:100%;min-width:90px;background:rgba(var(--luce-rgb),.05);b
             <option value="contributi">contributi</option>
             <option value="rata">rata</option>
           </select>
-          <input class="sel num" id="doImporto" placeholder="2.400,00" aria-label="Importo">
+          <input class="sel num" inputmode="decimal" id="doImporto" placeholder="2.400,00" aria-label="Importo">
           <label class="etichetta" for="doScadenza">scade il</label>
           <input class="sel" type="date" id="doScadenza">
           <label class="etichetta" for="doModo">come lo paghi</label>
@@ -922,11 +1001,11 @@ table.mem input{width:100%;min-width:90px;background:rgba(var(--luce-rgb),.05);b
             <option value="finanziamento">con un prestito (TAN)</option>
           </select>
           <label class="etichetta" for="doRate">rate</label>
-          <input class="sel" type="number" id="doRate" style="width:70px" value="1" min="1" max="60">
+          <input class="sel" type="number" inputmode="numeric" id="doRate" style="width:70px" value="1" min="1" max="60">
           <label class="etichetta" for="doTan">TAN %</label>
-          <input class="sel num" id="doTan" style="width:80px" placeholder="6,00" aria-label="TAN">
+          <input class="sel num" inputmode="decimal" id="doTan" style="width:80px" placeholder="6,00" aria-label="TAN">
           <label class="etichetta" for="doTaeg">TAEG %</label>
-          <input class="sel num" id="doTaeg" style="width:80px" placeholder="6,40" aria-label="TAEG">
+          <input class="sel num" inputmode="decimal" id="doTaeg" style="width:80px" placeholder="6,40" aria-label="TAEG">
           <select class="sel" id="doMetodo" aria-label="Metodo">
             <option value="francese">rata costante (francese)</option>
             <option value="italiano">capitale costante (italiano)</option>
@@ -962,7 +1041,7 @@ table.mem input{width:100%;min-width:90px;background:rgba(var(--luce-rgb),.05);b
           <!-- decisione 12: il default dell'anticipo e' 5 giorni, e viene dal
                parametro promemoria.anticipo_default (caricaAnagrafica lo
                riallinea); il 5 scritto qui e' solo la rete di sicurezza -->
-          <input class="sel" type="number" id="prAnticipo" style="width:70px" value="5" min="0" max="365">
+          <input class="sel" type="number" inputmode="numeric" id="prAnticipo" style="width:70px" value="5" min="0" max="365">
           <span class="etichetta">giorni prima</span>
           <select class="sel" id="prRicorrenza" aria-label="Ricorrenza">
             <option value="una_tantum">una volta sola</option>
@@ -2623,9 +2702,9 @@ function apriPiano(id){
       ? '<p class="nota">Questa e&#768; una sequenza di pagamenti nota. Con capitale, TAN, numero di rate e metodo ' +
         'diventa un piano calcolato: le rate gia&#768; pagate restano come sono state pagate.</p>' +
         '<div class="riga" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">' +
-        '<input class="sel num" id="pcCapitale" placeholder="capitale" aria-label="Capitale">' +
-        '<input class="sel num" id="pcTan" placeholder="TAN %" aria-label="TAN">' +
-        '<input class="sel" type="number" id="pcRate" placeholder="rate" aria-label="Rate" style="width:90px">' +
+        '<input class="sel num" inputmode="decimal" id="pcCapitale" placeholder="capitale" aria-label="Capitale">' +
+        '<input class="sel num" inputmode="decimal" id="pcTan" placeholder="TAN %" aria-label="TAN">' +
+        '<input class="sel" type="number" inputmode="numeric" id="pcRate" placeholder="rate" aria-label="Rate" style="width:90px">' +
         '<select class="sel" id="pcMetodo" aria-label="Metodo">' +
           '<option value="rata_costante">rata costante</option>' +
           '<option value="quota_capitale_costante">quota capitale costante</option></select>' +
@@ -3157,7 +3236,7 @@ function caricaObiettivi(){
             '<td class="n">' + euro(o.assegnato_cents) + '</td>' +
             '<td>' + prog + '</td>' +
             '<td><span class="riga" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">' +
-            '<input class="sel num" style="width:110px" data-quota="' + o.id + '" placeholder="100,00" aria-label="Quota">' +
+            '<input class="sel num" inputmode="decimal" style="width:110px" data-quota="' + o.id + '" placeholder="100,00" aria-label="Quota">' +
             '<button class="btn" data-assegna="' + o.id + '">Assegna</button>' +
             '<button class="btn" data-togli="' + o.id + '">Togli</button></span></td></tr>';
         }).join('') + '</tbody></table></div>';
