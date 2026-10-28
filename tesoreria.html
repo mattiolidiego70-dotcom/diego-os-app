@@ -508,6 +508,57 @@ table.mem input{width:100%;min-width:90px;background:rgba(var(--luce-rgb),.05);b
         <div class="legenda" id="legenda"></div>
         <p class="nota">Una linea per conto piu' l'aggregato: l'aggregato e' la somma dei conti ALLA STESSA DATA, mai la somma di giorni diversi.</p>
       </div>
+
+      <!-- ANAGRAFICHE (28/10, difetto 1 del giro di messa in opera): senza un
+           conto e senza categorie l'app non si puo' nemmeno COMINCIARE, e i
+           form dei costi fissi, dei finanziamenti e del budget restano
+           bloccati. Le rotte del servizio esistevano da sempre; i campi in
+           pagina no, e si era costretti a passare dal Terminale.
+           Le guardie restano quelle del servizio: senza saldo o senza data di
+           taglio rifiuta, e qui si mostra il motivo invece di inventare uno
+           zero o un «oggi». -->
+      <div class="card" id="card-nuovo-conto">
+        <span class="tec">anagrafica</span>
+        <h2>Un conto nuovo</h2>
+        <div class="riga" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <input class="sel" id="ncoNome" placeholder="nome del conto (es. INTESA)" aria-label="Nome del conto">
+          <label class="etichetta" for="ncoTipo">tipo</label>
+          <select class="sel" id="ncoTipo" aria-label="Tipo di conto">
+            <option value="corrente">corrente</option>
+            <option value="salvadanaio">salvadanaio</option>
+            <option value="tasse">tasse</option>
+            <option value="prepagata">prepagata</option>
+          </select>
+          <label class="etichetta" for="ncoSaldo">saldo di partenza</label>
+          <input class="sel num" inputmode="decimal" id="ncoSaldo" placeholder="4.000,00" aria-label="Saldo di partenza" style="width:130px">
+          <label class="etichetta" for="ncoData">alla data</label>
+          <input class="sel" type="date" id="ncoData" aria-label="Data del saldo di partenza">
+          <input class="sel" id="ncoBanca" placeholder="sigla della banca (facoltativa)" aria-label="Sigla della banca">
+          <button class="btn p" id="btnNuovoConto">Crea il conto</button>
+        </div>
+        <p class="nota">Il <b>saldo di partenza</b> e la <b>sua data</b> sono il punto da cui
+          l&#39;app conta: si leggono dall&#39;estratto, non si assumono. Senza, il servizio
+          rifiuta — e qui vedi scritto perche&#768;.</p>
+        <p class="nota" id="msgNuovoConto" role="status" aria-live="polite"></p>
+      </div>
+
+      <div class="card" id="card-nuova-categoria">
+        <span class="tec">anagrafica</span>
+        <h2>Una categoria o una sottocategoria</h2>
+        <div class="riga" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <input class="sel" id="ncatNome" placeholder="nome (es. BOLLETTE)" aria-label="Nome della categoria">
+          <label class="etichetta" for="ncatDentro">dentro</label>
+          <select class="sel" id="ncatDentro" aria-label="Categoria che la contiene">
+            <option value="">— e&#768; una categoria —</option>
+          </select>
+          <button class="btn p" id="btnNuovaCategoria">Aggiungi</button>
+        </div>
+        <div id="elencoCategorie"></div>
+        <p class="nota">Lascia «e&#768; una categoria» per crearne una nuova; scegli una
+          categoria per metterci dentro una sottocategoria. Un nome gia&#768; esistente ma
+          spento viene <b>riacceso</b>, non duplicato.</p>
+        <p class="nota" id="msgNuovaCategoria" role="status" aria-live="polite"></p>
+      </div>
     </section>
 
     <!-- ════════ IMPORT E INBOX ════════ -->
@@ -531,6 +582,16 @@ table.mem input{width:100%;min-width:90px;background:rgba(var(--luce-rgb),.05);b
       <div class="card">
         <span class="tec">inbox</span>
         <h2>Righe da riconciliare</h2>
+        <!-- GESTO DI GRUPPO (28/10, difetto 4): un mese vero di Diego sono
+             ~90 click. Qui si accettano in un colpo solo le proposte SICURE —
+             stesso importo entro pochi giorni, soglia decisa dal servizio —
+             e MAI i candidati deboli. Prima si guarda l'anteprima: quante ne
+             prenderebbe e quali restano a mano, col motivo. -->
+        <div class="riga" id="rigaGruppo" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
+          <button class="btn" id="btnGruppoAnteprima">Vedi quante ne posso accettare</button>
+          <span class="nota">accetta solo le proposte sicure: le altre restano a mano</span>
+        </div>
+        <div id="anteprimaGruppo"></div>
         <!-- l'esito sta FUORI dall'elenco: ricaricare le righe non deve
              cancellare la risposta che Diego sta leggendo -->
         <div id="esitoInbox" role="status" aria-live="polite"></div>
@@ -1265,6 +1326,7 @@ function caricaAnagrafica(){
     $('#alSorgente').innerHTML = opzAl;
     $('#alAlimentato').innerHTML = opzAl;
     renderTasse(); renderFissi(); renderAttivo(); renderPromemoria();
+    renderAnagraficaPagina();
   }).catch(function(e){ dichiaraFonte('anagrafica', e); });
 }
 
@@ -2318,12 +2380,22 @@ function caricaAperti(){
       : '';
   }).catch(function(e){ dichiaraFonte('import aperti', e); });
 }
+/* le righe lette, per row_id: servono ai messaggi che devono dire DOVE va a
+   finire una riga (data e importo), senza richiedere di nuovo l'elenco */
+var RIGHE_INBOX = {};
 function caricaInbox(){
   var q = '/inbox/righe';
   if (S.conto !== 'tutti') q += '?conto_id=' + encodeURIComponent(S.conto.replace(/^c/,''));
   return api(q).then(function(righe){
     dichiaraFonte('inbox', null);
-    if (!righe.length){ $('#inbox').innerHTML = '<p class="nota">Nessuna riga da riconciliare. Si popola caricando un estratto.</p>'; return; }
+    RIGHE_INBOX = {};
+    (righe||[]).forEach(function(r){ RIGHE_INBOX[String(r.row_id)] = r; });
+    $('#btnGruppoAnteprima').disabled = !(righe||[]).length;
+    if (!righe.length){
+      $('#inbox').innerHTML = '<p class="nota">Nessuna riga da riconciliare. Si popola caricando un estratto.</p>';
+      $('#anteprimaGruppo').innerHTML = '';
+      return;
+    }
     $('#inbox').innerHTML = righe.map(function(r){
       return '<div class="riga-inbox" data-riga="' + r.row_id + '" id="riga-' + r.row_id + '">' +
         '<div><b class="num' + (r.importo_cents<0?' neg':'') + '">' + euro(r.importo_cents) + '</b> ' +
@@ -2347,13 +2419,19 @@ function candidati(rowId){
   api('/inbox/riga/' + rowId + '/candidati').then(function(c){
     box.innerHTML = (c||[]).length
       ? (c||[]).map(function(x){
+          /* l'addebito del CICLO CARTA non e' un movimento previsto: e' una
+             conseguenza che il motore deriva dagli acquisti. Si dichiara, e
+             non si offre come acconto — un ciclo si paga per intero o non e'
+             quel ciclo (il servizio infatti rifiuterebbe). */
+          var ciclo = x.derivato === true;
           return '<div class="cand' + (x.proposta?' proposta':'') + '">' +
             '<b class="num">' + euro(x.importo_cents) + '</b> ' + esc(x.descrizione) +
             ' <span class="chip">' + esc(dataIt(x.data)) + '</span>' +
             (x.proposta ? ' <span class="chip ok">proposta</span>' : ' <span class="chip">alternativa</span>') +
+            (ciclo ? ' <span class="chip">addebito di un ciclo carta</span>' : '') +
             ' <span class="nota">' + esc(x.motivo) + '</span>' +
             '<button class="btn p" data-coll="' + rowId + ':' + x.tx_id + '">Collega</button>' +
-            '<button class="btn" data-parz="' + rowId + ':' + x.tx_id + '">Collega come acconto</button>' +
+            (ciclo ? '' : '<button class="btn" data-parz="' + rowId + ':' + x.tx_id + '">Collega come acconto</button>') +
             '</div>'; }).join('')
       : '<p class="nota">Nessuna previsione compatibile.</p>';
     box.innerHTML += '<div class="bottoni"><button class="btn" data-nuova="' + rowId +
@@ -2368,16 +2446,122 @@ function candidati(rowId){
     box.innerHTML = '<p class="errore">' + esc(e.message) + '</p>';
   });
 }
-function collega(rowId, txId, parziale){
-  var box = document.querySelector('.cand-box[data-per="' + rowId + '"]');
-  api('/inbox/riga/' + rowId + '/collega', { tx_id:Number(txId), operation_id:uuid(), parziale:!!parziale })
+/* ── ACCETTA LE SICURE: il gesto di gruppo (difetto 4 del giro, 28/10) ──── */
+/* Prima l'ANTEPRIMA, sempre: quante ne prende e quali restano a mano, col
+   motivo. Poi, e solo premendo, il gesto — che nel database e' UNA transazione
+   e UNA voce di storico, quindi si annulla in un colpo solo. La soglia del
+   «sicuro» NON e' scritta qui: la decide il servizio e la dichiara nella
+   risposta, cosi' anteprima ed esecuzione non possono divergere. */
+var GRUPPO_VISTO = null;
+function corpoGruppo(extra){
+  var c = extra || {};
+  if (S.conto !== 'tutti') c.conto_id = Number(S.conto.replace(/^c/, ''));
+  return c;
+}
+function anteprimaGruppo(){
+  var box = $('#anteprimaGruppo');
+  $('#btnGruppoAnteprima').disabled = true;
+  box.innerHTML = '<p class="nota">guardo le righe…</p>';
+  api('/inbox/accetta-gruppo', corpoGruppo({ prova: true }))
+    .then(function(a){
+      GRUPPO_VISTO = a;
+      var prese = a.prese || [], restano = a.restano || [];
+      box.innerHTML =
+        '<div class="card" style="margin:0">' +
+        '<p class="nota"><span class="chip">nulla e&#768; stato scritto</span> ' +
+        'Prenderei <b>' + a.quante + '</b> ' + (a.quante === 1 ? 'riga' : 'righe') +
+        ' e ne lascerei <b>' + a.a_mano + '</b> a te. ' +
+        'Sicura vuol dire <b>stesso importo entro pochi giorni</b> (punteggio ' + a.soglia_sicura +
+        ' su 100): le proposte deboli non si accettano mai in blocco.</p>' +
+        (prese.length
+          ? '<div class="tab-wrap"><table class="pro"><thead><tr><th>Riga di banca</th>' +
+            '<th>Va su</th><th class="n">importo</th><th>perche&#768;</th></tr></thead><tbody>' +
+            prese.map(function(x){
+              return '<tr><td>' + esc(x.descrizione || '') + ' <span class="g">' + esc(dataIt(x.data)) + '</span></td>' +
+                '<td>' + esc(x.previsione || '') + '</td>' +
+                '<td class="n' + (x.importo_cents < 0 ? ' neg' : '') + '">' + euro(x.importo_cents) + '</td>' +
+                '<td class="nota">' + esc(x.motivo || '') + '</td></tr>';
+            }).join('') + '</tbody></table></div>'
+          : '<p class="avviso">Nessuna proposta sicura: non c&#8217;e&#768; niente da accettare in gruppo.</p>') +
+        (restano.length
+          ? '<p class="nota">Restano a te, una per una: ' +
+            restano.slice(0, 8).map(function(x){
+              return '<b>' + esc(x.descrizione || '') + '</b> ' + euro(x.importo_cents) +
+                ' (' + esc(x.perche || '') + ')'; }).join(' · ') +
+            (restano.length > 8 ? ' e altre ' + (restano.length - 8) + '.' : '') + '</p>'
+          : '') +
+        '<div class="bottoni">' +
+        (prese.length ? '<button class="btn p" id="btnGruppoVai">Accetta le ' + a.quante +
+          ' sicure</button>' : '') +
+        '<button class="btn" id="btnGruppoNo">Lascia stare</button></div>' +
+        '<p class="nota" id="msgGruppo" role="status" aria-live="polite"></p>' +
+        '</div>';
+      if ($('#btnGruppoVai')) $('#btnGruppoVai').onclick = eseguiGruppo;
+      $('#btnGruppoNo').onclick = function(){ box.innerHTML = ''; GRUPPO_VISTO = null; };
+    })
+    .catch(function(e){
+      box.innerHTML = '<p class="errore">L&#8217;anteprima non e&#768; stata letta: ' + esc(e.message) +
+        '. Non e&#768; «niente da accettare».</p>';
+    })
+    .finally(function(){ $('#btnGruppoAnteprima').disabled = false; });
+}
+function eseguiGruppo(){
+  if (!GRUPPO_VISTO) return;
+  /* si mandano le righe VISTE nell'anteprima, non «tutte»: fra la vista e il
+     click potrebbe esserne arrivata un'altra, e Diego ha approvato queste */
+  var righe = (GRUPPO_VISTO.prese || []).map(function(x){ return Number(x.row_id); });
+  if (!righe.length) return;
+  $('#btnGruppoVai').disabled = true;
+  msgScen('#msgGruppo', 'accetto…');
+  api('/inbox/accetta-gruppo', corpoGruppo({ righe: righe, operation_id: uuid() }))
     .then(function(e){
-      $('#esitoInbox').innerHTML = '<p class="nota">Collegato: previsto ' + euro(e.previsto_cents) +
-        ' il ' + dataIt(e.data_prevista) + ', reale ' + euro(e.reale_cents) + ' il ' + dataIt(e.data_reale) +
-        ', scarto <b>' + euro(e.scarto_cents) + '</b>' +
-        (e.residuo_cents ? '. Resta aperto il residuo di ' + euro(e.residuo_cents) : '. Nessun residuo aperto') +
-        '.</p>';
-      return Promise.all([caricaInbox(), caricaPrevisione(), caricaJournal()]);
+      $('#anteprimaGruppo').innerHTML = '';
+      GRUPPO_VISTO = null;
+      $('#esitoInbox').innerHTML = '<p class="nota">Accettate in gruppo <b>' + e.quante + '</b> ' +
+        (e.quante === 1 ? 'riga' : 'righe') + ', ' + (e.a_mano || 0) + ' restano a mano. ' +
+        'E&#768; <b>un solo passaggio</b> nello storico: si annulla tutto insieme dalla scheda ' +
+        '«Annulla e storico».' +
+        (e.quante !== righe.length
+          ? ' Attenzione: ne avevo mostrate ' + righe.length + ' e ne ho prese ' + e.quante +
+            ' — qualcuna e&#768; cambiata nel frattempo.'
+          : '') + '</p>';
+      return Promise.all([caricaInbox(), caricaPrevisione(), caricaCarte(), caricaJournal()]);
+    })
+    .catch(function(e){
+      msgScen('#msgGruppo', e.scaduto
+        ? ('ESITO INCERTO: ' + e.message + '. Verifica prima di ripetere.')
+        : ('Non accettate: ' + e.message + '. O passano tutte, o non passa nessuna.'), true);
+      if ($('#btnGruppoVai')) $('#btnGruppoVai').disabled = false;
+    });
+}
+
+/* L'ID SINTETICO DELL'ADDEBITO DI CICLO NON E' UN NUMERO (difetto 5 del giro,
+   28/10). La previsione espone l'addebito derivato di una carta come
+   `carta-<cartaId>-<ciclo>`: `Number()` lo rendeva NaN, il servizio rispondeva
+   «manca tx_id» e dall'interfaccia quel collegamento non si poteva fare —
+   mentre via API funzionava gia'. Qui l'id si manda COM'E', e la rotta
+   `/collega` lo traduce in `inbox_collega_ciclo`. */
+var ID_CICLO_CARTA = /^carta-k?\d+-\d+$/;
+function collega(rowId, txId, parziale){
+  var ciclo = ID_CICLO_CARTA.test(String(txId));
+  var corpo = ciclo
+    ? { tx_id: String(txId), operation_id: uuid() }
+    : { tx_id: Number(txId), operation_id: uuid(), parziale: !!parziale };
+  api('/inbox/riga/' + rowId + '/collega', corpo)
+    .then(function(e){
+      $('#esitoInbox').innerHTML = (e && e.ciclo != null)
+        /* l'esito del ciclo ha una forma sua: previsto/scarto non esistono,
+           perche' il bersaglio non era un movimento previsto */
+        ? '<p class="nota">Collegato all&#8217;<b>addebito del ciclo carta</b>: ' + euro(e.cents) +
+          ' il ' + dataIt(e.data) + '. Da qui in poi quel ciclo non viene piu&#768; derivato: ' +
+          'la stessa spesa non conta due volte.</p>'
+        : '<p class="nota">Collegato: previsto ' + euro(e.previsto_cents) +
+          ' il ' + dataIt(e.data_prevista) + ', reale ' + euro(e.reale_cents) + ' il ' + dataIt(e.data_reale) +
+          ', scarto <b>' + euro(e.scarto_cents) + '</b>' +
+          (e.residuo_cents ? '. Resta aperto il residuo di ' + euro(e.residuo_cents) : '. Nessun residuo aperto') +
+          '.</p>';
+      /* un ciclo riconciliato cambia anche la scheda Carte: si rilegge */
+      return Promise.all([caricaInbox(), caricaPrevisione(), caricaCarte(), caricaJournal()]);
     }).catch(function(e){
       $('#esitoInbox').innerHTML = '<p class="errore">' + esc(e.message) + '</p>';
     });
@@ -2394,8 +2578,19 @@ function nuovaSpesa(rowId){
     api('/inbox/riga/' + rowId + '/nuova',
         { category_id: c ? Number(c) : null, operation_id: uuid() })
       .then(function(e){
-        $('#esitoInbox').innerHTML = '<p class="nota">Registrata' +
-          (e.classificata ? '' : ' e lasciata DA CLASSIFICARE: resta visibile in Inbox') + '.</p>';
+        /* 28/10, difetto 3: qui c'era scritto «resta visibile in Inbox», e NON
+           E' VERO — la riga passa da `da_riconciliare` a `nuova_spesa`, e
+           l'Inbox mostra solo le prime: esce, e il conteggio scende. Ora si
+           dice dove la si ritrova DAVVERO, e come tornare indietro. */
+        var r = RIGHE_INBOX[String(rowId)];
+        var quando = r && r.data ? ' al ' + dataIt(r.data) : '';
+        $('#esitoInbox').innerHTML = '<p class="nota">Registrata come spesa nuova' +
+          (e.classificata
+            ? ' e classificata. <b>Esce dall&#8217;Inbox</b>: la trovi nel prospetto' + quando + '.'
+            : ' e lasciata <b>DA CLASSIFICARE</b>. <b>Esce comunque dall&#8217;Inbox</b>: qui non la ritrovi. ' +
+              'La trovi nel prospetto, scheda «Conti e previsione»' + quando +
+              ', con categoria «&#8212;»: si classifica aprendo la voce.') +
+          ' Se e&#768; stato un errore, l&#8217;ultimo passaggio si disfa dalla scheda «Annulla e storico».</p>';
         return Promise.all([caricaInbox(), caricaPrevisione(), caricaJournal()]);
       }).catch(function(e){ $('#esitoInbox').innerHTML = '<p class="errore">' + esc(e.message) + '</p>'; });
   };
@@ -3461,6 +3656,104 @@ function nuovaCarta(){
                                           : ('Non aggiunta: ' + e.message), true);
     })
     .finally(function(){ $('#btnNuovaCarta').disabled = false; });
+}
+
+/* ── ANAGRAFICHE: il conto e le categorie, dall'app ─────────────────────── */
+/* 28/10, difetto 1 del giro di messa in opera: le rotte c'erano
+   (`/anagrafica/conto`, `/anagrafica/categoria`, `/anagrafica/sottocategoria`),
+   i campi no. Senza un conto e senza categorie l'app non si comincia: il giro
+   era costretto a passare dal Terminale.
+   Le guardie NON si duplicano qui: il servizio rifiuta un conto senza saldo di
+   partenza o senza la sua data, e la pagina mostra il motivo invece di
+   inventare uno zero o un «oggi». I pochi controlli locali servono solo a non
+   far partire una richiesta che si sa gia' sbagliata. */
+function renderAnagraficaPagina(){
+  var cat = (S.anag && S.anag.categorie) || [];
+  if ($('#ncatDentro')) {
+    var scelta = $('#ncatDentro').value;
+    $('#ncatDentro').innerHTML = '<option value="">— e&#768; una categoria —</option>' +
+      cat.map(function(c){ return '<option value="' + c.id + '">dentro ' + esc(c.nome) + '</option>'; }).join('');
+    $('#ncatDentro').value = scelta;      /* non si perde la scelta a ogni rilettura */
+  }
+  if ($('#elencoCategorie')) {
+    $('#elencoCategorie').innerHTML = cat.length
+      ? '<p class="nota">Ci sono <b>' + cat.length + '</b> categorie: ' +
+        cat.map(function(c){
+          var sotto = (c.sotto || []).filter(function(s){ return s.attiva !== false; });
+          return esc(c.nome) + (sotto.length ? ' (' + sotto.map(function(s){ return esc(s.nome); }).join(', ') + ')' : '');
+        }).join(' · ') + '</p>'
+      : '<p class="nota">Nessuna categoria: finche&#768; non ce n&#8217;e&#768; almeno una, i costi fissi e il budget non si possono impostare.</p>';
+  }
+}
+function nuovoConto(){
+  var nome = $('#ncoNome').value.trim();
+  if (!nome){ msgScen('#msgNuovoConto', 'Serve un nome: è come lo chiamerai ovunque.', true); return; }
+  /* obbligatorio = true: il saldo non si assume zero, e il messaggio lo dice
+     con le stesse parole del servizio */
+  var sal = importoDi('#ncoSaldo', 'il saldo di partenza', true);
+  if (sal.errore){ msgScen('#msgNuovoConto', sal.errore + ' Non si assume zero: il saldo va letto dall’estratto.', true); return; }
+  if (!$('#ncoData').value){
+    msgScen('#msgNuovoConto', 'Serve la data del saldo di partenza: non si assume oggi.', true); return;
+  }
+  $('#btnNuovoConto').disabled = true;
+  msgScen('#msgNuovoConto', 'creo…');
+  api('/anagrafica/conto', { nome: nome, tipo: $('#ncoTipo').value,
+    saldo_taglio_cents: sal.cents, data_taglio: $('#ncoData').value,
+    codice: $('#ncoBanca').value.trim() || null, operation_id: uuid() })
+    .then(function(e){
+      /* RILETTURA: un 200 muto non e' un conto creato */
+      return caricaAnagrafica().then(function(){ return e; });
+    })
+    .then(function(e){
+      var trovato = ((S.anag && S.anag.conti) || []).filter(function(c){
+        return String(c.id) === String(e.id); })[0];
+      if (!trovato){
+        msgScen('#msgNuovoConto', 'NON VERIFICATO: rileggendo l’anagrafica il conto non c’è.', true);
+        return;
+      }
+      msgScen('#msgNuovoConto', 'Creato «' + trovato.nome + '» (' + trovato.tipo + '): saldo ' +
+        euro(trovato.saldo_taglio_cents) + ' al ' + dataIt(trovato.data_taglio) +
+        '. Da qui in poi l’app conta.');
+      $('#ncoNome').value = ''; $('#ncoSaldo').value = ''; $('#ncoBanca').value = '';
+      /* il conto nuovo cambia saldi e previsione: si rilegge quello che mostra */
+      return Promise.all([caricaPrevisione(), caricaRischio()]);
+    })
+    .catch(function(e){
+      msgScen('#msgNuovoConto', e.scaduto ? ('ESITO INCERTO: ' + e.message + '. Verifica prima di ripetere.')
+                                          : ('Non creato: ' + e.message), true);
+    })
+    .finally(function(){ $('#btnNuovoConto').disabled = false; });
+}
+function nuovaCategoria(){
+  var nome = $('#ncatNome').value.trim();
+  if (!nome){ msgScen('#msgNuovaCategoria', 'Serve un nome.', true); return; }
+  var dentro = $('#ncatDentro').value;
+  $('#btnNuovaCategoria').disabled = true;
+  msgScen('#msgNuovaCategoria', 'aggiungo…');
+  var corpo = dentro
+    ? { nome: nome, category_id: Number(dentro), operation_id: uuid() }
+    : { nome: nome, operation_id: uuid() };
+  api(dentro ? '/anagrafica/sottocategoria' : '/anagrafica/categoria', corpo)
+    .then(function(e){ return caricaAnagrafica().then(function(){ return e; }); })
+    .then(function(e){
+      var cat = (S.anag && S.anag.categorie) || [];
+      var trovata = dentro
+        ? cat.filter(function(c){ return String(c.id) === String(dentro); })
+             .map(function(c){ return (c.sotto || []).filter(function(s){ return String(s.id) === String(e.id); })[0]; })[0]
+        : cat.filter(function(c){ return String(c.id) === String(e.id); })[0];
+      if (!trovata){
+        msgScen('#msgNuovaCategoria', 'NON VERIFICATO: rileggendo l’anagrafica non c’è.', true);
+        return;
+      }
+      msgScen('#msgNuovaCategoria', (dentro ? 'Sottocategoria' : 'Categoria') +
+        ' «' + trovata.nome + '» pronta: ora si può usare nei costi fissi, nelle entrate e nel budget.');
+      $('#ncatNome').value = '';
+    })
+    .catch(function(e){
+      msgScen('#msgNuovaCategoria', e.scaduto ? ('ESITO INCERTO: ' + e.message + '. Verifica prima di ripetere.')
+                                              : ('Non aggiunta: ' + e.message), true);
+    })
+    .finally(function(){ $('#btnNuovaCategoria').disabled = false; });
 }
 
 /* Le chiavi tecniche non si mostrano a Diego: ogni parametro ha il suo nome
@@ -4562,6 +4855,9 @@ document.addEventListener('DOMContentLoaded', function(){
   $('#btnTogliAttesa').onclick = function(){ salvaEntrata(true); };
   $('#btnChiudiEntrata').onclick = function(){ $('#box-entrata').hidden = true; ENTRATA_APERTA = null; };
   $('#btnNuovaCarta').onclick = nuovaCarta;
+  $('#btnNuovoConto').onclick = nuovoConto;
+  $('#btnNuovaCategoria').onclick = nuovaCategoria;
+  $('#btnGruppoAnteprima').onclick = anteprimaGruppo;
   $('#btnCostoFisso').onclick = creaCostoFisso;
   $('#cfCategoria').onchange = function(){ sottoDi('#cfCategoria', '#cfSotto'); };
   $('#fzCategoria').onchange = function(){ sottoDi('#fzCategoria', '#fzSotto'); };
