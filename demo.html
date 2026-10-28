@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Demo Tesoreria · Diego OS</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&family=Spline+Sans+Mono:wght@400;500&display=swap" rel="stylesheet">
+<!-- i colori vengono TUTTI da pelle.css: questa pagina non ne scrive nessuno -->
+<link rel="stylesheet" href="pelle.css">
+<script>
+/* la pelle scelta su salute.html vale anche qui: si applica prima del primo
+   paint, dentro try, perche' uno script che muore al boot porta giu' la pagina */
+(function(){
+  try{
+    var p='attuale';
+    try{ p=localStorage.getItem('pelle')||'attuale'; }catch(e){}
+    if(['inchiostro','bronzo','carta'].indexOf(p)>=0) document.documentElement.setAttribute('data-pelle',p);
+  }catch(e){ /* pelle non applicata: resta quella di default */ }
+})();
+</script>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;min-height:100%}
+body{background:var(--fondo);background-image:var(--fondo-mobile);color:var(--testo1);
+  font:400 15px/1.55 var(--font-ui);-webkit-font-smoothing:antialiased;
+  display:flex;align-items:center;justify-content:center;padding:22px}
+.scatola{width:min(94vw,520px);background:var(--vetro-forte);border:1px solid var(--bordo);
+  border-radius:var(--r-scheda);box-shadow:var(--ombra-finestra);padding:26px 22px 22px;
+  backdrop-filter:var(--vetro-filtro);-webkit-backdrop-filter:var(--vetro-filtro)}
+.marchio{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.marchio .euro{width:34px;height:34px;border-radius:var(--r-chip);display:flex;
+  align-items:center;justify-content:center;background:var(--accento-fondo);
+  border:1px solid var(--accento-bordo);color:var(--accento);font:600 17px var(--font-ui)}
+.marchio .etk{font:500 10px/1 var(--font-ui);letter-spacing:.14em;color:var(--testo3)}
+h1{margin:0;font:600 21px/1.25 var(--font-ui);color:var(--testo1)}
+p{margin:0 0 12px;color:var(--testo2)}
+p.forte{color:var(--testo1)}
+.chip{display:inline-block;padding:3px 9px;border-radius:var(--r-chip-s);
+  background:var(--accento-fondo-16);border:1px solid var(--accento-bordo);
+  color:var(--accento);font:600 11px/1.3 var(--font-ui);letter-spacing:.04em}
+ul{margin:0 0 16px;padding-left:18px;color:var(--testo2);font-size:14px}
+li{margin:4px 0}
+.bottoni{display:flex;flex-direction:column;gap:9px;margin-top:4px}
+.btn{display:block;width:100%;text-align:center;text-decoration:none;cursor:pointer;
+  border-radius:var(--r-chip);padding:13px 16px;font:500 15px/1 var(--font-ui);
+  background:rgba(var(--luce-rgb),.06);border:1px solid var(--bordo);color:var(--testo1);
+  transition:var(--transizione)}
+.btn:hover{box-shadow:var(--ombra-hover)}
+.btn.p{background:var(--accento);border-color:var(--accento);color:var(--inchiostro-su-lime);font-weight:600}
+.nota{font-size:12px;color:var(--testo3);margin:14px 0 0}
+#esito{min-height:18px;font-size:12.5px;color:var(--accento);margin-top:10px}
+#esito.errore{color:var(--negativo)}
+.sep{height:1px;background:var(--riga);margin:18px 0}
+</style>
+</head>
+<body>
+<main class="scatola">
+  <div class="marchio">
+    <div class="euro" aria-hidden="true">€</div>
+    <div>
+      <div class="etk">DIEGO OS · TESORERIA</div>
+      <h1>Demo con dati finti</h1>
+    </div>
+  </div>
+
+  <p class="forte">Qui dentro <b>non ci sono i tuoi soldi</b>: conti, movimenti, carte e tasse
+  sono <b>inventati</b> e vivono solo in questo browser. Serve per guardare l&#39;app e dirmi
+  se l&#39;interfaccia funziona — non per controllare i numeri.</p>
+  <p>Le modifiche che fai (assegnare una quota, impostare un budget, creare un promemoria)
+  <b>restano salvate</b> su questo telefono finché non premi «Ricomincia da capo».</p>
+
+  <div class="sep"></div>
+
+  <p><span class="chip">COSA GUARDARE</span></p>
+  <ul>
+    <li>Conti e previsione: cambia il periodo (1 settimana / 1 mese / 3 mesi) e usa le frecce.</li>
+    <li>Carte: gli acquisti del ciclo e il giorno in cui scendono dal conto.</li>
+    <li>Obiettivi e budget: una capienza è volutamente sfondata, si deve vedere.</li>
+    <li>Tasse: l&#39;accantonamento del 25% e il mese già chiuso.</li>
+    <li>Conti a rischio: un conto scende sotto soglia, e c&#39;è la proposta di giroconto.</li>
+  </ul>
+
+  <div class="bottoni">
+    <button class="btn p" id="btnEntra">Entra nella demo</button>
+    <button class="btn" id="btnAzzera">Ricomincia da capo</button>
+  </div>
+  <p id="esito" role="status" aria-live="polite"></p>
+
+  <p class="nota">Cosa questa demo <b>non</b> prova: i numeri veri, il backend su Supabase e
+  l&#39;import di un estratto conto vero. Quelli si collaudano solo sul Mac, col backend acceso.</p>
+</main>
+
+<!-- lo STESSO finto backend della pagina di demo: serve qui per azzerare i
+     dati (window.collaudoAzzera) senza duplicare la semina in due posti -->
+<script src="collaudo.js"></script>
+<script>
+(function(){
+  var esito = document.getElementById('esito');
+  function dillo(t, male){
+    esito.textContent = t;
+    esito.className = male ? 'errore' : '';
+  }
+  document.getElementById('btnEntra').onclick = function(){
+    /* i flag li mette collaudo.js al caricamento: qui si VERIFICA che ci
+       siano, invece di darlo per fatto, e poi si va */
+    var pronto = false;
+    try { pronto = !!localStorage.getItem('app_token') && !!localStorage.getItem('tesoreria_api'); }
+    catch(e){ pronto = false; }
+    if (!pronto){
+      dillo('Questo browser non lascia salvare niente (navigazione privata?): la demo non può partire.', true);
+      return;
+    }
+    location.href = 'tesoreria-demo.html';
+  };
+  document.getElementById('btnAzzera').onclick = function(){
+    if (typeof window.collaudoAzzera !== 'function'){
+      dillo('Non trovo il finto backend (collaudo.js): non ho azzerato niente.', true);
+      return;
+    }
+    /* si azzerano anche le PREFERENZE della pagina (periodo, tab, ipotesi
+       scelta): altrimenti «ricomincia da capo» lascerebbe la demo aperta
+       dove l'avevi lasciata, e non sarebbe un ricominciare */
+    try {
+      ['tesoreria_periodo','tesoreria_da','tesoreria_mesi','tesoreria_tab','tesoreria_vista',
+       'tesoreria_vista_fissi','tesoreria_gruppo','tesoreria_conto','tesoreria_scenario']
+        .forEach(function(k){ localStorage.removeItem(k); });
+    } catch(e){ /* niente: l'azzeramento dei dati conta piu' delle preferenze */ }
+    window.collaudoAzzera();
+    dillo('Fatto: dati finti rimessi come all’inizio.');
+  };
+})();
+</script>
+</body>
+</html>

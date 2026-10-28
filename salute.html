@@ -1511,6 +1511,12 @@ REGISTRO.brain={
         '<div style="color:var(--testo1);font:400 12px/1.45 var(--font-ui);margin-top:2px">'+esc(a.testo)+'</div></div></div>';
     });
     h+='</div><div style="display:flex;gap:6px"><button class="bott" style="flex:1" onclick="portaInSeduta()">Portati in seduta (<span id="nSel">0</span>)</button><button class="bott2" style="flex:0 0 90px" onclick="exportBrain()">Export</button></div>';
+    /* IL COLLEGAMENTO CHE MANCAVA (27/10): da salute non si arrivava piu' a
+       psicologa.html, e Diego non la trovava. Sta QUI e non nel rail perche'
+       sotto i 760px il rail e' nascosto, e Diego guarda dal telefono.
+       Il link dichiara che e' una RISERVA: quella pagina si marca da sola
+       SUPERATA e rimanda a Brain, quindi la casa degli appunti resta questa. */
+    h+='<div class="nota">Gli appunti vivono qui. La vecchia pagina <a href="psicologa.html">Psicologa</a> resta raggiungibile come riserva.</div>';
     return scheda('1/3','1/3',h);
   },
   nuovo:function(D){
